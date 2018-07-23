@@ -1,0 +1,117 @@
+Sub Main
+	|Change Elegant Defiant Breastplate to something else to use a different item. Be sure to leave the quotes ""
+	/declare thingToBuy string outer "Elegant Defiant Breastplate"
+	/cechob "\aoAttempting to Buy and Sell ${thingToBuy}"
+	/declare startCash int outer ${Me.Cash}
+	/cechob "\aoYou started with ${Int[${Math.Calc[${Me.Cash}/1000]}]}pp"
+
+	:mainLoop
+	|/call OpenAllContainers
+	/if (!${FindItemCount[${thingToBuy}]}) {
+		/call BuyFromVendor ${thingToBuy}
+	}
+	/if (${FindItemCount[${thingToBuy}]}) {
+		/call SellToVendor ${thingToBuy}
+	}
+	
+	/if (!${Defined[Difference]}) {
+		/declare Difference int outer ${Int[${Math.Calc[${Me.Cash}-${startCash}]}]}
+	}
+	/varset Difference ${Int[${Math.Calc[${Me.Cash}-${startCash}]}]}
+	/if (!${Defined[plat]}) {
+		/declare plat int outer -1
+	}
+	/varset plat ${Int[${Math.Calc[${Difference}/1000]}]}
+	
+	/if (${Difference} > 0) {
+		/cechob "\ayYou started with ${Int[${Math.Calc[${startCash}/1000]}]}pp, you now have ${Int[${Math.Calc[${Me.Cash}/1000]}]}pp. ~Difference of: ${plat}pp"
+		/if (${Macro.RunTime} < 120) {
+			/cechob "\ayMacro has been running for ${Macro.RunTime} seconds"
+		} else /if (${Macro.RunTime} > 119 && ${Macro.RunTime} < 3600) {
+			/cechob "\ayMacro has been running for ${Int[${Math.Calc[${Macro.RunTime}/60]}]} Minutes"
+		} else {
+			/cechob "\ayMacro has been running for ${Int[${Math.Calc[${Macro.RunTime}/60/60]}]} Hours"
+		}
+	}
+	/goto :mainLoop
+	
+/return
+
+|Sub to use as a function to return if you have the item.
+Sub checkInv(string buyItem)
+/return ${FindItemCount[=${buyItem}]}
+
+Sub checkVend(string buyItem)
+	/if (!${Window[MerchantWnd].Open}) {
+		/cechob "\ayYou need to open a merchant! Attempting to do that for you."
+		/target class Merchant
+		/if (${Target.Distance} < 20) {
+			/cechob "\awAttempting to open merchant!"
+			/invoke ${Target.RightClick}
+			|Need to give the merchant time to load their inventory. 
+			/delay 10s ${Window[MerchantWnd].Open}
+		} else /if (${Target.Race.Name.Equal[Merchant]}) {
+		/cechob "\ap${Target.CleanName} is to far away to open the Merchant, get closer and try again!"
+		/end
+		} else {
+		/cechob "\apNo Merchant in this Zone, ending macro!!"
+		/end
+		}
+	}
+/return ${Window[MerchantWnd].Child[MW_ItemList].List[=${buyItem},2]}
+
+Sub OpenAllContainers
+	|** Done only once declare invslot count (calculation to remove the first 23 slots because those are your worn items.) **|
+	/if (!${Defined[InvSlots]}) {
+		/declare InvSlots int outer 32
+		/cechob "\arAll packs opened, you must leave them open for macro to work. Move them if they are in your way!!"
+	}
+	
+	|** Opening your inventory **|
+	/if (!${Window[InventoryWindow].Open}) {
+		/windowstate InventoryWindow open
+	}
+	
+	|** Opening all your bags **|
+	/declare i int inner
+	/for i 23 to ${InvSlots}
+		/if (${Me.Inventory[${i}].Container} && !${Me.Inventory[${i}].Open}) {
+			/nomodkey /itemnotify pack${Int[${Math.Calc[${i}-22]}]} rightmouseup
+		}
+	/next i
+/return
+
+Sub SellToVendor(ItemToSell)
+    /if (${Window[MerchantWnd].Open}) {
+        /cechob "\agSelling ${ItemToSell}"
+		:sell
+        /nomodkey /itemnotify ${FindItem[=${ItemToSell}].InvSlot} leftmouseup
+        /nomodkey /shiftkey /notify merchantwnd MW_Sell_Button leftmouseup
+    	/if (${FindItem[${ItemToSell}].InvSlot}) /goto :sell
+    } else {
+		/cechob "You need to open a merchant! Attempting to do that for you."
+		/keypress u
+		/target class Merchant
+		/if (${Target.Distance} < 20) {
+			/echo Attempting to open merchant!
+			/invoke ${Target.RightClick}
+			/delay 10s ${Window[MerchantWnd].Open}
+			/goto :sell
+		} else /if (${Target.Race.Name.Equal[Merchant]}) {
+			/echo ${Target.CleanName} is to far away to open the Merchant, get closer!
+		} else {
+			/echo No Merchant in this Zone!!
+			/end
+		}
+	}
+/return
+
+Sub BuyFromVendor(string buyItem)
+	/if (${Window[MerchantWnd].Child[MW_ItemList].List[=${buyItem},2]}) {
+		/cechob "\arBuying ${buyItem}"
+		/nomodkey /notify merchantwnd MW_ItemList listselect ${Window[MerchantWnd].Child[MW_ItemList].List[=${buyItem},2]}
+		/nomodkey /shiftkey /notify merchantwnd MW_Buy_Button leftmouseup
+		/delay 1s ${FindItemCount[=${thingToBuy}]}
+	}
+	
+/return

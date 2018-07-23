@@ -1,0 +1,360 @@
+
+Sub Main
+	/call Declares
+	/call CheckSubscription Gold
+	/call WhereAmI
+	:mainLoop
+	/if (${myLocation.Equal[TraderSide]}) {
+		/call TraderWnd Open
+		/call TraderSetup
+		/call BazaarSearchWnd Open
+		/call CheckPrices
+		/call TraderWnd On
+		/call BazaarSearchWnd Close
+		/if (${UpdateOn}) {
+			/varset UpdateInterval ${UpdateInterval.OriginalValue}
+			/while (${UpdateInterval}) {
+				/if (${UpdateSpam} && !${UpdateSpamFrequency}) {
+					/bazecho \ayPrices will be updated in \ar${Int[${Math.Calc[${Math.Calc[${UpdateInterval}/10]}/60]}]} \ayminutes.
+					/varset UpdateSpamFrequency ${UpdateSpamFrequency.OriginalValue}
+				}
+				
+			}
+			/goto :mainLoop
+		}
+		
+	} else /if (${myLocation.Equal[BarterSide]}) {
+		|** TODO: Add Barter code and Barter "myLocation" logic **|
+	} else {
+		/bazecho You were not on the trader or barter side. Ending Macro. 
+		/end
+	}
+	
+/return
+
+Sub CheckPlugin(PluginName)
+	/if (!${Plugin[${PluginName}].Name.Equal[${PluginName}]}) {
+		/plugin ${PluginName}
+		/delay 3s ${Plugin[${PluginName}].Name.Equal[${PluginName}]}
+		/if (!${Plugin[${PluginName}].Name.Equal[${PluginName}]}) {
+			/echo "The Plugin --> ${PluginName} didn't load for some reason. Ending the Macro."
+		}
+	}
+/return
+
+Sub CheckSubscription(RequiredSub)
+	/if (!${Me.Subscription.Equal[${RequiredSub}]}) {
+		/bazecho \arYou don't not have a ${RequiredSub} Subscription. Ending Macro.
+		/end
+	}
+/return
+
+Sub TraderWnd(Status)
+	/if (${Status.Equal[Open]} || ${Status.Equal[On]} || ${Status.Equal[Off]}) {
+		/if (!${Window[BazaarWnd].Open}) {
+			/trader
+			/delay 2s ${Window[BazaarWnd].Open}
+		}
+		/if (${Status.Equal[On]}) {
+			/if (${Window[BazaarWnd].Child[BZW_Start_Button]}) {
+				/notify BazaarWnd BZW_Start_Button leftmouseup
+			}
+		}
+		/if (${Status.Equal[Off]}) {
+			/if (!${Window[BazaarWnd].Child[BZW_Start_Button]}) {
+				/notify BazaarWnd BZW_End_Button leftmouseup
+			}
+		}
+	} else /if (${Status.Equal[Close]}) {
+		/if (${Window[BazaarWnd].Open}) {
+			/windowstate BazaarWnd Close
+		}
+	}
+/return
+
+Sub BazaarSearchWnd(string Status) 
+	/if (${Status.Equal[Open]}) {
+		/if (!${Window[BazaarSearchWnd].Open}) {
+			/bazaar
+			/delay 2s ${Window[BazaarSearchWnd].Open}
+		}
+	} else /if (${Status.Equal[Close]}) {
+		/if (${Window[BazaarSearchWnd].Open}) {
+			/windowstate BazaarSearchWnd Close
+		}
+	}
+/return
+
+Sub CheckPrices
+	/declare i int local
+	/declare k int local
+	/declare j int local
+	/for i 0 to 100
+		/if (${Bool[${Window[BazaarWnd].Child[BZR_BazaarSlot${i}].Tooltip}]}) {
+			/if (${i}) {
+				/for k 0 to ${Math.Calc[${i}-1]}
+					/if (${Window[BazaarWnd].Child[BZR_BazaarSlot${k}].Tooltip.Equal[${Window[BazaarWnd].Child[BZR_BazaarSlot${i}].Tooltip}]}) {
+						/if (${Debugging}) /bazecho \aySkipping Price Calculation for ${Window[BazaarWnd].Child[BZR_BazaarSlot${i}].Tooltip} item, it was already checked.
+						/varset SkipItem TRUE
+					}
+				/next k
+			}
+			/if (${SkipItem}) {
+				/varset SkipItem FALSE
+				/continue
+			}
+			/varset SellerFound FALSE
+			/notify BazaarWnd BZR_BazaarSlot${i} leftmouseup
+			/varset currentPrice ${Window[BazaarWnd].Child[BZW_Money0].Text}
+			/varset newPrice ${currentPrice}
+			/delay 5
+			/varset thisItem ${Window[BazaarWnd].Child[BZR_BazaarSlot${i}].Tooltip}
+			/if (${ReportSearching}) /bazecho \ayChecking: \ap${thisItem}
+			/call CheckBazINIEntry "${thisItem}"
+			/if (${Ini[${itemPrices},${thisItem},SellPriceMin]} != 1) {
+				/if (${newPrice} < ${Ini[${itemPrices},${thisItem},SellPriceMin]}) {
+					/if (${Debugging}) /bazecho The price of ${thisItem} was less than SellPriceMin: ${Ini[${itemPrices},${thisItem},SellPriceMin]}
+					/varset newPrice ${Ini[${itemPrices},${thisItem},SellPriceMin]}
+				}
+			}
+			/if (${Ini[${itemPrices},${thisItem},SellPriceMax]} != 1) {
+				/if (${newPrice} > ${Ini[${itemPrices},${thisItem},SellPriceMax]}) {
+					/if (${Debugging}) /bazecho The price of ${thisItem} was greater than SellPriceMax: ${Ini[${itemPrices},${thisItem},SellPriceMax]}
+					/varset newPrice ${Ini[${itemPrices},${thisItem},SellPriceMax]}
+				}
+			}
+			/notify BazaarSearchWnd BZR_ItemNameInput leftmouseup
+			/call ClearChat
+			/call TypeIn "${thisItem}"
+			/notify BazaarSearchWnd BZR_QueryButton leftmouseup
+			/delay 10s ${Window[BazaarSearchWnd].Child[BZR_QueryButton].Enabled}
+			/for j 1 to 255
+				/if (${Bool[${Window[BazaarSearchWnd].Child[BZR_ItemList].List[${j},4]}]}) {
+					/if (${Window[BazaarSearchWnd].Child[BZR_ItemList].List[${j},2].Equal[${thisItem}]}) {
+						/if (!${Ini[${BazINI},Excludes,ExcludeList].Find[${Window[BazaarSearchWnd].Child[BZR_ItemList].List[${j},8]}]}) {
+							/varset SellerFound TRUE
+							/if (!${OpponentPrice} || ${OpponentPrice} > ${Window[BazaarSearchWnd].Child[BZR_ItemList].List[${j},4]}) {
+								/varset OpponentPrice ${Window[BazaarSearchWnd].Child[BZR_ItemList].List[${j},4]}
+								/if (${Debugging}) /bazecho \ayLowest Opponent Price is now ${OpponentPrice}
+							}
+							/if (${Window[BazaarSearchWnd].Child[BZR_ItemList].List[${j},4]} < ${newPrice} || ${OpponentPrice} > ${newPrice}) {
+								/if (${Debugging}) /bazecho \am${Window[BazaarSearchWnd].Child[BZR_ItemList].List[${j},8]}'s \awprice was lower than mine.
+								/if (${Ini[${itemPrices},${thisItem},SellPriceMin]} != 1) {
+									/if (${Ini[${itemPrices},${thisItem},SellPriceMin]} <= ${Window[BazaarSearchWnd].Child[BZR_ItemList].List[${j},4]}) {
+										/varset newPrice ${Window[BazaarSearchWnd].Child[BZR_ItemList].List[${j},4]}
+										/if (${Debugging}) /bazecho \ayNewPrice is now \ag${newPrice}
+									} else {
+										/if (${Debugging}) /bazecho \am${Window[BazaarSearchWnd].Child[BZR_ItemList].List[${j},8]}'s price was lower than SellPriceMin!
+									}
+								} else {
+									/if (${Debugging}) /bazecho SellPriceMin not considered. 
+									/varset newPrice ${Window[BazaarSearchWnd].Child[BZR_ItemList].List[${j},4]}
+									/if (${Debugging}) /bazecho \ayNewPrice is now \ag${newPrice}
+								}
+								
+							}
+						} else {
+							/if (${ReportExcluded}) /bazecho \am${Window[BazaarSearchWnd].Child[BZR_ItemList].List[${j},8]} \awwas on the Excluded Traders list
+						}
+					} else {
+						/if (${Debugging}) /bazecho ${Window[BazaarSearchWnd].Child[BZR_ItemList].List[${j},2]} is not the same as ${thisItem}
+					}
+				} else {
+					/break
+				}
+				/delay 10s ${Window[BazaarSearchWnd].Child[BZR_QueryButton].Enabled}
+			/next j
+		} else {
+			/if (${Debugging}) /bazecho No more items to check. Finished updating prices.
+			/break
+		}
+		/if (!${SellerFound}) {
+			/if (${Ini[${itemPrices},${thisItem},SellPriceMax]} != 1) {
+				/if (${newPrice} < ${Ini[${itemPrices},${thisItem},SellPriceMax]}) {
+					/varset newPrice ${Ini[${itemPrices},${thisItem},SellPriceMax]}
+					/if (${Debugging}) /bazecho NewPrice is now ${newPrice}
+				}
+			}
+		}
+		/if (${newPrice} == ${OpponentPrice} && ${OpponentPrice}) {
+			/varcalc newPrice ${newPrice}-${Math.Calc[${newPrice}*0.${UndercutPct}]}
+			/if (${Debugging}) /bazecho \arA new price ${UndercutPct}% lower than all other vendors is ${newPrice}
+		}
+		/if (${Ini[${itemPrices},${thisItem},SellPriceMin]} != 1) {
+			/if (${newPrice} < ${Ini[${itemPrices},${thisItem},SellPriceMin]}) {
+				/if (${Debugging}) /bazecho The price of ${thisItem} was less than SellPriceMin: ${Ini[${itemPrices},${thisItem},SellPriceMin]}
+				/varset newPrice ${Ini[${itemPrices},${thisItem},SellPriceMin]}
+			}
+		}
+		/if (${Ini[${itemPrices},${thisItem},SellPriceMax]} != 1) {
+			/if (${newPrice} > ${Ini[${itemPrices},${thisItem},SellPriceMax]}) {
+				/if (${Debugging}) /bazecho The price of ${thisItem} was greater than SellPriceMax: ${Ini[${itemPrices},${thisItem},SellPriceMax]}
+				/varset newPrice ${Ini[${itemPrices},${thisItem},SellPriceMax]}
+			}
+		}
+		
+		/if (${newPrice} != ${currentPrice}) {
+			/bazecho \arUpdating \ap${thisItem}'s \aoprice from \aw${currentPrice}pp \aoto ${If[${currentPrice}<${newPrice},\ag,\ar]}${newPrice}pp
+			/call UpdatePrice ${newPrice}
+		}
+		/varset OpponentPrice 0
+	/next i
+/return
+
+Sub CheckBazINIEntry(string itemname)
+	/if (!${Ini[${itemPrices},${itemname},SellPriceMin].Length}) {
+		/myecho \agCreating ${itemPrices} entry for - ${itemname}
+		/if (${SellPriceMin} > ${Int[${Math.Calc[${FindItem[${itemname}].Value}/1000]}]}) {
+			/ini ${itemPrices} "${itemname}" "SellPriceMin" ${SellPriceMin}
+		} else {
+			/myecho \arOverriding SellPriceMin on ${itemname}. It was lower than Vendor value of: ${Int[${Math.Calc[${FindItem[${itemname}].Value}/1000]}]}pp. 
+			/ini ${itemPrices} "${itemname}" "SellPriceMin" ${Int[${Math.Calc[${FindItem[${itemname}].Value}/1000]}]}
+		}
+		/ini ${itemPrices} "${itemname}" "SellPriceMax" ${SellPriceMax}
+		/ini ${itemPrices} "${itemname}" "BuyPriceMin" ${BuyPriceMin}
+		/ini ${itemPrices} "${itemname}" "BuyPriceMax" ${BuyPriceMax}
+	} else /if (${Int[${Math.Calc[${FindItem[${itemname}].Value}/1000]}]} > ${Ini[${itemPrices},${itemname},SellPriceMin]}) {
+		/myecho \arThere was a MinPrice set in the INI for ${itemname}, but it was lower than vendor value, fixing it. 
+		/ini ${itemPrices} "${itemname}" "SellPriceMin" ${Int[${Math.Calc[${FindItem[${itemname}].Value}/1000]}]}
+	}
+/return
+
+Sub TypeIn(InStr)
+	/declare char string local
+	/declare i int local
+	/for i 1 to ${InStr.Length}
+		/varset char ${InStr.Mid[${i},1]}
+		/if (!${char.Length}) {
+			/nomodkey /keypress Space chat
+		} else {
+			/if (${char.Left[1].Equal[(]}) /return
+			/if (${char.Left[1].Equal[)]}) /return
+			/nomodkey /keypress ${char} chat
+		}
+	/next i
+/return
+
+Sub ClearChat
+	/while (${Window[BazaarSearchWnd].Child[BZR_ItemNameInput].Text.Length}>0) {
+		/ctrlkey /shiftkey /keypress home chat
+		/delay 5
+		/ctrlkey /shiftkey /keypress delete chat
+		/delay 5
+	}
+/return
+
+Sub WhereAmI
+	/if (${Zone.ID} != 151) {
+		/bazecho \arYou must be in the Bazaar to use this macro. Ending.
+		/end
+	} else /if (${Range.Between[-1416,-325 : ${Me.X}]} && ${Range.Between[598,1690 : ${Me.Y}]}) {
+		/varset myLocation TraderSide
+		/echo \ayLocation: \ag${myLocation}
+	}
+/return
+
+Sub TraderSetup
+	/declare slot int local -1
+	/declare itemname string local
+	/declare targetstr string local ${InitialPrice}
+	/declare curprice string local
+	/bazecho Setting unpriced items to default price of (${targetstr}) pp.
+	|** Open the Bazaar Window if it isn't already opened **|
+	/if (!${Window[BazaarWnd].Open}) {
+		/bazecho \agOpening Trade Window.
+		/trader
+	}
+	/delay 5s ${Window[BazaarWnd].Open}
+	/for slot 0 to 100
+		/notify BazaarWnd BZR_BazaarSlot${slot} leftmouseup
+		/if (!${Window[BazaarWnd].Child[BZR_BazaarSlot${slot}].Tooltip.Length}) /break
+		/varset curprice ${Window[BazaarWnd].Child[BZW_Money0].Text}
+		/if (${curprice} != 0) /continue
+		/varset itemname ${Window[BazaarWnd].Child[BZR_BazaarSlot${slot}].Tooltip}
+		/call CheckBazINIEntry "${itemname}"
+		/if (${itemname.Find[,]}) {
+			/bazecho ${itemname} has a comma in the name, skipping, set manually ...
+			/continue
+		}
+		/if (!${curprice}) {
+			/bazecho ... Repricing ${itemname} from ${Window[BazaarWnd].Child[BZW_Money0].Text} to ${targetstr}.
+			/notify BazaarWnd BZW_Money0 leftmouseup
+			/delay 5s ${Window[QuantityWnd].Open}
+			/notify QuantityWnd QTYW_slider newvalue ${targetstr}
+			/delay 1
+			/notify QuantityWnd QTYW_Accept_Button leftmouseup
+			/delay 1
+			/notify BazaarWnd BZW_SetPrice_Button leftmouseup
+			/delay 1
+		}
+	/next slot
+/return
+
+Sub Declares
+	/declare BazINI string outer bazaarSettings.ini
+	/declare itemPrices string outer Bazaar.ini
+	/call BazaarSettings
+	/alias /bazecho /echo \ar[\agBazaar.mac\ar]\aw >>> \ao
+	/declare myLocation string outer
+	/declare thisItem string outer
+	/declare currentPrice int outer
+	/declare newPrice int outer
+	/declare SellerFound bool outer FALSE
+	/declare OpponentPrice int outer 0
+	/declare SkipItem bool outer FALSE
+/return
+
+Sub UpdatePrice(int price)
+	/notify BazaarWnd BZW_Money0 leftmouseup
+	/delay 2s ${Window[QuantityWnd].Open}
+	/notify QuantityWnd QTYW_Slider newvalue ${price}
+	/notify QuantityWnd QTYW_Accept_Button leftmouseup
+	/notify BazaarWnd BZW_SetPrice_Button leftmouseup
+/return
+
+Sub BazaarSettings
+	/if (!${Ini[${BazINI},Excludes,ExcludeList].Length}) /ini ${BazINI} "Excludes" "ExcludeList" "${Me.Name}"
+	/if (!${Ini[${BazINI},Excludes,ExcludeList].Find[${Me.Name}]}) /ini ${BazINI} "Excludes" "ExcludeList" "${Ini[${BazINI},Excludes,ExcludeList]}, ${Me.Name}"
+	/bazecho \ayExcluded Traders: ${Ini[${BazINI},Excludes,ExcludeList]}
+	
+	/if (!${Ini[${BazINI},Defaults,SellPriceMin].Length}) /ini ${BazINI} "Defaults" "SellPriceMin" "1"
+	/declare SellPriceMin int outer ${Ini[${BazINI},Defaults,SellPriceMin]}
+	
+	/if (!${Ini[${BazINI},Defaults,SellPriceMax].Length}) /ini ${BazINI} "Defaults" "SellPriceMax" "1"
+	/declare SellPriceMax int outer ${Ini[${BazINI},Defaults,SellPriceMax]}
+	
+	/if (!${Ini[${BazINI},Defaults,BuyPriceMin].Length}) /ini ${BazINI} "Defaults" "BuyPriceMin" "1"
+	/declare BuyPriceMin int outer ${Ini[${BazINI},Defaults,BuyPriceMin]}
+	
+	/if (!${Ini[${BazINI},Defaults,BuyPriceMax].Length}) /ini ${BazINI} "Defaults" "BuyPriceMax" "1"
+	/declare BuyPriceMax int outer ${Ini[${BazINI},Defaults,BuyPriceMax]}
+	
+	/if (!${Ini[${BazINI},Settings,UndercutPct].Length}) /ini ${BazINI} "Settings" "UndercutPct" "5"
+	/declare UndercutPct string outer ${Ini[${BazINI},Settings,UndercutPct]}
+	/bazecho \ayUndercutting all other vendors by \ag${UndercutPct}%
+	/if (${UndercutPct.Length} == 1) /varset UndercutPct 0${UndercutPct}
+	
+	/if (!${Ini[${BazINI},Defaults,InitialPrice].Length}) /ini ${BazINI} "Defaults" "InitialPrice" "5000"
+	/declare InitialPrice int outer ${Ini[${BazINI},Defaults,InitialPrice]}
+	
+	/if (!${Ini[${BazINI},Settings,UpdateOn].Length}) /ini ${BazINI} "Settings" "UpdateOn" "TRUE"
+	/declare UpdateOn bool outer ${Ini[${BazINI},Settings,UpdateOn]}
+	
+	/if (!${Ini[${BazINI},Settings,UpdateInterval].Length}) /ini ${BazINI} "Settings" "UpdateInterval" "90"
+	/declare UpdateInterval timer outer ${Ini[${BazINI},Settings,UpdateInterval]}m
+	
+	/if (!${Ini[${BazINI},Spam,UpdateSpam].Length}) /ini ${BazINI} "Spam" "UpdateSpam" "TRUE"
+	/declare UpdateSpam bool outer ${Ini[${BazINI},Spam,UpdateSpam]}
+	
+	/if (!${Ini[${BazINI},Spam,UpdateSpamFrequency].Length}) /ini ${BazINI} "Spam" "UpdateSpamFrequency" "5"
+	/declare UpdateSpamFrequency timer outer ${Ini[${BazINI},Spam,UpdateSpamFrequency]}m
+	
+	/if (!${Ini[${BazINI},Settings,Debugging].Length}) /ini ${BazINI} "Settings" "Debugging" "FALSE"
+	/declare Debugging bool outer ${Ini[${BazINI},Settings,Debugging]}
+	
+	/if (!${Ini[${BazINI},Spam,ReportSearching].Length}) /ini ${BazINI} "Spam" "ReportSearching" "FALSE"
+	/declare ReportSearching bool outer ${Ini[${BazINI},Spam,ReportSearching]}
+	
+	/if (!${Ini[${BazINI},Spam,ReportExcluded].Length}) /ini ${BazINI} "Spam" "ReportExcluded" "FALSE"
+	/declare ReportExcluded bool outer ${Ini[${BazINI},Spam,ReportExcluded]}
+/return

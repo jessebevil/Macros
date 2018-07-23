@@ -1,0 +1,311 @@
+|**AutoBuff Macro**|
+#Event beginCast "#*#You begin casting#*#"
+#Event Fizzle "#*#Your spell fizzles!#*#"
+#Event Interrupted "#*#Your spell is interrupted#*#"
+#Event noTarget "#*#You must first select a target#*#"
+#Event noMana "#*#Insufficient Mana to cast#*#"
+
+	#Warning
+
+| --------------------------------------------------------------------------------------------
+| SUB: Main
+| --------------------------------------------------------------------------------------------
+Sub Main
+
+	/declare Filename string outer Buff_${Me.CleanName}_${Me.Class}.ini
+	/declare TotalBuffs int outer 0
+
+	/call CheckINIBuffs
+	/call Declares
+	/while (TRUE) {
+		/call BuffRoutine
+	}
+
+/return
+
+| --------------------------------------------------------------------------------------------
+| SUB: Declares
+| --------------------------------------------------------------------------------------------
+Sub Declares
+	/declare Black 		string outer \ab
+	/declare Blue   	string outer \au
+	/declare Brown      string outer \a-o
+	/declare Cyan   	string outer \at
+	/declare Gray		string outer \a-w
+	/declare Green		string outer \ag
+	/declare Pink   	string outer \am
+	/declare Orange   	string outer \ao
+	/declare Purple   	string outer \ap
+	/declare Red   		string outer \ar
+	/declare Teal   	string outer \at
+	/declare White   	string outer \aw
+	/declare Yellow  	string outer \ay
+	/declare DarkGreen 	string outer \a-g
+	/declare DarkMaroon	string outer \a-m
+	/declare DarkPurple	string outer \a-p
+	/declare DarkRed	string outer \a-r
+	/declare DarkCyan	string outer \a-t
+	/declare DarkBlue	string outer \a-u
+	/declare DarkYellow	string outer \a-y
+	/declare OldGroupSize int outer ${Group}
+	/declare beginCast bool outer FALSE
+	/declare Fizzle bool outer FALSE
+	/declare Interrupted bool outer FALSE
+	/declare noTarget bool outer FALSE
+	/declare noMana bool outer FALSE
+	/declare DefaultGem string outer ${Ini[${Filename},Settings,DefaultGem]}
+	/declare Debugging bool outer ${Ini[${Filename},Settings,DebugMode]}
+	/noparse /declare RecastNeeded string outer (${noTarget} || ${Interrupted} || ${Fizzle})
+	/declare MedToMana int outer ${Ini[${Filename},Settings,MedToMana]}
+	/declare BuffCheckFrequency timer outer 0s
+	/declare GlobalConditions string outer ${Ini[${Filename},Settings,GlobalConditions]}
+	/alias /buffecho /echo ${White}[${Green}Buff.mac${White}]${Orange}
+	/declare i int local
+	/for i 1 to ${TotalBuffs}
+		/declare Buff${i} string outer ${Ini[${Filename},Buffs,Buff${i}]}
+		/declare Buff${i}Slot string outer ${Ini[${Filename},Buffs,Buff${i}Slot]}
+		/declare Buff${i}Conditions string outer ${Ini[${Filename},Buffs,Buff${i}Conditions,TRUE]}
+		/declare Buff${i}Targets string outer
+		/declare Buff${i}Type string outer ${Ini[${Filename},Buffs,Buff${i}Type,Spell]}
+		/declare BuffCmd${i} string outer
+	|** Only look here if Buff${i} isn't NULL **|
+		/if (!${Buff${i}.Equal[NULL]}) {
+			/if (${Debugging}) /buffecho Setting buff command
+		|** Is this an AltAbility? **|
+			/if (${Me.AltAbility[${Buff${i}}].ID}) {
+				/varset BuffCmd{i} casting "${Buff${i}} alt"
+				/if (${Debugging}) /buffecho Buff Command is: ${BuffCmd${i}}
+			|** Is this a spell I have? **|
+			} else /if (${Me.Book[${Buff${i}}]}) {
+				/if (${Debugging}) /buffecho ${Buff${i}} was in my book.
+			|** Do I already have this Memorized? **|
+				/if (${Debugging}) /buffecho Do I have it memorized? ${Me.Gem[${Buff${i}}]}
+				/if (${Me.Gem[${Buff${i}}]}) {
+					/varset BuffCmd${i} casting "${Buff${i}}"|gem${Me.Gem[${Buff${i}}]}
+					/if (${Debugging}) /buffecho Buff Command is: ${BuffCmd${i}}
+				|** If I don't have it memorized which gem do I use? **|
+				} else /if (!${Bool[${Buff${i}Slot}]}) {
+					/if (${Debugging}) /buffecho Did I assign it a slot? ${Buff${i}Slot}
+					/varset BuffCmd${i} casting "${Buff${i}}"|${DefaultGem}
+					/if (${Debugging}) /buffecho Buff Command is: ${BuffCmd${i}}
+				} else {
+					/if (${Debugging}) /buffecho Did I assign it a slot? ${Buff${i}Slot}
+					/varset BuffCmd${i} casting "${Buff${i}}"|${Buff${i}Slot}
+					/if (${Debugging}) /buffecho Buff Command is: ${BuffCmd${i}}
+				}
+			|** Is this a CombatAbility? **|
+			} else /if (${Me.CombatAbility[${Buff${i}}]}) {
+				/varset BuffCmd${i} disc "${Me.CombatAbility[${Buff${i}}]}"
+				/if (${Debugging}) /buffecho Buff Command is: ${BuffCmd${i}}
+			|** If I haven't figured out what it is by now, then I don't think we have it. ~~~~~~~~~~~~~~~Expand to include an itemcheck **|
+			} else {
+				/varcalc TotalBuffs ${TotalBuffs}-1
+				/buffecho ${Red} There was a problem with Buff${i}: ${Buff${i}}. It doesn't seem to be a AltAbility, Spell, or CombatAbility. Please check the INI entry.
+				/continue
+			}
+			/varset Buff${i}Targets ${Ini[${Filename},Buffs,Buff${i}Targets]}
+		}
+	/next i
+|** If I don't have any buffs setup that I actually have the say so and end the macro **|
+	/if (!${TotalBuffs}) {
+		/buffecho ${Red}No Buffs Loaded, edit ${Filename} located in the macros folder.
+		/end
+	}
+|** How many buffs do I have setup correctly? **|
+	/buffecho ${Red} ${TotalBuffs} Buffs Loaded
+|** Show me what buffs I have loaded **|
+	/for i 1 to ${TotalBuffs}
+		/buffecho ${Green} ${Buff${i}} <--
+	/next i
+
+/return
+
+| --------------------------------------------------------------------------------------------
+| SUB: CheckINI
+| --------------------------------------------------------------------------------------------
+Sub CheckINIBuffs
+	/if (${Ini[${Filename},MacroBuiltInCheck,INIGenerated].Length}) {
+		/declare INIGenerated bool local ${Ini[${Filename},MacroBuiltInCheck,INIGenerated]}
+	} else {
+		/declare INIGenerated bool local FALSE
+	}
+	/if (!${INIGenerated}) {
+		/call GenerateINI
+	}
+	/declare i int local
+	/for i 1 to 20
+		/if (${String[${Ini[${Filename},Buffs,Buff${i}]}].NotEqual[NULL]}) {
+			/varset TotalBuffs ${Math.Calc[${TotalBuffs}+1]}
+		} else /break
+	/next i
+
+/return
+
+| --------------------------------------------------------------------------------------------
+| SUB: GenerateINI
+| --------------------------------------------------------------------------------------------
+Sub GenerateINIBuff
+	/ini "${Filename}" "Settings" "BuffGroup?" "TRUE"
+	/ini "${Filename}" "Settings" "DefaultGem" "gem1"
+	/ini "${Filename}" "Settings" "BuffCheckFrequency" "10s"
+	/ini "${Filename}" "Settings" "GlobalConditions" "(TRUE)"
+	/ini "${Filename}" "Settings" "MedToMana" "100"
+	/ini "${Filename}" "Settings" "DebugMode" "FALSE"
+	/declare i int local
+	/for i 1 to 20
+		/ini "${Filename}" "Buffs" "${i}-------------------${i}" "--------"
+		/if (!${Ini[${Filename},Buffs,Buff${i}].Length}) {
+			/ini "${Filename}" "Buffs" "Buff${i}" "NULL"
+		}
+		/if (!${Ini[${Filename},Buffs,Buff${i}Slot].Length}) {
+			/ini "${Filename}" "Buffs" "Buff${i}Slot" "NULL"
+		}
+		/if (!${Ini[${Filename},Buffs,Buff${i}Conditions].Length}) {
+			/ini "${Filename}" "Buffs" "Buff${i}Conditions" "(TRUE)"
+		}
+		/if (!${Ini[${Filename},Buffs,Buff${i}Targets].Length}) {
+			/ini "${Filename}" "Buffs" "Buff${i}Targets" "NULL"
+		}
+	/next i
+	/ini "${Filename}" "MacroBuiltInCheck" "BuffINIGenerated" "TRUE"
+	/echo \aw[\agBuff.mac\aw]\aoINI Generated. Please Edit the INI ${Filename} in your Macro's folder.
+	/echo \aw[\agBuff.mac\aw]\aoBuff1=Spirit of Wolf
+	/echo \aw[\agBuff.mac\aw]\aoBuff1Targets=Single
+	/noparse /echo \aw[\agBuff.mac\aw]\aoBuff1Conditions=(!${Me.Zoning} && !${Me.Invis} && ${Me.PctMana} > 20 && !${Me.Moving} && !${Me.Sitting} && !${Me.Combat})
+	/echo \aw[\agBuff.mac\aw]\aoBuff2=Talisman of the Doomscale
+	/echo \aw[\agBuff.mac\aw]\aoBuff2Targets=Group
+	/noparse /echo \aw[\agBuff.mac\aw]\aoBuff2Conditions=(!${Me.Zoning} && !${Me.Invis} && ${Me.PctMana} > 20 && !${Me.Moving} && !${Me.Sitting} && !${Me.Combat})
+/return
+
+| --------------------------------------------------------------------------------------------
+| SUB: BuffRoutine
+| --------------------------------------------------------------------------------------------
+Sub BuffRoutine
+	/declare i int local
+	/declare j int local
+	/declare k int local
+	/if (!${BuffCheckFrequency}) {
+		/if (${Ini[${Filename},Settings,BuffGroup?]}) {
+			/if (${Group}) {
+				/for j 0 to ${Group}
+					/target id ${Group.Member[${j}].ID}
+					/delay 2s ${Target.ID}==${Group.Member[${j}].ID}&&${Target.BuffsPopulated}
+					/for i 1 to ${TotalBuffs}
+						/if (${Buff${i}Targets.Find[${Target.Class.ShortName}]} || ${Buff${i}Targets.Find[Group]} || ${Buff${i}Targets.Find[All]} || ${Buff${i}Targets.Find[Self]}) {
+							/if ((${Spell[${Buff${i}}].TargetType.Equal[Self]} || ${Buff${i}Targets.Find[Self]} || ${Spell[${Buff${i}}].TargetType.Equal[Group v2]}) && ${j}!=0) /continue
+							/if (${Debugging}) /buffecho Checking ${Buff${i}} conditions ${Buff${i}Conditions}
+							/if (!${Defined[NeedsBuff]}) /declare NeedsBuff bool outer TRUE
+							/varset NeedsBuff TRUE
+							/if (${Buff${i}Conditions} && ${GlobalConditions}) {
+								/if (${Debugging}) /buffecho Conditions Passed
+								/if (${Target.Buff[${Buff${i}}].ID}) {
+									/if (${Target.Buff[${Buff${i}}].Duration.TotalSeconds} < ${Math.Calc[${Spell[${Buff${i}}].CastTime.TotalSeconds}+2]}) {
+										/varset NeedsBuff TRUE
+									} else {
+										/varset NeedsBuff FALSE
+										/if (${Debugging}) /buffecho ${Target} doesn't need ${Buff${i}}
+										/continue
+									}
+								}
+								/if (${Debugging}) /buffecho ${Target.Name} Needs ${Buff${i}}: ${NeedsBuff}
+								/if (${NeedsBuff}) {
+									/if (${BuffCmd${i}.Find[gem]} && !${Me.Gem[${Buff${i}}]}) {
+										/if (${BuffCmd${i}.Length} == 4) {
+											:waitForMem
+											/mem "${Buff${i}}" ${BuffCmd${i}.Right[1]}
+											/delay 5
+											/if (!${Me.Gem[${Buff${i}}]}) /goto :waitForMem
+											/delay 10s !${Me.GemTimer[${Buff${i}}]}
+										} else /if (${BuffCmd${i}.Length} == 5) {
+											:waitForMem
+											/mem "${Buff${i}}" ${BuffCmd${i}.Right[2]}
+											/delay 5
+											/if (!${Me.Gem[${Buff${i}}]}) /goto :waitForMem
+											/delay 10s !${Me.GemTimer[${Buff${i}}]}
+										}
+									}
+									/buffecho ${Purple}${Target.Name} ${White}--> ${Green}${Buff${i}}
+									/if (${Buff${i}Conditions}) {
+									:castAgain
+										/docommand /${BuffCmd${i}}
+									:beginCastCheck
+										/delay 5
+										/doevents
+										/if (${noTarget}) {
+											/target id ${Group.Member[${j}].ID}
+											/goto :castAgain
+										}
+										/if (${Debugging}) /buffecho noMana: ${noMana} Recast Needed: ${RecastNeeded} Have I began cast:${beginCast}
+										/if (${noMana}) /call Meditate
+										/if (${RecastNeeded}) /goto :castAgain
+										/if (!${beginCast}) /goto :castAgain
+										/varset beginCast FALSE
+										/varset Fizzle FALSE
+										/varset Interrupted FALSE
+										/varset noTarget FALSE
+										/delay 1m !${Me.Casting.ID}
+									|** Global Spell cooldown delay **|
+										/delay 2s
+									}
+								}
+							}
+						}
+					/next i
+
+				/next j
+
+			}
+		}
+		/squelch /target clear
+		/varset BuffCheckFrequency ${Ini[${Filename},Settings,BuffCheckFrequency]}
+	}
+
+/return
+
+| --------------------------------------------------------------------------------------------
+| SUB: Meditate
+| --------------------------------------------------------------------------------------------
+Sub Meditate
+:waitForMana
+	/if (${Me.PctMana} < ${MedToMana}) {
+		/delay 5
+		/goto :waitForMana
+	}
+/return
+
+| --------------------------------------------------------------------------------------------
+| SUB: Event_beginCast
+| --------------------------------------------------------------------------------------------
+Sub Event_beginCast
+	/if (${Debugging}) /buffecho Begin Casting Sub
+	/varset beginCast TRUE
+/return
+
+| --------------------------------------------------------------------------------------------
+| SUB: Event_Fizzle
+| --------------------------------------------------------------------------------------------
+Sub Event_Fizzle
+	/varset Fizzle TRUE
+/return
+
+| --------------------------------------------------------------------------------------------
+| SUB: Event_Interrupted
+| --------------------------------------------------------------------------------------------
+Sub Event_Interrupted
+	/varset Interrupted TRUE
+/return
+
+| --------------------------------------------------------------------------------------------
+| SUB: Event_noTarget
+| --------------------------------------------------------------------------------------------
+Sub Event_noTarget
+	/varset noTarget TRUE
+/return
+
+| --------------------------------------------------------------------------------------------
+| SUB: Event_noMana
+| --------------------------------------------------------------------------------------------
+Sub Event_noMana
+	/varset noMana TRUE
+/return
+|  [+++  Formatted by MQ2f using tabs for indents +++]

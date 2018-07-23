@@ -1,0 +1,1941 @@
+817	Gemming Tool
+1226	Small Metal Container
+1227	Medium Metal Container
+1228	Large Metal Container
+1267	Small Sewing Kit
+1287	Toolbox
+2741	Ethereal Sheet of Metal
+2742	Ethereal Metal Rings
+3100	Tae Ew Chain Gloves
+3101	Tae Ew Chain Boots
+3102	Tae Ew Chain Bracer
+3103	Tae Ew Chain Helm
+3104	Tae Ew Chain Leggings
+3105	Tae Ew Chain Tunic
+3106	Tae Ew Chain Sleeves
+3107	Tae Ew Plate Gloves
+3108	Tae Ew Plate Boots
+3109	Tae Ew Plate Bracers
+3110	Tae Ew Plate Helm
+3111	Tae Ew Plate Greaves
+3112	Tae Ew Plate Breastplate
+3113	Tae Ew Plate Sleeves
+3128	Tae Ew Longsword
+3129	Tae Ew Two Hand Sword
+3130	Tae Ew Dagger
+3131	Tae Ew Shield
+3132	Tae Ew Mace
+3133	Tae Ew Two Hand Hammer
+3990	Molten Bits
+3991	E'cian Ice Shards
+3992	Planar Steel Bits
+3993	Wind Metal Bits
+3994	Nightmare Iron Bits
+3995	Electrified Copper Bits
+4074	Molten Studs
+4075	E'cian Ice Studs
+4076	Planar Steel Studs
+4077	Wind Metal Studs
+4078	Nightmare Iron Studs
+4079	Electrified Copper Studs
+4080	Molten Rings
+4081	E'cian Ice Scales
+4082	Planar Steel Rings
+4083	Wind Metal Rings
+4084	Nightmare Iron Rings
+4085	Electrified Copper Rings
+4086	Sheet of Molten Ore
+4087	Sheet of E'cian Ice
+4088	Sheet of Immaculate Steel
+4089	Sheet of Wind Metal
+4090	Sheet of Nightmare Iron
+4091	Sheet of Electrified Copper
+4113	Molten Metal Gears
+4114	Planar Steel Gears
+4115	Wind Metal Gears
+4116	E'cian Ice Gears
+4127	Enchanted Bar of Nightmare Iron
+4128	Enchanted Molten Bar
+4129	Enchanted Bar of Immaculate Steel
+4130	Enchanted Bar of Wind Metal
+4131	Enchanted Bar of E'cian Ice
+4132	Enchanted Electrified Copper
+4293	Inferno Chain Coif
+4294	Inferno Chain Tunic
+4295	Inferno Chain Sleeves
+4296	Inferno Chain Leggings
+4297	Inferno Chain Bracer
+4298	Inferno Chain Gloves
+4299	Inferno Chain Boots
+4300	Farwater Scale Coif
+4301	Farwater Scale Tunic
+4302	Farwater Scale Sleeves
+4303	Farwater Scale Leggings
+4304	Farwater Scale Bracer
+4305	Farwater Scale Gloves
+4306	Farwater Scale Boots
+4307	Livestone Chain Coif
+4308	Livestone Chain Tunic
+4309	Livestone Chain Sleeves
+4310	Livestone Chain Leggings
+4311	Livestone Chain Bracer
+4312	Livestone Chain Gloves
+4313	Livestone Chain Boots
+4314	Windessence Chain Coif
+4315	Windessence Chain Tunic
+4316	Windessence Chain Sleeves
+4317	Windessence Chain Leggings
+4318	Windessence Chain Bracer
+4319	Windessence Chain Gloves
+4320	Windessence Chain Boots
+4321	Night Terror Chain Coif
+4322	Night Terror Chain Tunic
+4323	Night Terror Chain Sleeves
+4324	Night Terror Chain Leggings
+4325	Night Terror Chain Bracer
+4326	Night Terror Chain Gloves
+4327	Night Terror Chain Boots
+4328	Hurricane Chain Coif
+4329	Hurricane Chain Tunic
+4330	Hurricane Chain Sleeves
+4331	Hurricane Chain Leggings
+4332	Hurricane Chain Bracer
+4333	Hurricane Chain Gloves
+4334	Hurricane Chain Boots
+4341	Inferno Plate Helm
+4342	Inferno Plate Breastplate
+4343	Inferno Plate Vambraces
+4344	Inferno Plate Greaves
+4345	Inferno Plate Bracer
+4346	Inferno Plate Gauntlets
+4347	Inferno Plate Boots
+4348	Farwater Plate Helm
+4349	Farwater Plate Breastplate
+4350	Farwater Plate Vambraces
+4351	Farwater Plate Greaves
+4352	Farwater Plate Bracer
+4353	Farwater Plate Gauntlets
+4354	Farwater Plate Boots
+4355	Livestone Plate Helm
+4356	Livestone Plate Breastplate
+4357	Livestone Plate Vambraces
+4358	Livestone Plate Greaves
+4359	Livestone Plate Bracer
+4360	Livestone Plate Gauntlets
+4361	Livestone Plate Boots
+4362	Windessence Plate Helm
+4363	Windessence Plate Breastplate
+4364	Windessence Plate Vambraces
+4365	Windessence Plate Greaves
+4366	Windessence Plate Bracer
+4367	Windessence Plate Gauntlets
+4368	Windessence Plate Boots
+4369	Night Terror Plate Helm
+4370	Night Terror Plate Breastplate
+4371	Night Terror Plate Vambraces
+4372	Night Terror Plate Greaves
+4373	Night Terror Plate Bracer
+4374	Night Terror Plate Gauntlets
+4375	Night Terror Plate Boots
+4376	Hurricane Plate Helm
+4377	Hurricane Plate Breastplate
+4378	Hurricane Plate Vambraces
+4379	Hurricane Plate Greaves
+4380	Hurricane Plate Bracer
+4381	Hurricane Plate Gauntlets
+4382	Hurricane Plate Boots
+4394	Enchanted Bar of Valorium
+4395	Enchanted Bar of Bloodmetal
+4947	Rugged Blades
+4969	Alliance Sword
+5203	Blade of Eternal Tempering
+5204	Chronomagic Axe
+5205	Ethernere Traveler's Blade
+5206	Distortion Greatsword
+5207	Shifting Glaive
+5208	Warped Baton
+5209	Mace of Regression
+5211	Ethermasher Maul
+5214	Ethertipped Stilleto
+5215	Otherworldly Blade
+5216	Ethernere Assassin's Dagger
+5217	Trident of Tomorrow
+5222	Timesplitter Throwing Axe
+5225	Distorting Guard
+5226	Refraction Tower Shield
+5249	Temporal Soldier Helm
+5250	Temporal Soldier Sleeves
+5251	Temporal Soldier Chain Shirt
+5252	Temporal Soldier Leggings
+5253	Temporal Soldier Chain Mantle
+5254	Temporal Soldier Waistwrap
+5255	Temporal Soldier Bracer
+5256	Temporal Soldier Gauntlets
+5257	Temporal Soldier Boots
+5258	Dimensional Warrior Helmet
+5259	Dimensional Warrior Vambraces
+5260	Dimensional Warrior Breastplate
+5261	Dimensional Warrior Greaves
+5262	Dimensional Warrior Gorget
+5263	Dimensional Warrior Belt
+5264	Dimensional Warrior Wristguard
+5265	Dimensional Warrior Gauntlets
+5266	Dimensional Warrior Sabatons
+5267	Displacer Blade
+5268	Cleaver of Time
+5269	Entwined Hammer
+5271	Sorcerer's Blade
+5275	Temporal Field
+5283	Crown of Clarity
+5284	Etherlink Vest
+5285	Manalinked Gauntlets
+5286	Temporal Helmet
+5287	Armor of Guidance
+5288	Gauntlets of Finality
+6646	Osmium Barbs
+6647	Osmium Studs
+6648	Osmium Fill
+6838	Palladium Barbs
+6839	Palladium Studs
+6840	Palladium Fill
+9874	Bloodling Plate Gorget
+9875	Bloodling Plate Bracer
+9879	Bloodling Plate Gauntlets
+9980	Bloodling Plate Boots
+9982	Bloodling Plate Mask
+9983	Bloodling Plate Mail
+9984	Bloodling Plate Belt
+9985	Bloodling Plate Sleeves
+11407	Worked Energeiac Chain Coif
+11408	Worked Energeiac Chain Wristguard
+11409	Worked Energeiac Chain Boots
+11410	Worked Energeiac Chain Gauntlets
+11411	Worked Energeiac Chain Sleeves
+11412	Worked Energeiac Chain Leggings
+11413	Worked Energeiac Chain Coat
+11414	Crude Energeiac Plate Helm
+11415	Crude Energeiac Plate Bracer
+11416	Crude Energeiac Plate Boots
+11417	Crude Energeiac Plate Gauntlets
+11418	Crude Energeiac Plate Vambraces
+11419	Crude Energeiac Plate Greaves
+11420	Crude Energeiac Plate Breastplate
+11421	Dull Energeiac Shield
+11422	Dull Energeiac Sword
+11423	Dull Energeiac Broadsword
+11424	Dull Energeiac Mace
+11425	Dull Energeiac Staff
+11426	Dull Energeiac Dagger
+11427	Dull Energeiac Lance
+11428	Dull Energeiac Fist
+11445	Beaten Energeiac Chain Coif
+11446	Beaten Energeiac Chain Wristguard
+11447	Beaten Energeiac Chain Boots
+11448	Beaten Energeiac Chain Gauntlets
+11449	Beaten Energeiac Chain Sleeves
+11450	Beaten Energeiac Chain Leggings
+11451	Beaten Energeiac Chain Coat
+11452	Tempered Energeiac Plate Helm
+11453	Tempered Energeiac Plate Bracer
+11454	Tempered Energeiac Plate Boots
+11455	Tempered Energeiac Plate Gauntlets
+11456	Tempered Energeiac Plate Vambraces
+11457	Tempered Energeiac Plate Greaves
+11458	Tempered Energeiac Plate Breastplate
+11459	Shining Energeiac Shield
+11460	Shining Energeiac Sword
+11461	Shining Energeiac Broadsword
+11462	Shining Energeiac Mace
+11463	Shining Energeiac Staff
+11464	Shining Energeiac Dagger
+11465	Shining Energeiac Lance
+11466	Shining Energeiac Fist
+11483	Linked Energeiac Chain Coif
+11484	Linked Energeiac Chain Wristguard
+11485	Linked Energeiac Chain Boots
+11486	Linked Energeiac Chain Gauntlets
+11487	Linked Energeiac Chain Sleeves
+11488	Linked Energeiac Chain Leggings
+11489	Linked Energeiac Chain Coat
+11490	Polished Energeiac Plate Helm
+11491	Polished Energeiac Plate Bracer
+11492	Polished Energeiac Plate Boots
+11493	Polished Energeiac Plate Gauntlets
+11494	Polished Energeiac Plate Vambraces
+11495	Polished Energeiac Plate Greaves
+11496	Polished Energeiac Plate Breastplate
+11497	Glowing Energeiac Shield
+11498	Glowing Energeiac Sword
+11499	Glowing Energeiac Broadsword
+11500	Glowing Energeiac Mace
+11501	Glowing Energeiac Staff
+11502	Glowing Energeiac Dagger
+11503	Glowing Energeiac Lance
+11504	Glowing Energeiac Fist
+11922	Metal Camp Chair
+12301	Condensed Flame Arrowheads
+12302	Condensed Shadow Arrowheads
+12303	Condensed Ice Arrowheads
+13202	Silver Tipped Arrowheads
+13443	Silvered Dagger
+13444	Silvered Rapier
+13445	Silvered Short Sword
+13446	Silvered Battle Axe
+13447	Silvered Halberd
+13448	Silvered Scimitar
+13449	Silvered Mace
+13450	Silvered Throwing Knife
+13451	Silvered Javelin
+13452	Silvered Shuriken
+13453	Silvered Throwing Axe
+13454	Silvered Long Sword
+13455	Silvered Spear
+13456	Silvered Warhammer
+13457	Silvered Pick
+13688	Forged Velium Dagger
+13690	Forged Velium Short Sword
+13693	Forged Velium Scimitar
+13695	Forged Velium Long Sword
+13706	Forged Velium 2-Handed Sword
+13707	Forged Velium Morning Star
+13713	Forged Velium Throwing Knife
+13714	Forged Velium Throwing Spear
+13715	Forged Velium Shuriken
+13716	Forged Velium Throwing Axe
+13781	Thalium Barbs
+13782	Thalium Studs
+13783	Thalium Fill
+13784	Fulginate Barbs
+13785	Fulginate Studs
+13786	Fulginate Fill
+13787	Rhenium Barbs
+13788	Rhenium Studs
+13789	Rhenium Fill
+13790	Cobalt Barbs
+13791	Cobalt Studs
+13792	Cobalt Fill
+13793	Titanium Barbs
+13794	Titanium Studs
+13795	Titanium Fill
+13796	Tantalum Barbs
+13797	Tantalum Studs
+13798	Tantalum Fill
+13799	Vanadium Barbs
+13800	Vanadium Studs
+13801	Vanadium Fill
+15255	Refined Underfoot Silver
+15256	Refined Underfoot Copper
+15257	Brell Silver
+15258	Brell's Heart Silver Filigree
+15261	Undifferentiated Ore (Tin Ore)
+15262	Undifferentiated Ore (Iron Ore)
+15263	Undifferentiated Ore (Silvril Ore)
+15264	Undifferentiated Ore (Thalium Ore)
+15265	Undifferentiated Ore (Iridium Ore)
+15266	Undifferentiated Ore (Fulginate Ore)
+15267	Undifferentiated Ore (Rubicite Ore)
+15268	Undifferentiated Ore (Indium Ore)
+15269	Undifferentiated Ore (Rhenium Ore)
+15270	Undifferentiated Ore (Tungsten Ore)
+15271	Undifferentiated Ore (Cobalt Ore)
+15272	Undifferentiated Ore (Titanium Ore)
+15273	Undifferentiated Ore (Tantalum Ore)
+15274	Undifferentiated Ore (Vanadium Ore)
+15275	Undifferentiated Ore (Osmium Ore)
+15276	Undifferentiated Ore (Palladium Ore)
+15310	Violet Hero's Forge Plate Helm Ornament
+15311	Violet Hero's Forge Plate Chest Ornament
+15312	Violet Hero's Forge Plate Arms Ornament
+15313	Violet Hero's Forge Plate Wrist Ornament
+15314	Violet Hero's Forge Plate Hands Ornament
+15315	Violet Hero's Forge Plate Legs Ornament
+15316	Violet Hero's Forge Plate Feet Ornament
+15317	Violet Hero's Forge Chain Helm Ornament
+15318	Violet Hero's Forge Chain Chest Ornament
+15319	Violet Hero's Forge Chain Arms Ornament
+15320	Violet Hero's Forge Chain Wrist Ornament
+15321	Violet Hero's Forge Chain Hands Ornament
+15322	Violet Hero's Forge Chain Legs Ornament
+15323	Violet Hero's Forge Chain Feet Ornament
+15373	Crystalized Lava Wurm Bead
+15387	Golem Empowerment Bead
+18385	Mistletoe Cutting Sickle
+18402	Spool
+23083	Northman Needle
+23084	Feir`Dal Needle
+23085	Earthen Needle
+23086	Norrathian Needle
+23087	Blood Spike
+23088	Bile Spine
+23089	Vale Needle
+23090	Vah Shir Needle
+23091	Froglok Needle
+24132	Vanadium Chain Coif Template
+24133	Vanadium Chain Faceguard Template
+24134	Vanadium Chain Collar Template
+24135	Vanadium Chain Chestguard Template
+24136	Vanadium Chain Spaulders Template
+24137	Vanadium Chain Cloak Template
+24138	Vanadium Chain Belt Template
+24139	Vanadium Chain Arms Template
+24140	Vanadium Chain Bracer Template
+24141	Vanadium Chain Gloves Template
+24142	Vanadium Chain Legplates Template
+24143	Vanadium Chain Boots Template
+24144	Vanadium Plate Helm Template
+24145	Vanadium Plate Visor Template
+24146	Vanadium Plate Gorget Template
+24147	Vanadium Breastplate Template
+24148	Vanadium Plate Pauldron Template
+24149	Vanadium Plate Cloak Template
+24150	Vanadium Plate Belt Template
+24151	Vanadium Plate Vambrace Template
+24152	Vanadium Plate Bracer Template
+24153	Vanadium Plate Gauntlet Template
+24154	Vanadium Plate Greaves Template
+24155	Vanadium Plate Boot Template
+24989	Cosgrove Chest Seal
+24990	Cosgrove Legging Seal
+24991	Cosgrove Boot Seal
+24992	Cosgrove Sleeve Seal
+24993	Cosgrove Wrist Seal
+24994	Cosgrove Glove Seal
+24995	Cosgrove Helm Seal
+32095	Large Ornate Platinum Chain Gloves
+32101	Large Ornate Platinum Chain Coif
+32107	Large Ornate Platinum Chain Mail
+32108	Acrylia Plate Helm
+32109	Acrylia Plate Visor
+32110	Acrylia Plate Collar
+32111	Acrylia Breastplate
+32112	Acrylia Plate Pauldron
+32113	Acrylia Plate Splinted Cloak
+32114	Acrylia Plate Girdle
+32115	Acrylia Plate Vambraces
+32116	Acrylia Plate Bracer
+32117	Acrylia Plate Gauntlets
+32118	Acrylia Plate Greaves
+32119	Acrylia Plate Boots
+32120	Small Acrylia Plate Helm
+32121	Small Acrylia Plate Visor
+32122	Small Acrylia Plate Collar
+32123	Small Acrylia Breastplate
+32124	Small Acrylia Plate Pauldron
+32125	Small Acrylia Plate Splinted Cloak
+32126	Small Acrylia Plate Girdle
+32127	Small Acrylia Plate Vambraces
+32128	Small Acrylia Plate Bracer
+32129	Small Acrylia Plate Gauntlets
+32130	Small Acrylia Plate Greaves
+32131	Small Acrylia Plate Boots
+32132	Large Acrylia Plate Helm
+32133	Large Acrylia Plate Visor
+32134	Large Acrylia Plate Collar
+32135	Large Acrylia Breastplate
+32136	Large Acrylia Plate Pauldron
+32137	Large Acrylia Plate Splinted Cloak
+32138	Large Acrylia Plate Girdle
+32139	Large Acrylia Plate Vambraces
+32140	Large Acrylia Plate Bracer
+32141	Large Acrylia Plate Gauntlets
+32142	Large Acrylia Plate Greaves
+32143	Large Acrylia Plate Boots
+32144	Acrylia Chain Coif
+32145	Acrylia Chain Veil
+32146	Acrylia Chain Gorget
+32147	Acrylia Chain Mail
+32148	Acrylia Chain Mantle
+32149	Acrylia Chain Cloak
+32150	Acrylia Chain Skirt
+32151	Acrylia Chain Sleeves
+32152	Acrylia Chain Bracelet
+32153	Acrylia Chain Gloves
+32154	Acrylia Chain Leggings
+32155	Acrylia Chain Boots
+32156	Small Acrylia Chain Coif
+32157	Small Acrylia Chain Veil
+32158	Small Acrylia Chain Gorget
+32159	Small Acrylia Chain Mail
+32160	Small Acrylia Chain Mantle
+32161	Small Acrylia Chain Cloak
+32162	Small Acrylia Chain Skirt
+32163	Small Acrylia Chain Sleeves
+32164	Small Acrylia Chain Bracelet
+32165	Small Acrylia Chain Gloves
+32166	Small Acrylia Chain Leggings
+32167	Small Acrylia Chain Boots
+32168	Large Acrylia Chain Coif
+32169	Large Acrylia Chain Veil
+32170	Large Acrylia Chain Gorget
+32171	Large Acrylia Chain Mail
+32172	Large Acrylia Chain Mantle
+32173	Large Acrylia Chain Cloak
+32174	Large Acrylia Chain Skirt
+32175	Large Acrylia Chain Sleeves
+32176	Large Acrylia Chain Bracelet
+32177	Large Acrylia Chain Gloves
+32178	Large Acrylia Chain Leggings
+32179	Large Acrylia Chain Boots
+32196	Combine Acrylia Dagger
+32197	Combine Acrylia Pick
+32198	Combine Acrylia Short Sword
+32199	Combine Acrylia Warhammer
+32200	Combine Acrylia Rapier
+32201	Combine Acrylia Mace
+32202	Combine Acrylia Spear
+32203	Combine Acrylia Scimitar
+32204	Combine Acrylia Long Sword
+32205	Combine Acrylia Bastard Sword
+32206	Combine Acrylia Battle Axe
+32207	Combine Acrylia Morning Star
+32208	Combine Acrylia Two Handed Sword
+32209	Combine Acrylia Halberd
+32210	Black Acrylia Dagger
+32211	Black Acrylia Pick
+32212	Black Acrylia Short Sword
+32213	Black Acrylia Warhammer
+32214	Black Acrylia Rapier
+32215	Black Acrylia Mace
+32216	Black Acrylia Spear
+32217	Black Acrylia Scimitar
+32218	Black Acrylia Long Sword
+32219	Black Acrylia Bastard Sword
+32220	Black Acrylia Battle Axe
+32221	Black Acrylia Morning Star
+32222	Black Acrylia Two Handed Sword
+32223	Black Acrylia Halberd
+33227	Poxysmit's Amalgamator Frame
+33228	Poxysmit's Amalgamator Cover
+33230	Ambleshift's Display Panel Front Plate
+33231	Poxysmit's Gearbox Casing
+33236	Small High Quality Steel Plate
+33242	Poxysmit's Gearbox Top
+33247	High Quality Steel Plate
+33248	Large High Quality Steel Plate
+33249	High Quality Hinge
+33250	High Quality Latch
+33281	Scrindite's Instruction Holepoker Casing
+33292	Last Blood Seal (Last Blood Steel)
+33293	Bazu Seal (Bazu Steel)
+33294	Discordant Seal (Discordant Steel)
+33295	Chronal Seal (Chronal Steel)
+33544	Block of High Quality Steel
+33545	Large Brick of High Quality Steel (Large Brick)
+33546	Small Brick of High Quality Steel (Small Brick)
+33547	Small Piece of High Quality Steel
+33548	Large Brick of High Quality Steel (Block)
+33549	Large Brick of High Quality Steel (Small Brick)
+33550	Small Brick of High Quality Steel (Large Brick)
+33551	Small Brick of High Quality Steel (Small Piece)
+33564	Longflight Javelin Heads
+33565	War Javelin Heads
+33566	Steel Longflight Javelin Heads
+33567	Steel War Javelin Heads
+33568	Longflight Javelin
+33569	War Javelin
+33570	Runic Longflight Javelin
+33571	Runic War Javelin
+33572	Steel Longflight Javelin
+33573	Steel War Javelin
+33574	Runic Steel Longflight Javelin
+33575	Runic Steel War Javelin
+33596	Large Brick of Refined High Quality Ore (Block)
+33597	Large Brick of Refined High Quality Ore (Small Brick)
+33619	Poxysmit's Basic Amalgamator Frame
+33620	Poxysmit's Basic Amalgamator Cover
+33621	Ambleshift's Basic Display Panel Front Plate
+33622	Poxysmit's Basic Gearbox Casing
+33623	Small High Quality Ore Plate
+33624	Poxysmit's Basic Gearbox Top
+33625	High Quality Ore Plate
+33626	Large High Quality Ore Plate
+33632	Poxysmit's Golden Amalgamator Frame
+33633	Poxysmit's Golden Amalgamator Cover
+33634	Ambleshift's Golden Display Panel Front Plate
+33635	Poxysmit's Golden Gearbox Casing
+33636	Small Golden High Quality Steel Plate
+33637	Poxysmit's Golden Gearbox Top
+33638	Golden High Quality Steel Plate
+33639	Large Golden High Quality Steel Plate
+33640	Block of Golden High Quality Steel
+33641	Large Brick of Golden High Quality Steel (Large Brick)
+33642	Small Brick of Golden High Quality Steel (Small Brick)
+33645	Large Brick of Golden High Quality Steel (Small Brick)
+33653	Poxysmit's Opal Amalgamator Frame
+33654	Poxysmit's Opal Amalgamator Cover
+33655	Ambleshift's Opal Display Panel Front Plate
+33656	Poxysmit's Opal Gearbox Casing
+33657	Small Opal High Quality Steel Plate
+33658	Poxysmit's Opal Gearbox Top
+33659	Opal High Quality Steel Plate
+33660	Large Opal High Quality Steel Plate
+33661	Block of Opal High Quality Steel
+33662	Large Brick of Opal High Quality Steel (Large Brick)
+33663	Small Brick of Opal High Quality Steel (Small Brick)
+33666	Large Brick of Opal High Quality Steel (Small Brick)
+33810	Pouch of Ore Dust
+35558	Battle Cam Parts (Broken Battle Blade)
+35559	Laminator Blade
+35560	Laminator Roller
+35658	Battle Cam Parts (Sundered Blade Shards)
+35673	Envenomed Steel
+35674	Envenomed Steel Blade
+35675	Envenomed Athame
+36270	Smith Ceramic Clay
+36617	Simple Stud (Vial of Salty Sea Water)
+36618	Simple File (Flask of Salty Water)
+36789	Crystalwing Needle
+40001	Forged Firebrand Scimitar
+40002	Forged Firebrand Bastard Sword
+40003	Forged Firebrand Battle Axe
+40005	Forged Firebrand Long Sword
+40006	Forged Firebrand Pick
+40007	Forged Firebrand Mace
+40008	Forged Firebrand Morning Star
+40010	Forged Firebrand Dagger
+40011	Forged Firebrand Spear
+40012	Forged Firebrand Rapier
+40014	Forged Firebrand Halberd
+40255	Teir`Dal Needle
+40276	Erud Needle
+40297	Clockwork Needle
+40318	Koada'Dal Needle
+40339	Antonican Needle
+40360	Cabilisan Needle
+43325	Tin Chain Coif Template
+43326	Tin Chain Faceguard Template
+43327	Tin Chain Collar Template
+43328	Tin Chain Chestguard Template
+43329	Tin Chain Spaulders Template
+43330	Tin Chain Cloak Template
+43331	Tin Chain Belt Template
+43332	Tin Chain Arms Template
+43333	Tin Chain Bracer Template
+43334	Tin Chain Gloves Template
+43335	Tin Chain Legplates Template
+43336	Tin Chain Boots Template
+43337	Iron Chain Coif Template
+43338	Iron Chain Faceguard Template
+43339	Iron Chain Collar Template
+43340	Iron Chain Chestguard Template
+43341	Iron Chain Spaulders Template
+43342	Iron Chain Cloak Template
+43343	Iron Chain Belt Template
+43344	Iron Chain Arms Template
+43345	Iron Chain Bracer Template
+43346	Iron Chain Gloves Template
+43347	Iron Chain Legplates Template
+43348	Iron Chain Boots Template
+43349	Silvril Chain Coif Template
+43350	Silvril Chain Faceguard Template
+43351	Silvril Chain Collar Template
+43352	Silvril Chain Chestguard Template
+43353	Silvril Chain Spaulders Template
+43354	Silvril Chain Cloak Template
+43355	Silvril Chain Belt Template
+43356	Silvril Chain Arms Template
+43357	Silvril Chain Bracer Template
+43358	Silvril Chain Gloves Template
+43359	Silvril Chain Legplates Template
+43360	Silvril Chain Boots Template
+43361	Thalium Chain Coif Template
+43362	Thalium Chain Faceguard Template
+43363	Thalium Chain Collar Template
+43364	Thalium Chain Chestguard Template
+43365	Thalium Chain Spaulders Template
+43366	Thalium Chain Cloak Template
+43367	Thalium Chain Belt Template
+43368	Thalium Chain Arms Template
+43369	Thalium Chain Bracer Template
+43370	Thalium Chain Gloves Template
+43371	Thalium Chain Legplates Template
+43372	Thalium Chain Boots Template
+43373	Iridium Chain Coif Template
+43374	Iridium Chain Faceguard Template
+43375	Iridium Chain Collar Template
+43376	Iridium Chain Chestguard Template
+43377	Iridium Chain Spaulders Template
+43378	Iridium Chain Cloak Template
+43379	Iridium Chain Belt Template
+43380	Iridium Chain Arms Template
+43381	Iridium Chain Bracer Template
+43382	Iridium Chain Gloves Template
+43383	Iridium Chain Legplates Template
+43384	Iridium Chain Boots Template
+43385	Fulginate Chain Coif Template
+43386	Fulginate Chain Faceguard Template
+43387	Fulginate Chain Collar Template
+43388	Fulginate Chain Chestguard Template
+43389	Fulginate Chain Spaulders Template
+43390	Fulginate Chain Cloak Template
+43391	Fulginate Chain Belt Template
+43392	Fulginate Chain Arms Template
+43393	Fulginate Chain Bracer Template
+43394	Fulginate Chain Gloves Template
+43395	Fulginate Chain Legplates Template
+43396	Fulginate Chain Boots Template
+43397	Rubicite Chain Coif Template
+43398	Rubicite Chain Faceguard Template
+43399	Rubicite Chain Collar Template
+43400	Rubicite Chain Chestguard Template
+43401	Rubicite Chain Spaulders Template
+43402	Rubicite Chain Cloak Template
+43403	Rubicite Chain Belt Template
+43404	Rubicite Chain Arms Template
+43405	Rubicite Chain Bracer Template
+43406	Rubicite Chain Gloves Template
+43407	Rubicite Chain Legplates Template
+43408	Rubicite Chain Boots Template
+43409	Indium Chain Coif Template
+43410	Indium Chain Faceguard Template
+43411	Indium Chain Collar Template
+43412	Indium Chain Chestguard Template
+43413	Indium Chain Spaulders Template
+43414	Indium Chain Cloak Template
+43415	Indium Chain Belt Template
+43416	Indium Chain Arms Template
+43417	Indium Chain Bracer Template
+43418	Indium Chain Gloves Template
+43419	Indium Chain Legplates Template
+43420	Indium Chain Boots Template
+43421	Rhenium Chain Coif Template
+43422	Rhenium Chain Faceguard Template
+43423	Rhenium Chain Collar Template
+43424	Rhenium Chain Chestguard Template
+43425	Rhenium Chain Spaulders Template
+43426	Rhenium Chain Cloak Template
+43427	Rhenium Chain Belt Template
+43428	Rhenium Chain Arms Template
+43429	Rhenium Chain Bracer Template
+43430	Rhenium Chain Gloves Template
+43431	Rhenium Chain Legplates Template
+43432	Rhenium Chain Boots Template
+43433	Tungsten Chain Coif Template
+43434	Tungsten Chain Faceguard Template
+43435	Tungsten Chain Collar Template
+43436	Tungsten Chain Chestguard Template
+43437	Tungsten Chain Spaulders Template
+43438	Tungsten Chain Cloak Template
+43439	Tungsten Chain Belt Template
+43440	Tungsten Chain Arms Template
+43441	Tungsten Chain Bracer Template
+43442	Tungsten Chain Gloves Template
+43443	Tungsten Chain Legplates Template
+43444	Tungsten Chain Boots Template
+43445	Cobalt Chain Coif Template
+43446	Cobalt Chain Faceguard Template
+43447	Cobalt Chain Collar Template
+43448	Cobalt Chain Chestguard Template
+43449	Cobalt Chain Spaulders Template
+43450	Cobalt Chain Cloak Template
+43451	Cobalt Chain Belt Template
+43452	Cobalt Chain Arms Template
+43453	Cobalt Chain Bracer Template
+43454	Cobalt Chain Gloves Template
+43455	Cobalt Chain Legplates Template
+43456	Cobalt Chain Boots Template
+43457	Titanium Chain Coif Template
+43458	Titanium Chain Faceguard Template
+43459	Titanium Chain Collar Template
+43460	Titanium Chain Chestguard Template
+43461	Titanium Chain Spaulders Template
+43462	Titanium Chain Cloak Template
+43463	Titanium Chain Belt Template
+43464	Titanium Chain Arms Template
+43465	Titanium Chain Bracer Template
+43466	Titanium Chain Gloves Template
+43467	Titanium Chain Legplates Template
+43468	Titanium Chain Boots Template
+43469	Tantalum Chain Coif Template
+43470	Tantalum Chain Faceguard Template
+43471	Tantalum Chain Collar Template
+43472	Tantalum Chain Chestguard Template
+43473	Tantalum Chain Spaulders Template
+43474	Tantalum Chain Cloak Template
+43475	Tantalum Chain Belt Template
+43476	Tantalum Chain Arms Template
+43477	Tantalum Chain Bracer Template
+43478	Tantalum Chain Gloves Template
+43479	Tantalum Chain Legplates Template
+43480	Tantalum Chain Boots Template
+43481	Tin Plate Helm Template
+43482	Tin Plate Visor Template
+43483	Tin Plate Gorget Template
+43484	Tin Breastplate Template
+43485	Tin Plate Pauldron Template
+43486	Tin Plate Cloak Template
+43487	Tin Plate Belt Template
+43488	Tin Plate Vambrace Template
+43489	Tin Plate Bracer Template
+43490	Tin Plate Gauntlet Template
+43491	Tin Plate Greaves Template
+43492	Tin Plate Boot Template
+43493	Iron Plate Helm Template
+43494	Iron Plate Visor Template
+43495	Iron Plate Gorget Template
+43496	Iron Breastplate Template
+43497	Iron Plate Pauldron Template
+43498	Iron Plate Cloak Template
+43499	Iron Plate Belt Template
+43500	Iron Plate Vambrace Template
+43501	Iron Plate Bracer Template
+43502	Iron Plate Gauntlet Template
+43503	Iron Plate Greaves Template
+43504	Iron Plate Boot Template
+43505	Silvril Plate Helm Template
+43506	Silvril Plate Visor Template
+43507	Silvril Plate Gorget Template
+43508	Silvril Breastplate Template
+43509	Silvril Plate Pauldron Template
+43510	Silvril Plate Cloak Template
+43511	Silvril Plate Belt Template
+43512	Silvril Plate Vambrace Template
+43513	Silvril Plate Bracer Template
+43514	Silvril Plate Gauntlet Template
+43515	Silvril Plate Greaves Template
+43516	Silvril Plate Boot Template
+43517	Thalium Plate Helm Template
+43518	Thalium Plate Visor Template
+43519	Thalium Plate Gorget Template
+43520	Thalium Breastplate Template
+43521	Thalium Plate Pauldron Template
+43522	Thalium Plate Cloak Template
+43523	Thalium Plate Belt Template
+43524	Thalium Plate Vambrace Template
+43525	Thalium Plate Bracer Template
+43526	Thalium Plate Gauntlet Template
+43527	Thalium Plate Greaves Template
+43528	Thalium Plate Boot Template
+43529	Iridium Plate Helm Template
+43530	Iridium Plate Visor Template
+43531	Iridium Plate Gorget Template
+43532	Iridium Breastplate Template
+43533	Iridium Plate Pauldron Template
+43534	Iridium Plate Cloak Template
+43535	Iridium Plate Belt Template
+43536	Iridium Plate Vambrace Template
+43537	Iridium Plate Bracer Template
+43538	Iridium Plate Gauntlet Template
+43539	Iridium Plate Greaves Template
+43540	Iridium Plate Boot Template
+43541	Fulginate Plate Helm Template
+43542	Fulginate Plate Visor Template
+43543	Fulginate Plate Gorget Template
+43544	Fulginate Breastplate Template
+43545	Fulginate Plate Pauldron Template
+43546	Fulginate Plate Cloak Template
+43547	Fulginate Plate Belt Template
+43548	Fulginate Plate Vambrace Template
+43549	Fulginate Plate Bracer Template
+43550	Fulginate Plate Gauntlet Template
+43551	Fulginate Plate Greaves Template
+43552	Fulginate Plate Boot Template
+43553	Rubicite Plate Helm Template
+43554	Rubicite Plate Visor Template
+43555	Rubicite Plate Gorget Template
+43556	Rubicite Breastplate Template
+43557	Rubicite Plate Pauldron Template
+43558	Rubicite Plate Cloak Template
+43559	Rubicite Plate Belt Template
+43560	Rubicite Plate Vambrace Template
+43561	Rubicite Plate Bracer Template
+43562	Rubicite Plate Gauntlet Template
+43563	Rubicite Plate Greaves Template
+43564	Rubicite Plate Boot Template
+43565	Indium Plate Helm Template
+43566	Indium Plate Visor Template
+43567	Indium Plate Gorget Template
+43568	Indium Breastplate Template
+43569	Indium Plate Pauldron Template
+43570	Indium Plate Cloak Template
+43571	Indium Plate Belt Template
+43572	Indium Plate Vambrace Template
+43573	Indium Plate Bracer Template
+43574	Indium Plate Gauntlet Template
+43575	Indium Plate Greaves Template
+43576	Indium Plate Boot Template
+43577	Rhenium Plate Helm Template
+43578	Rhenium Plate Visor Template
+43579	Rhenium Plate Gorget Template
+43580	Rhenium Breastplate Template
+43581	Rhenium Plate Pauldron Template
+43582	Rhenium Plate Cloak Template
+43583	Rhenium Plate Belt Template
+43584	Rhenium Plate Vambrace Template
+43585	Rhenium Plate Bracer Template
+43586	Rhenium Plate Gauntlet Template
+43587	Rhenium Plate Greaves Template
+43588	Rhenium Plate Boot Template
+43589	Tungsten Plate Helm Template
+43590	Tungsten Plate Visor Template
+43591	Tungsten Plate Gorget Template
+43592	Tungsten Breastplate Template
+43593	Tungsten Plate Pauldron Template
+43594	Tungsten Plate Cloak Template
+43595	Tungsten Plate Belt Template
+43596	Tungsten Plate Vambrace Template
+43597	Tungsten Plate Bracer Template
+43598	Tungsten Plate Gauntlet Template
+43599	Tungsten Plate Greaves Template
+43600	Tungsten Plate Boot Template
+43601	Cobalt Plate Helm Template
+43602	Cobalt Plate Visor Template
+43603	Cobalt Plate Gorget Template
+43604	Cobalt Breastplate Template
+43605	Cobalt Plate Pauldron Template
+43606	Cobalt Plate Cloak Template
+43607	Cobalt Plate Belt Template
+43608	Cobalt Plate Vambrace Template
+43609	Cobalt Plate Bracer Template
+43610	Cobalt Plate Gauntlet Template
+43611	Cobalt Plate Greaves Template
+43612	Cobalt Plate Boot Template
+43613	Titanium Plate Helm Template
+43614	Titanium Plate Visor Template
+43615	Titanium Plate Gorget Template
+43616	Titanium Breastplate Template
+43617	Titanium Plate Pauldron Template
+43618	Titanium Plate Cloak Template
+43619	Titanium Plate Belt Template
+43620	Titanium Plate Vambrace Template
+43621	Titanium Plate Bracer Template
+43622	Titanium Plate Gauntlet Template
+43623	Titanium Plate Greaves Template
+43624	Titanium Plate Boot Template
+43625	Tantalum Plate Helm Template
+43626	Tantalum Plate Visor Template
+43627	Tantalum Plate Gorget Template
+43628	Tantalum Breastplate Template
+43629	Tantalum Plate Pauldron Template
+43630	Tantalum Plate Cloak Template
+43631	Tantalum Plate Belt Template
+43632	Tantalum Plate Vambrace Template
+43633	Tantalum Plate Bracer Template
+43634	Tantalum Plate Gauntlet Template
+43635	Tantalum Plate Greaves Template
+43636	Tantalum Plate Boot Template
+43637	Blessed Sleeve Symbol of the Skeptic
+43638	Blessed Chest Symbol of the Skeptic
+43639	Blessed Boot Symbol of the Skeptic
+43640	Blessed Glove Symbol of the Skeptic
+43641	Blessed Helm Symbol of the Skeptic
+43642	Blessed Legging Symbol of the Skeptic
+43643	Blessed Wrist Symbol of the Skeptic
+43644	Blessed Sleeve Symbol of Infestation
+43645	Blessed Chest Symbol of Infestation
+43646	Blessed Boot Symbol of Infestation
+43647	Blessed Glove Symbol of Infestation
+43648	Blessed Helm Symbol of Infestation
+43649	Blessed Legging Symbol of Infestation
+43650	Blessed Wrist Symbol of Infestation
+43651	Blessed Sleeve Symbol of Below
+43652	Blessed Chest Symbol of Below
+43653	Blessed Boot Symbol of Below
+43654	Blessed Glove Symbol of Below
+43655	Blessed Helm Symbol of Below
+43656	Blessed Legging Symbol of Below
+43657	Blessed Wrist Symbol of Below
+43658	Blessed Sleeve Symbol of Terror
+43659	Blessed Chest Symbol of Terror
+43660	Blessed Boot Symbol of Terror
+43661	Blessed Glove Symbol of Terror
+43662	Blessed Helm Symbol of Terror
+43663	Blessed Legging Symbol of Terror
+43664	Blessed Wrist Symbol of Terror
+43665	Blessed Sleeve Symbol of Devotion
+43666	Blessed Chest Symbol of Devotion
+43667	Blessed Boot Symbol of Devotion
+43668	Blessed Glove Symbol of Devotion
+43669	Blessed Helm Symbol of Devotion
+43670	Blessed Legging Symbol of Devotion
+43671	Blessed Wrist Symbol of Devotion
+43672	Blessed Sleeve Symbol of the Farceur
+43673	Blessed Chest Symbol of the Farceur
+43674	Blessed Boot Symbol of the Farceur
+43675	Blessed Glove Symbol of the Farceur
+43676	Blessed Helm Symbol of the Farceur
+43677	Blessed Legging Symbol of the Farceur
+43678	Blessed Wrist Symbol of the Farceur
+43679	Blessed Sleeve Symbol of Hate
+43680	Blessed Chest Symbol of Hate
+43681	Blessed Boot Symbol of Hate
+43682	Blessed Glove Symbol of Hate
+43683	Blessed Helm Symbol of Hate
+43684	Blessed Legging Symbol of Hate
+43685	Blessed Wrist Symbol of Hate
+43686	Blessed Sleeve Symbol of Storms
+43687	Blessed Chest Symbol of Storms
+43688	Blessed Boot Symbol of Storms
+43689	Blessed Glove Symbol of Storms
+43690	Blessed Helm Symbol of Storms
+43691	Blessed Legging Symbol of Storms
+43692	Blessed Wrist Symbol of Storms
+43693	Blessed Sleeve Symbol of Integrity
+43694	Blessed Chest Symbol of Integrity
+43695	Blessed Boot Symbol of Integrity
+43696	Blessed Glove Symbol of Integrity
+43697	Blessed Helm Symbol of Integrity
+43698	Blessed Legging Symbol of Integrity
+43699	Blessed Wrist Symbol of Integrity
+43700	Blessed Sleeve Symbol of the Depths
+43701	Blessed Chest Symbol of the Depths
+43702	Blessed Boot Symbol of the Depths
+43703	Blessed Glove Symbol of the Depths
+43704	Blessed Helm Symbol of the Depths
+43705	Blessed Legging Symbol of the Depths
+43706	Blessed Wrist Symbol of the Depths
+43707	Blessed Sleeve Symbol of Stillness
+43708	Blessed Chest Symbol of Stillness
+43709	Blessed Boot Symbol of Stillness
+43710	Blessed Glove Symbol of Stillness
+43711	Blessed Helm Symbol of Stillness
+43712	Blessed Legging Symbol of Stillness
+43713	Blessed Wrist Symbol of Stillness
+43714	Blessed Sleeve Symbol of the Warmonger
+43715	Blessed Chest Symbol of the Warmonger
+43716	Blessed Boot Symbol of the Warmonger
+43717	Blessed Glove Symbol of the Warmonger
+43718	Blessed Helm Symbol of the Warmonger
+43719	Blessed Legging Symbol of the Warmonger
+43720	Blessed Wrist Symbol of the Warmonger
+43721	Blessed Sleeve Symbol of Compassion
+43722	Blessed Chest Symbol of Compassion
+43723	Blessed Boot Symbol of Compassion
+43724	Blessed Glove Symbol of Compassion
+43725	Blessed Helm Symbol of Compassion
+43726	Blessed Legging Symbol of Compassion
+43727	Blessed Wrist Symbol of Compassion
+43728	Blessed Sleeve Symbol of Wildfire
+43729	Blessed Chest Symbol of Wildfire
+43730	Blessed Boot Symbol of Wildfire
+43731	Blessed Glove Symbol of Wildfire
+43732	Blessed Helm Symbol of Wildfire
+43733	Blessed Legging Symbol of Wildfire
+43734	Blessed Wrist Symbol of Wildfire
+43735	Blessed Sleeve Symbol of Judgment
+43736	Blessed Chest Symbol of Judgment
+43737	Blessed Boot Symbol of Judgment
+43738	Blessed Glove Symbol of Judgment
+43739	Blessed Helm Symbol of Judgment
+43740	Blessed Legging Symbol of Judgment
+43741	Blessed Wrist Symbol of Judgment
+43742	Blessed Sleeve Symbol of Growth
+43743	Blessed Chest Symbol of Growth
+43744	Blessed Boot Symbol of Growth
+43745	Blessed Glove Symbol of Growth
+43746	Blessed Helm Symbol of Growth
+43747	Blessed Legging Symbol of Growth
+43748	Blessed Wrist Symbol of Growth
+43749	Blessed Sleeve Symbol of the Brood
+43750	Blessed Chest Symbol of the Brood
+43751	Blessed Boot Symbol of the Brood
+43752	Blessed Glove Symbol of the Brood
+43753	Blessed Helm Symbol of the Brood
+43754	Blessed Legging Symbol of the Brood
+43755	Blessed Wrist Symbol of the Brood
+43756	Revered Sleeve Symbol of the Skeptic
+43757	Revered Chest Symbol of the Skeptic
+43758	Revered Boot Symbol of the Skeptic
+43759	Revered Glove Symbol of the Skeptic
+43760	Revered Helm Symbol of the Skeptic
+43761	Revered Legging Symbol of the Skeptic
+43762	Revered Wrist Symbol of the Skeptic
+43763	Revered Sleeve Symbol of Infestation
+43764	Revered Chest Symbol of Infestation
+43765	Revered Boot Symbol of Infestation
+43766	Revered Glove Symbol of Infestation
+43767	Revered Helm Symbol of Infestation
+43768	Revered Legging Symbol of Infestation
+43769	Revered Wrist Symbol of Infestation
+43770	Revered Sleeve Symbol of Below
+43771	Revered Chest Symbol of Below
+43772	Revered Boot Symbol of Below
+43773	Revered Glove Symbol of Below
+43774	Revered Helm Symbol of Below
+43775	Revered Legging Symbol of Below
+43776	Revered Wrist Symbol of Below
+43777	Revered Sleeve Symbol of Terror
+43778	Revered Chest Symbol of Terror
+43779	Revered Boot Symbol of Terror
+43780	Revered Glove Symbol of Terror
+43781	Revered Helm Symbol of Terror
+43782	Revered Legging Symbol of Terror
+43783	Revered Wrist Symbol of Terror
+43784	Revered Sleeve Symbol of Devotion
+43785	Revered Chest Symbol of Devotion
+43786	Revered Boot Symbol of Devotion
+43787	Revered Glove Symbol of Devotion
+43788	Revered Helm Symbol of Devotion
+43789	Revered Legging Symbol of Devotion
+43790	Revered Wrist Symbol of Devotion
+43791	Revered Sleeve Symbol of the Farceur
+43792	Revered Chest Symbol of the Farceur
+43793	Revered Boot Symbol of the Farceur
+43794	Revered Glove Symbol of the Farceur
+43795	Revered Helm Symbol of the Farceur
+43796	Revered Legging Symbol of the Farceur
+43797	Revered Wrist Symbol of the Farceur
+43798	Revered Sleeve Symbol of Hate
+43799	Revered Chest Symbol of Hate
+43800	Revered Boot Symbol of Hate
+43801	Revered Glove Symbol of Hate
+43802	Revered Helm Symbol of Hate
+43803	Revered Legging Symbol of Hate
+43804	Revered Wrist Symbol of Hate
+43805	Revered Sleeve Symbol of Storms
+43806	Revered Chest Symbol of Storms
+43807	Revered Boot Symbol of Storms
+43808	Revered Glove Symbol of Storms
+43809	Revered Helm Symbol of Storms
+43810	Revered Legging Symbol of Storms
+43811	Revered Wrist Symbol of Storms
+43812	Revered Sleeve Symbol of Integrity
+43813	Revered Chest Symbol of Integrity
+43814	Revered Boot Symbol of Integrity
+43815	Revered Glove Symbol of Integrity
+43816	Revered Helm Symbol of Integrity
+43817	Revered Legging Symbol of Integrity
+43818	Revered Wrist Symbol of Integrity
+43819	Revered Sleeve Symbol of the Depths
+43820	Revered Chest Symbol of the Depths
+43821	Revered Boot Symbol of the Depths
+43822	Revered Glove Symbol of the Depths
+43823	Revered Helm Symbol of the Depths
+43824	Revered Legging Symbol of the Depths
+43825	Revered Wrist Symbol of the Depths
+43826	Revered Sleeve Symbol of Stillness
+43827	Revered Chest Symbol of Stillness
+43828	Revered Boot Symbol of Stillness
+43829	Revered Glove Symbol of Stillness
+43830	Revered Helm Symbol of Stillness
+43831	Revered Legging Symbol of Stillness
+43832	Revered Wrist Symbol of Stillness
+43833	Revered Sleeve Symbol of the Warmonger
+43834	Revered Chest Symbol of the Warmonger
+43835	Revered Boot Symbol of the Warmonger
+43836	Revered Glove Symbol of the Warmonger
+43837	Revered Helm Symbol of the Warmonger
+43838	Revered Legging Symbol of the Warmonger
+43839	Revered Wrist Symbol of the Warmonger
+43840	Revered Sleeve Symbol of Compassion
+43841	Revered Chest Symbol of Compassion
+43842	Revered Boot Symbol of Compassion
+43843	Revered Glove Symbol of Compassion
+43844	Revered Helm Symbol of Compassion
+43845	Revered Legging Symbol of Compassion
+43846	Revered Wrist Symbol of Compassion
+43847	Revered Sleeve Symbol of Wildfire
+43848	Revered Chest Symbol of Wildfire
+43849	Revered Boot Symbol of Wildfire
+43850	Revered Glove Symbol of Wildfire
+43851	Revered Helm Symbol of Wildfire
+43852	Revered Legging Symbol of Wildfire
+43853	Revered Wrist Symbol of Wildfire
+43854	Revered Sleeve Symbol of Judgment
+43855	Revered Chest Symbol of Judgment
+43856	Revered Boot Symbol of Judgment
+43857	Revered Glove Symbol of Judgment
+43858	Revered Helm Symbol of Judgment
+43859	Revered Legging Symbol of Judgment
+43860	Revered Wrist Symbol of Judgment
+43861	Revered Sleeve Symbol of Growth
+43862	Revered Chest Symbol of Growth
+43863	Revered Boot Symbol of Growth
+43864	Revered Glove Symbol of Growth
+43865	Revered Helm Symbol of Growth
+43866	Revered Legging Symbol of Growth
+43867	Revered Wrist Symbol of Growth
+43868	Revered Sleeve Symbol of the Brood
+43869	Revered Chest Symbol of the Brood
+43870	Revered Boot Symbol of the Brood
+43871	Revered Glove Symbol of the Brood
+43872	Revered Helm Symbol of the Brood
+43873	Revered Legging Symbol of the Brood
+43874	Revered Wrist Symbol of the Brood
+43875	Sacred Sleeve Symbol of the Skeptic
+43876	Sacred Chest Symbol of the Skeptic
+43877	Sacred Boot Symbol of the Skeptic
+43878	Sacred Glove Symbol of the Skeptic
+43879	Sacred Helm Symbol of the Skeptic
+43880	Sacred Legging Symbol of the Skeptic
+43881	Sacred Wrist Symbol of the Skeptic
+43882	Sacred Sleeve Symbol of Infestation
+43883	Sacred Chest Symbol of Infestation
+43884	Sacred Boot Symbol of Infestation
+43885	Sacred Glove Symbol of Infestation
+43886	Sacred Helm Symbol of Infestation
+43887	Sacred Legging Symbol of Infestation
+43888	Sacred Wrist Symbol of Infestation
+43889	Sacred Sleeve Symbol of Below
+43890	Sacred Chest Symbol of Below
+43891	Sacred Boot Symbol of Below
+43892	Sacred Glove Symbol of Below
+43893	Sacred Helm Symbol of Below
+43894	Sacred Legging Symbol of Below
+43895	Sacred Wrist Symbol of Below
+43896	Sacred Sleeve Symbol of Terror
+43897	Sacred Chest Symbol of Terror
+43898	Sacred Boot Symbol of Terror
+43899	Sacred Glove Symbol of Terror
+43900	Sacred Helm Symbol of Terror
+43901	Sacred Legging Symbol of Terror
+43902	Sacred Wrist Symbol of Terror
+43903	Sacred Sleeve Symbol of Devotion
+43904	Sacred Chest Symbol of Devotion
+43905	Sacred Boot Symbol of Devotion
+43906	Sacred Glove Symbol of Devotion
+43907	Sacred Helm Symbol of Devotion
+43908	Sacred Legging Symbol of Devotion
+43909	Sacred Wrist Symbol of Devotion
+43910	Sacred Sleeve Symbol of the Farceur
+43911	Sacred Chest Symbol of the Farceur
+43912	Sacred Boot Symbol of the Farceur
+43913	Sacred Glove Symbol of the Farceur
+43914	Sacred Helm Symbol of the Farceur
+43915	Sacred Legging Symbol of the Farceur
+43916	Sacred Wrist Symbol of the Farceur
+43917	Sacred Sleeve Symbol of Hate
+43918	Sacred Chest Symbol of Hate
+43919	Sacred Boot Symbol of Hate
+43920	Sacred Glove Symbol of Hate
+43921	Sacred Helm Symbol of Hate
+43922	Sacred Legging Symbol of Hate
+43923	Sacred Wrist Symbol of Hate
+43924	Sacred Sleeve Symbol of Storms
+43925	Sacred Chest Symbol of Storms
+43926	Sacred Boot Symbol of Storms
+43927	Sacred Glove Symbol of Storms
+43928	Sacred Helm Symbol of Storms
+43929	Sacred Legging Symbol of Storms
+43930	Sacred Wrist Symbol of Storms
+43931	Sacred Sleeve Symbol of Integrity
+43932	Sacred Chest Symbol of Integrity
+43933	Sacred Boot Symbol of Integrity
+43934	Sacred Glove Symbol of Integrity
+43935	Sacred Helm Symbol of Integrity
+43936	Sacred Legging Symbol of Integrity
+43937	Sacred Wrist Symbol of Integrity
+43938	Sacred Sleeve Symbol of the Depths
+43939	Sacred Chest Symbol of the Depths
+43940	Sacred Boot Symbol of the Depths
+43941	Sacred Glove Symbol of the Depths
+43942	Sacred Helm Symbol of the Depths
+43943	Sacred Legging Symbol of the Depths
+43944	Sacred Wrist Symbol of the Depths
+43945	Sacred Sleeve Symbol of Stillness
+43946	Sacred Chest Symbol of Stillness
+43947	Sacred Boot Symbol of Stillness
+43948	Sacred Glove Symbol of Stillness
+43949	Sacred Helm Symbol of Stillness
+43950	Sacred Legging Symbol of Stillness
+43951	Sacred Wrist Symbol of Stillness
+43952	Sacred Sleeve Symbol of the Warmonger
+43953	Sacred Chest Symbol of the Warmonger
+43954	Sacred Boot Symbol of the Warmonger
+43955	Sacred Glove Symbol of the Warmonger
+43956	Sacred Helm Symbol of the Warmonger
+43957	Sacred Legging Symbol of the Warmonger
+43958	Sacred Wrist Symbol of the Warmonger
+43959	Sacred Sleeve Symbol of Compassion
+43960	Sacred Chest Symbol of Compassion
+43961	Sacred Boot Symbol of Compassion
+43962	Sacred Glove Symbol of Compassion
+43963	Sacred Helm Symbol of Compassion
+43964	Sacred Legging Symbol of Compassion
+43965	Sacred Wrist Symbol of Compassion
+43966	Sacred Sleeve Symbol of Wildfire
+43967	Sacred Chest Symbol of Wildfire
+43968	Sacred Boot Symbol of Wildfire
+43969	Sacred Glove Symbol of Wildfire
+43970	Sacred Helm Symbol of Wildfire
+43971	Sacred Legging Symbol of Wildfire
+43972	Sacred Wrist Symbol of Wildfire
+43973	Sacred Sleeve Symbol of Judgment
+43974	Sacred Chest Symbol of Judgment
+43975	Sacred Boot Symbol of Judgment
+43976	Sacred Glove Symbol of Judgment
+43977	Sacred Helm Symbol of Judgment
+43978	Sacred Legging Symbol of Judgment
+43979	Sacred Wrist Symbol of Judgment
+43980	Sacred Sleeve Symbol of Growth
+43981	Sacred Chest Symbol of Growth
+43982	Sacred Boot Symbol of Growth
+43983	Sacred Glove Symbol of Growth
+43984	Sacred Helm Symbol of Growth
+43985	Sacred Legging Symbol of Growth
+43986	Sacred Wrist Symbol of Growth
+43987	Sacred Sleeve Symbol of the Brood
+43988	Sacred Chest Symbol of the Brood
+43989	Sacred Boot Symbol of the Brood
+43990	Sacred Glove Symbol of the Brood
+43991	Sacred Helm Symbol of the Brood
+43992	Sacred Legging Symbol of the Brood
+43993	Sacred Wrist Symbol of the Brood
+43994	Eminent Sleeve Symbol of the Skeptic
+43995	Eminent Chest Symbol of the Skeptic
+43996	Eminent Boot Symbol of the Skeptic
+43997	Eminent Glove Symbol of the Skeptic
+43998	Eminent Helm Symbol of the Skeptic
+43999	Eminent Legging Symbol of the Skeptic
+44000	Eminent Wrist Symbol of the Skeptic
+44001	Eminent Sleeve Symbol of Infestation
+44002	Eminent Chest Symbol of Infestation
+44003	Eminent Boot Symbol of Infestation
+44004	Eminent Glove Symbol of Infestation
+44005	Eminent Helm Symbol of Infestation
+44006	Eminent Legging Symbol of Infestation
+44007	Eminent Wrist Symbol of Infestation
+44008	Eminent Sleeve Symbol of Below
+44009	Eminent Chest Symbol of Below
+44010	Eminent Boot Symbol of Below
+44011	Eminent Glove Symbol of Below
+44012	Eminent Helm Symbol of Below
+44013	Eminent Legging Symbol of Below
+44014	Eminent Wrist Symbol of Below
+44015	Eminent Sleeve Symbol of Terror
+44016	Eminent Chest Symbol of Terror
+44017	Eminent Boot Symbol of Terror
+44018	Eminent Glove Symbol of Terror
+44019	Eminent Helm Symbol of Terror
+44020	Eminent Legging Symbol of Terror
+44021	Eminent Wrist Symbol of Terror
+44022	Eminent Sleeve Symbol of Devotion
+44023	Eminent Chest Symbol of Devotion
+44024	Eminent Boot Symbol of Devotion
+44025	Eminent Glove Symbol of Devotion
+44026	Eminent Helm Symbol of Devotion
+44027	Eminent Legging Symbol of Devotion
+44028	Eminent Wrist Symbol of Devotion
+44029	Eminent Sleeve Symbol of the Farceur
+44030	Eminent Chest Symbol of the Farceur
+44031	Eminent Boot Symbol of the Farceur
+44032	Eminent Glove Symbol of the Farceur
+44033	Eminent Helm Symbol of the Farceur
+44034	Eminent Legging Symbol of the Farceur
+44035	Eminent Wrist Symbol of the Farceur
+44036	Eminent Sleeve Symbol of Hate
+44037	Eminent Chest Symbol of Hate
+44038	Eminent Boot Symbol of Hate
+44039	Eminent Glove Symbol of Hate
+44040	Eminent Helm Symbol of Hate
+44041	Eminent Legging Symbol of Hate
+44042	Eminent Wrist Symbol of Hate
+44043	Eminent Sleeve Symbol of Storms
+44044	Eminent Chest Symbol of Storms
+44045	Eminent Boot Symbol of Storms
+44046	Eminent Glove Symbol of Storms
+44047	Eminent Helm Symbol of Storms
+44048	Eminent Legging Symbol of Storms
+44049	Eminent Wrist Symbol of Storms
+44050	Eminent Sleeve Symbol of Integrity
+44051	Eminent Chest Symbol of Integrity
+44052	Eminent Boot Symbol of Integrity
+44053	Eminent Glove Symbol of Integrity
+44054	Eminent Helm Symbol of Integrity
+44055	Eminent Legging Symbol of Integrity
+44056	Eminent Wrist Symbol of Integrity
+44057	Eminent Sleeve Symbol of the Depths
+44058	Eminent Chest Symbol of the Depths
+44059	Eminent Boot Symbol of the Depths
+44060	Eminent Glove Symbol of the Depths
+44061	Eminent Helm Symbol of the Depths
+44062	Eminent Legging Symbol of the Depths
+44063	Eminent Wrist Symbol of the Depths
+44064	Eminent Sleeve Symbol of Stillness
+44065	Eminent Chest Symbol of Stillness
+44066	Eminent Boot Symbol of Stillness
+44067	Eminent Glove Symbol of Stillness
+44068	Eminent Helm Symbol of Stillness
+44069	Eminent Legging Symbol of Stillness
+44070	Eminent Wrist Symbol of Stillness
+44071	Eminent Sleeve Symbol of the Warmonger
+44072	Eminent Chest Symbol of the Warmonger
+44073	Eminent Boot Symbol of the Warmonger
+44074	Eminent Glove Symbol of the Warmonger
+44075	Eminent Helm Symbol of the Warmonger
+44076	Eminent Legging Symbol of the Warmonger
+44077	Eminent Wrist Symbol of the Warmonger
+44078	Eminent Sleeve Symbol of Compassion
+44079	Eminent Chest Symbol of Compassion
+44080	Eminent Boot Symbol of Compassion
+44081	Eminent Glove Symbol of Compassion
+44082	Eminent Helm Symbol of Compassion
+44083	Eminent Legging Symbol of Compassion
+44084	Eminent Wrist Symbol of Compassion
+44085	Eminent Sleeve Symbol of Wildfire
+44086	Eminent Chest Symbol of Wildfire
+44087	Eminent Boot Symbol of Wildfire
+44088	Eminent Glove Symbol of Wildfire
+44089	Eminent Helm Symbol of Wildfire
+44090	Eminent Legging Symbol of Wildfire
+44091	Eminent Wrist Symbol of Wildfire
+44092	Eminent Sleeve Symbol of Judgment
+44093	Eminent Chest Symbol of Judgment
+44094	Eminent Boot Symbol of Judgment
+44095	Eminent Glove Symbol of Judgment
+44096	Eminent Helm Symbol of Judgment
+44097	Eminent Legging Symbol of Judgment
+44098	Eminent Wrist Symbol of Judgment
+44099	Eminent Sleeve Symbol of Growth
+44100	Eminent Chest Symbol of Growth
+44101	Eminent Boot Symbol of Growth
+44102	Eminent Glove Symbol of Growth
+44103	Eminent Helm Symbol of Growth
+44104	Eminent Legging Symbol of Growth
+44105	Eminent Wrist Symbol of Growth
+44106	Eminent Sleeve Symbol of the Brood
+44107	Eminent Chest Symbol of the Brood
+44108	Eminent Boot Symbol of the Brood
+44109	Eminent Glove Symbol of the Brood
+44110	Eminent Helm Symbol of the Brood
+44111	Eminent Legging Symbol of the Brood
+44112	Eminent Wrist Symbol of the Brood
+47921	Last Blood Seal (Cobalt Ore)
+47924	Chronal Seal (Tungsten Ore)
+48326	Serpent's Seal
+48327	Sunshard Seal
+48328	Faycite Seal
+49358	Scorched Barbs
+49359	Scorched Studs
+49360	Scorched Fill
+56885	Scorched Chain Coif Template
+56886	Scorched Chain Faceguard Template
+56887	Scorched Chain Collar Template
+56888	Scorched Chain Chestguard Template
+56889	Scorched Chain Spaulders Template
+56890	Scorched Chain Cloak Template
+56891	Scorched Chain Belt Template
+56892	Scorched Chain Arms Template
+56893	Scorched Chain Bracer Template
+56894	Scorched Chain Gloves Template
+56895	Scorched Chain Legplates Template
+56896	Scorched Chain Boots Template
+56897	Scorched Plate Helm Template
+56898	Scorched Plate Visor Template
+56899	Scorched Plate Gorget Template
+56900	Scorched Breastplate Template
+56901	Scorched Plate Pauldron Template
+56902	Scorched Plate Cloak Template
+56903	Scorched Plate Belt Template
+56904	Scorched Plate Vambrace Template
+56905	Scorched Plate Bracer Template
+56906	Scorched Plate Gauntlet Template
+56907	Scorched Plate Greaves Template
+56908	Scorched Plate Boot Template
+56909	Fearlinked Chest Seal
+56912	Fearlinked Legging Seal
+56915	Fearlinked Boot Seal
+56918	Fearlinked Sleeve Seal
+56921	Fearlinked Wrist Seal
+56924	Fearlinked Glove Seal
+56927	Fearlinked Helm Seal
+63192	Small Frosted Steel Bracer
+63193	Small Frosted Steel Boots
+63194	Small Frosted Steel Collar
+63195	Small Frosted Steel Visor
+63196	Small Frosted Steel Pauldrons
+63197	Small Frosted Steel Vambraces
+63198	Small Frosted Steel Cloak
+63199	Small Frosted Steel Girth
+63200	Small Frosted Steel Helmet
+63201	Small Frosted Steel Greaves
+63202	Small Frosted Steel Gauntlets
+63203	Small Frosted Steel Breastplate
+63204	Frosted Steel Bracer
+63205	Frosted Steel Boots
+63206	Frosted Steel Collar
+63207	Frosted Steel Visor
+63208	Frosted Steel Pauldrons
+63209	Frosted Steel Vambraces
+63210	Frosted Steel Cloak
+63211	Frosted Steel Girth
+63212	Frosted Steel Helmet
+63213	Frosted Steel Greaves
+63214	Frosted Steel Gauntlets
+63215	Frosted Steel Breastplate
+63216	Large Frosted Steel Bracer
+63217	Large Frosted Steel Boots
+63218	Large Frosted Steel Collar
+63219	Large Frosted Steel Visor
+63220	Large Frosted Steel Pauldrons
+63221	Large Frosted Steel Vambraces
+63222	Large Frosted Steel Cloak
+63223	Large Frosted Steel Girth
+63224	Large Frosted Steel Helmet
+63225	Large Frosted Steel Greaves
+63226	Large Frosted Steel Gauntlets
+63227	Large Frosted Steel Breastplate
+63228	Small Frosted Ringmail Bracelet
+63229	Small Frosted Ringmail Boots
+63230	Small Frosted Ringmail Gorget
+63231	Small Frosted Ringmail Veil
+63232	Small Frosted Ringmail Mantle
+63233	Small Frosted Ringmail Sleeves
+63234	Small Frosted Ringmail Cloak
+63235	Small Frosted Ringmail Skirt
+63236	Small Frosted Ringmail Coif
+63237	Small Frosted Ringmail Leggings
+63238	Small Frosted Ringmail Gloves
+63239	Small Frosted Ringmail Tunic
+63240	Frosted Ringmail Bracelet
+63241	Frosted Ringmail Boots
+63242	Frosted Ringmail Gorget
+63243	Frosted Ringmail Veil
+63244	Frosted Ringmail Mantle
+63245	Frosted Ringmail Sleeves
+63246	Frosted Ringmail Cloak
+63247	Frosted Ringmail Skirt
+63248	Frosted Ringmail Coif
+63249	Frosted Ringmail Leggings
+63250	Frosted Ringmail Gloves
+63251	Frosted Ringmail Tunic
+63252	Large Frosted Ringmail Bracelet
+63253	Large Frosted Ringmail Boots
+63254	Large Frosted Ringmail Gorget
+63255	Large Frosted Ringmail Veil
+63256	Large Frosted Ringmail Mantle
+63257	Large Frosted Ringmail Sleeves
+63258	Large Frosted Ringmail Cloak
+63259	Large Frosted Ringmail Skirt
+63260	Large Frosted Ringmail Coif
+63261	Large Frosted Ringmail Leggings
+63262	Large Frosted Ringmail Gloves
+63263	Large Frosted Ringmail Tunic
+63264	Small Calcified Steel Bracer
+63265	Small Calcified Steel Boots
+63266	Small Calcified Steel Collar
+63267	Small Calcified Steel Visor
+63268	Small Calcified Steel Pauldrons
+63269	Small Calcified Steel Vambraces
+63270	Small Calcified Steel Cloak
+63271	Small Calcified Steel Girth
+63272	Small Calcified Steel Helmet
+63273	Small Calcified Steel Greaves
+63274	Small Calcified Steel Gauntlets
+63275	Small Calcified Steel Breastplate
+63276	Calcified Steel Bracer
+63277	Calcified Steel Boots
+63278	Calcified Steel Collar
+63279	Calcified Steel Visor
+63280	Calcified Steel Pauldrons
+63281	Calcified Steel Vambraces
+63282	Calcified Steel Cloak
+63283	Calcified Steel Girth
+63284	Calcified Steel Helmet
+63285	Calcified Steel Greaves
+63286	Calcified Steel Gauntlets
+63287	Calcified Steel Breastplate
+63288	Large Calcified Steel Bracer
+63289	Large Calcified Steel Boots
+63290	Large Calcified Steel Collar
+63291	Large Calcified Steel Visor
+63292	Large Calcified Steel Pauldrons
+63293	Large Calcified Steel Vambraces
+63294	Large Calcified Steel Cloak
+63295	Large Calcified Steel Girth
+63296	Large Calcified Steel Helmet
+63297	Large Calcified Steel Greaves
+63298	Large Calcified Steel Gauntlets
+63299	Large Calcified Steel Breastplate
+63300	Small Calcified Ringmail Bracelet
+63301	Small Calcified Ringmail Boots
+63302	Small Calcified Ringmail Gorget
+63303	Small Calcified Ringmail Veil
+63304	Small Calcified Ringmail Mantle
+63305	Small Calcified Ringmail Sleeves
+63306	Small Calcified Ringmail Cloak
+63307	Small Calcified Ringmail Skirt
+63308	Small Calcified Ringmail Coif
+63309	Small Calcified Ringmail Leggings
+63310	Small Calcified Ringmail Gloves
+63311	Small Calcified Ringmail Tunic
+63312	Calcified Ringmail Bracelet
+63313	Calcified Ringmail Boots
+63314	Calcified Ringmail Gorget
+63315	Calcified Ringmail Veil
+63316	Calcified Ringmail Mantle
+63317	Calcified Ringmail Sleeves
+63318	Calcified Ringmail Cloak
+63319	Calcified Ringmail Skirt
+63320	Calcified Ringmail Coif
+63321	Calcified Ringmail Leggings
+63322	Calcified Ringmail Gloves
+63323	Calcified Ringmail Tunic
+63324	Large Calcified Ringmail Bracelet
+63325	Large Calcified Ringmail Boots
+63326	Large Calcified Ringmail Gorget
+63327	Large Calcified Ringmail Veil
+63328	Large Calcified Ringmail Mantle
+63329	Large Calcified Ringmail Sleeves
+63330	Large Calcified Ringmail Cloak
+63331	Large Calcified Ringmail Skirt
+63332	Large Calcified Ringmail Coif
+63333	Large Calcified Ringmail Leggings
+63334	Large Calcified Ringmail Gloves
+63335	Large Calcified Ringmail Tunic
+63336	Small Sandblasted Steel Bracer
+63337	Small Sandblasted Steel Boots
+63338	Small Sandblasted Steel Collar
+63339	Small Sandblasted Steel Visor
+63340	Small Sandblasted Steel Pauldrons
+63341	Small Sandblasted Steel Vambraces
+63342	Small Sandblasted Steel Cloak
+63343	Small Sandblasted Steel Girth
+63344	Small Sandblasted Steel Helmet
+63345	Small Sandblasted Steel Greaves
+63346	Small Sandblasted Steel Gauntlets
+63347	Small Sandblasted Breastplate
+63348	Sandblasted Steel Bracer
+63349	Sandblasted Steel Boots
+63350	Sandblasted Steel Collar
+63351	Sandblasted Steel Visor
+63352	Sandblasted Steel Pauldrons
+63353	Sandblasted Steel Vambraces
+63354	Sandblasted Steel Cloak
+63355	Sandblasted Steel Girth
+63356	Sandblasted Steel Helmet
+63357	Sandblasted Steel Greaves
+63358	Sandblasted Steel Gauntlets
+63359	Sandblasted Steel Breastplate
+63360	Large Sandblasted Steel Bracer
+63361	Large Sandblasted Steel Boots
+63362	Large Sandblasted Steel Collar
+63363	Large Sandblasted Steel Visor
+63364	Large Sandblasted Steel Pauldrons
+63365	Large Sandblasted Steel Vambraces
+63366	Large Sandblasted Steel Cloak
+63367	Large Sandblasted Steel Girth
+63368	Large Sandblasted Steel Helmet
+63369	Large Sandblasted Steel Greaves
+63370	Large Sandblasted Steel Gauntlets
+63371	Large Sandblasted Breastplate
+63372	Small Sandblasted Bracelet
+63373	Small Sandblasted Ringmail Boots
+63374	Small Sandblasted Ringmail Gorget
+63375	Small Sandblasted Ringmail Veil
+63376	Small Sandblasted Ringmail Mantle
+63377	Small Sandblasted Ringmail Sleeves
+63378	Small Sandblasted Ringmail Cloak
+63379	Small Sandblasted Ringmail Skirt
+63380	Small Sandblasted Ringmail Coif
+63381	Small Sandblasted Leggings
+63382	Small Sandblasted Ringmail Gloves
+63383	Small Sandblasted Ringmail Tunic
+63384	Sandblasted Ringmail Bracelet
+63385	Sandblasted Ringmail Boots
+63386	Sandblasted Ringmail Gorget
+63387	Sandblasted Ringmail Veil
+63388	Sandblasted Ringmail Mantle
+63389	Sandblasted Ringmail Sleeves
+63390	Sandblasted Ringmail Cloak
+63391	Sandblasted Ringmail Skirt
+63392	Sandblasted Ringmail Coif
+63393	Sandblasted Ringmail Leggings
+63394	Sandblasted Ringmail Gloves
+63395	Sandblasted Ringmail Tunic
+63397	Large Sandblasted Ringmail Boots
+63398	Large Sandblasted Ringmail Gorget
+63399	Large Sandblasted Ringmail Veil
+63400	Large Sandblasted Ringmail Mantle
+63401	Large Sandblasted Ringmail Sleeves
+63402	Large Sandblasted Ringmail Cloak
+63403	Large Sandblasted Ringmail Skirt
+63404	Large Sandblasted Ringmail Coif
+63405	Large Sandblasted Leggings
+63406	Large Sandblasted Ringmail Gloves
+63407	Large Sandblasted Ringmail Tunic
+63408	Small Gothic Steel Bracer
+63409	Small Gothic Steel Boots
+63410	Small Gothic Steel Collar
+63411	Small Gothic Steel Visor
+63412	Small Gothic Steel Pauldrons
+63413	Small Gothic Steel Vambraces
+63414	Small Gothic Steel Cloak
+63415	Small Gothic Steel Girth
+63416	Small Gothic Steel Helmet
+63417	Small Gothic Steel Greaves
+63418	Small Gothic Steel Gauntlets
+63419	Small Gothic Steel Breastplate
+63420	Gothic Steel Bracer
+63421	Gothic Steel Boots
+63422	Gothic Steel Collar
+63423	Gothic Steel Visor
+63424	Gothic Steel Pauldrons
+63425	Gothic Steel Vambraces
+63426	Gothic Steel Cloak
+63427	Gothic Steel Girth
+63428	Gothic Steel Helmet
+63429	Gothic Steel Greaves
+63430	Gothic Steel Gauntlets
+63431	Gothic Steel Breastplate
+63432	Large Gothic Steel Bracer
+63433	Large Gothic Steel Boots
+63434	Large Gothic Steel Collar
+63435	Large Gothic Steel Visor
+63436	Large Gothic Steel Pauldrons
+63437	Large Gothic Steel Vambraces
+63438	Large Gothic Steel Cloak
+63439	Large Gothic Steel Girth
+63440	Large Gothic Steel Helmet
+63441	Large Gothic Steel Greaves
+63442	Large Gothic Steel Gauntlets
+63443	Large Gothic Steel Breastplate
+63444	Small Gothic Ringmail Bracelet
+63445	Small Gothic Ringmail Boots
+63446	Small Gothic Ringmail Gorget
+63447	Small Gothic Ringmail Veil
+63448	Small Gothic Ringmail Mantle
+63449	Small Gothic Ringmail Sleeves
+63450	Small Gothic Ringmail Cloak
+63451	Small Gothic Ringmail Skirt
+63452	Small Gothic Ringmail Coif
+63453	Small Gothic Ringmail Leggings
+63454	Small Gothic Ringmail Gloves
+63455	Small Gothic Ringmail Tunic
+63456	Gothic Ringmail Bracelet
+63457	Gothic Ringmail Boots
+63458	Gothic Ringmail Gorget
+63459	Gothic Ringmail Veil
+63460	Gothic Ringmail Mantle
+63461	Gothic Ringmail Sleeves
+63462	Gothic Ringmail Cloak
+63463	Gothic Ringmail Skirt
+63464	Gothic Ringmail Coif
+63465	Gothic Ringmail Leggings
+63466	Gothic Ringmail Gloves
+63467	Gothic Ringmail Tunic
+63468	Large Gothic Ringmail Bracelet
+63469	Large Gothic Ringmail Boots
+63470	Large Gothic Ringmail Gorget
+63471	Large Gothic Ringmail Veil
+63472	Large Gothic Ringmail Mantle
+63473	Large Gothic Ringmail Sleeves
+63474	Large Gothic Ringmail Cloak
+63475	Large Gothic Ringmail Skirt
+63476	Large Gothic Ringmail Coif
+63477	Large Gothic Ringmail Leggings
+63478	Large Gothic Ringmail Gloves
+63479	Large Gothic Ringmail Tunic
+63480	Small Deep Cavern Steel Bracer
+63481	Small Deep Cavern Steel Boots
+63482	Small Deep Cavern Steel Collar
+63483	Small Deep Cavern Steel Visor
+63484	Small Deep Cavern Steel Pauldrons
+63485	Small Deep Cavern Steel Vambraces
+63486	Small Deep Cavern Steel Cloak
+63487	Small Deep Cavern Steel Girth
+63488	Small Deep Cavern Steel Helmet
+63489	Small Deep Cavern Steel Greaves
+63490	Small Deep Cavern Steel Gauntlets
+63491	Small Deep Cavern Breastplate
+63492	Deep Cavern Steel Bracer
+63493	Deep Cavern Steel Boots
+63494	Deep Cavern Steel Collar
+63495	Deep Cavern Steel Visor
+63496	Deep Cavern Steel Pauldrons
+63497	Deep Cavern Steel Vambraces
+63498	Deep Cavern Steel Cloak
+63499	Deep Cavern Steel Girth
+63500	Deep Cavern Steel Helmet
+63501	Deep Cavern Steel Greaves
+63502	Deep Cavern Steel Gauntlets
+63503	Deep Cavern Steel Breastplate
+63504	Large Deep Cavern Steel Bracer
+63505	Large Deep Cavern Steel Boots
+63506	Large Deep Cavern Steel Collar
+63507	Large Deep Cavern Steel Visor
+63508	Large Deep Cavern Steel Pauldrons
+63509	Large Deep Cavern Steel Vambraces
+63510	Large Deep Cavern Steel Cloak
+63511	Large Deep Cavern Steel Girth
+63512	Large Deep Cavern Steel Helmet
+63513	Large Deep Cavern Steel Greaves
+63514	Large Deep Cavern Steel Gauntlets
+63515	Large Deep Cavern Breastplate
+63516	Small Deep Cavern Bracelet
+63517	Small Deep Cavern Ringmail Boots
+63518	Small Deep Cavern Ringmail Gorget
+63519	Small Deep Cavern Ringmail Veil
+63520	Small Deep Cavern Ringmail Mantle
+63521	Small Deep Cavern Ringmail Sleeves
+63522	Small Deep Cavern Ringmail Cloak
+63523	Small Deep Cavern Ringmail Skirt
+63524	Small Deep Cavern Ringmail Coif
+63525	Small Deep Cavern Leggings
+63526	Small Deep Cavern Ringmail Gloves
+63527	Small Deep Cavern Ringmail Tunic
+63528	Deep Cavern Ringmail Bracelet
+63529	Deep Cavern Ringmail Boots
+63530	Deep Cavern Ringmail Gorget
+63531	Deep Cavern Ringmail Veil
+63532	Deep Cavern Ringmail Mantle
+63533	Deep Cavern Ringmail Sleeves
+63534	Deep Cavern Ringmail Cloak
+63535	Deep Cavern Ringmail Skirt
+63536	Deep Cavern Ringmail Coif
+63537	Deep Cavern Ringmail Leggings
+63538	Deep Cavern Ringmail Gloves
+63539	Deep Cavern Ringmail Tunic
+63540	Large Deep Cavern Bracelet
+63541	Large Deep Cavern Ringmail Boots
+63542	Large Deep Cavern Ringmail Gorget
+63543	Large Deep Cavern Ringmail Veil
+63544	Large Deep Cavern Ringmail Mantle
+63545	Large Deep Cavern Ringmail Sleeves
+63546	Large Deep Cavern Ringmail Cloak
+63547	Large Deep Cavern Ringmail Skirt
+63548	Large Deep Cavern Ringmail Coif
+63549	Large Deep Cavern Leggings
+63550	Large Deep Cavern Ringmail Gloves
+63551	Large Deep Cavern Ringmail Tunic
+63663	Steel Bits
+63669	Steel Alloy Rod
+63685	Enchanted Velium Bits
+63770	Inferno Scepter
+63976	Simple Stud (Vial of Abysmal Sea Water)
+63977	Simple Ring
+63978	Simple Chisel
+63979	Simple File (Flask of Abysmal Sea Water)
+63980	Simple Aligned Steel Skewer
+63981	Simple Aligned Steel Spike
+63982	Simple Aligned Steel File
+63983	Simple Aligned Steel Needle
+65774	Muramite Chain Link
+65775	Muramite Metal Sheet
+67001	Worn Magnetic Belt
+67002	Charged Worn Magnetic Belt
+67003	Worn Magnetic Collar
+67004	Charged Worn Magnetic Collar
+67005	Magnetic Gauntlets
+67006	Charged Magnetic Gauntlets
+67007	Magnetic Boots
+67008	Charged Magnetic Boots
+67009	Worn Magnetic Pauldrons
+67010	Charged Worn Magnetic Pauldrons
+67011	Magnetic Helm
+67012	Charged Magnetic Helm
+67013	Magnetic Breastplate
+67014	Charged Magnetic Breastplate
+67015	Magnetic Bracer
+67016	Charged Magnetic Leggings
+67017	Soft Bazu Skirt (Ruined Bazu Skin)
+67018	Soft Bazu Skirt of Flames
+67019	Soft Bazu Collar (Ruined Bazu Skin)
+67020	Soft Bazu Collar of Flames
+67021	Bazu Gauntlets (Damaged Bazu Skin)
+67022	Bazu Gauntlets of Flames
+67023	Bazu Boots (Damaged Bazu Skin)
+67024	Bazu Boots of Flames
+67025	Soft Bazu Pauldrons (Bazu Skin)
+67026	Soft Bazu Pauldrons of Flames
+67027	Bazu Helm (Bazu Skin)
+67028	Bazu Helm of Flames
+67029	Bazu Breastplate (Pristine Bazu Skin)
+67030	Bazu Breastplate of Flames
+67031	Bazu Leggings (Pristine Bazu Skin)
+67032	Bazu Leggings of Flames
+67033	Magnetic Leggings
+67034	Charged Magnetic Bracer
+67035	Magnetic Vambraces
+67036	Charged Magnetic Vambraces
+67037	Bazu Bracer (Ruined Bazu Skin)
+67038	Bazu Bracer of Flames
+67039	Bazu Sleeves (Damaged Bazu Skin)
+67040	Bazu Sleeves of Flames
+67041	Twisted Magnetized Belt (Reclaim)
+67042	Magnetic Belt (Reclaim)
+67043	Broken Magnetized Collar (Reclaim)
+67044	Magnetic Collar (Reclaim)
+67045	Damaged Magnetized Gauntlets (Reclaim)
+67046	Magnetic Gauntlets (Reclaim)
+67047	Smashed Magnetized Boots (Reclaim)
+67048	Magnetic Boots (Reclaim)
+67049	Bent Magnetized Pauldron (Reclaim)
+67050	Magnetic Pauldron (Reclaim)
+67051	Dented Magnetized Helm (Reclaim)
+67052	Magnetic Helm (Reclaim)
+67053	Gashed Magnetized Breastplate (Reclaim)
+67054	Magnetic Breastplate (Reclaim)
+67055	Mangled Magnetized Leggings (Reclaim)
+67056	Magnetic Leggings (Reclaim)
+67057	Cracked Magnetized Bracer (Reclaim)
+67058	Magnetic Bracer (Reclaim)
+67059	Splintered Magnetized Vambraces (Reclaim)
+67060	Magnetic Vambraces (Reclaim)
+67061	Magnetized Bolts
+67062	Magnetized Patch Plate
+67063	Magnetic Balls
+67064	Soft Bazu Skirt (Tanned Ruined Bazu Skin)
+67065	Soft Bazu Collar (Tanned Ruined Bazu Skin)
+67066	Bazu Gauntlets (Tanned Damaged Bazu Skin)
+67067	Bazu Boots (Tanned Damaged Bazu Skin)
+67068	Soft Bazu Pauldrons (Tanned Bazu Skin)
+67069	Bazu Helm (Tanned Bazu Skin)
+67070	Bazu Breastplate (Tanned Pristine Bazu Skin)
+67071	Bazu Leggings (Tanned Pristine Bazu Skin)
+67072	Bazu Bracer (Tanned Ruined Bazu Skin)
+67073	Bazu Sleeves (Tanned Damaged Bazu Skin)
+67600	White Gold Inlay
+67601	Black Gold Inlay
+75125	Osmium Chain Coif Template
+75126	Osmium Chain Faceguard Template
+75127	Osmium Chain Collar Template
+75128	Osmium Chain Chestguard Template
+75129	Osmium Chain Spaulders Template
+75130	Osmium Chain Cloak Template
+75131	Osmium Chain Belt Template
+75132	Osmium Chain Arms Template
+75133	Osmium Chain Bracer Template
+75134	Osmium Chain Gloves Template
+75135	Osmium Chain Legplates Template
+75136	Osmium Chain Boots Template
+75137	Osmium Plate Helm Template
+75138	Osmium Plate Visor Template
+75139	Osmium Plate Gorget Template
+75140	Osmium Breastplate Template
+75141	Osmium Plate Pauldron Template
+75142	Osmium Plate Cloak Template
+75143	Osmium Plate Belt Template
+75144	Osmium Plate Vambrace Template
+75145	Osmium Plate Bracer Template
+75146	Osmium Plate Gauntlet Template
+75147	Osmium Plate Greaves Template
+75148	Osmium Plate Boot Template
+75982	Phantasmic Chest Seal
+75983	Phantasmic Legging Seal
+75984	Phantasmic Boot Seal
+75985	Phantasmic Sleeve Seal
+75986	Phantasmic Wrist Seal
+75987	Phantasmic Glove Seal
+75988	Phantasmic Helm Seal
+79233	Palladium Chain Coif Template
+79234	Palladium Chain Faceguard Template
+79235	Palladium Chain Collar Template
+79236	Palladium Chain Chestguard Template
+79237	Palladium Chain Spaulders Template
+79238	Palladium Chain Cloak Template
+79239	Palladium Chain Belt Template
+79240	Palladium Chain Arms Template
+79241	Palladium Chain Bracer Template
+79242	Palladium Chain Gloves Template
+79243	Palladium Chain Legplates Template
+79244	Palladium Chain Boots Template
+79245	Palladium Plate Helm Template
+79246	Palladium Plate Visor Template
+79247	Palladium Plate Gorget Template
+79248	Palladium Breastplate Template
+79249	Palladium Plate Pauldron Template
+79250	Palladium Plate Cloak Template
+79251	Palladium Plate Belt Template
+79252	Palladium Plate Vambrace Template
+79253	Palladium Plate Bracer Template
+79254	Palladium Plate Gauntlet Template
+79255	Palladium Plate Greaves Template
+79256	Palladium Plate Boot Template
+79257	Veiled Chest Seal
+79260	Veiled Legging Seal
+79263	Veiled Boot Seal
+79266	Veiled Sleeve Seal
+79269	Veiled Wrist Seal
+79272	Veiled Glove Seal
+79275	Veiled Helm Seal

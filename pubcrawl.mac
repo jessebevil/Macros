@@ -1,0 +1,25 @@
+#warning
+#Event Talks "Galdorin Visigothe says, '#*#'"
+
+Sub Main
+	/while (TRUE) {
+		/doevents
+	}
+/return
+
+Sub Event_Talks(Line)
+	/echo ${Line}
+	/if (${Line.Find[My stinky stein has rough dirty lips,]}) {
+		/say My stinky stein has rough dirty lips,
+	} else /if (${Line.Find[but she loves a deep carouse]}) {
+		/say but she loves a deep carouse.
+	} else /if (${Line.Find[Beer or ale are her great trips]}) {
+		/say Beer or ale are her great trips.
+	} else /if (${Line.Find[No matter how many vows]}) {
+		/say No matter how many vows
+	} else /if (${Line.Find[I make or break, my drinking glass]}) {
+		/say I make or break, my drinking glass
+	} else /if (${Line.Find[reminds me of my lovely Brasse]}) {
+		/say reminds me of my lovely Brasse.
+	}
+/return

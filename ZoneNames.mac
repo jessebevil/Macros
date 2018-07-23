@@ -1,0 +1,31 @@
+|-------------------------------------------------------------------------------- 
+|SUB: Main
+|--------------------------------------------------------------------------------
+Sub Main
+	/echo Now building list for all EQ zones.
+	/declare i int local 0
+	/for i 1 to 5000
+		/if (${Zone[${i}].Name.NotEqual[NULL]}) {
+			/if (!${Ini[ZoneNames.ini,${i},Name:].Length} || ${Ini[ZoneNames.ini,${i},Name:].NotEqual[${Zone[${i}].Name}]}) {
+				/ini ZoneNames.ini ${i} "Name:" "${Zone[${i}].Name}"
+				/ini ZoneNames.ini ${i} "ShortName" "${Zone[${i}].ShortName}"
+			}
+			/if (!${Ini[ZoneNames.ini,${i},Type].Length} || ${Ini[ZoneNames.ini,${i},Name:].NotEqual[${Zone[${i}].Type}]}) {
+				/if (${i} == ${Zone.ID}) {
+					/ini ZoneNames.ini ${i} "Type" "${Zone[${i}].Type}"
+					/ini ZoneNames.ini ${i} "Gravity" "${Zone[${i}].Gravity}"
+					/ini ZoneNames.ini ${i} "SkyType" "${Zone[${i}].SkyType}"
+					/ini ZoneNames.ini ${i} "Dungeon" "${Zone[${i}].Dungeon}"
+					/ini ZoneNames.ini ${i} "MinClip" "${Zone[${i}].MinClip}"
+					/ini ZoneNames.ini ${i} "MaxClip" "${Zone[${i}].MaxClip}"
+					/ini ZoneNames.ini ${i} "ZoneType" "${Zone[${i}].ZoneType}"
+					/ini ZoneNames.ini ${i} "Indoor" "${Zone[${i}].Indoor}"
+					/ini ZoneNames.ini ${i} "Outdoor" "${Zone[${i}].Outdoor}"
+					/ini ZoneNames.ini ${i} "NoBind" "${Zone[${i}].NoBind}"
+				}
+			}
+		}
+	/next i
+	/echo List is done! Check your MQ2 Logs directory for the listing.
+/return
+|--------------------------------------------------------------------------------

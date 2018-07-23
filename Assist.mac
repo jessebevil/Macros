@@ -1,0 +1,117 @@
+Sub Main
+	/call Declares
+	/if (${UseCamp}) {
+		/makecamp on ${CampRadius}
+	}
+	/echo \aoNow Assisting ${AssistTargetName}
+	:mainloop
+		/call CheckXTarget
+		
+		/if (${Spawn[${AggroTargetID}].ID}) {
+			/if (${Target.ID} != ${AggroTargetID}) /target id ${AggroTargetID}
+			/if (!${Me.Combat} && ${Spawn[${AggroTargetID}].PctHPs} <= ${AssistPercent} && ${Spawn[id ${AggroTargetID}].Distance3D} < ${CampRadius}) {
+				/if (${Debugging}) /echo Attacking ${Spawn[${AggroTargetID}].Name}
+				/if (!${Me.Class.PureCaster} || ${MeleeTargets}) /attack on
+				/pet attack
+				/pet swarm
+			}
+		}
+		/if ((!${Stick.Active} || ${Stick.StickTarget} != ${AggroTargetID}) && ${Spawn[${AggroTargetID}].ID} == ${Target.ID} && ${AggroTargetID} && ${Spawn[${AggroTargetID}].PctHPs} <= ${AssistPercent} ${If[${UseCamp},&& ${Spawn[id ${AggroTargetID}].Distance3D} < ${CampRadius},]}) {
+			/if (${Debugging}) /echo ((!${Stick.Active} || ${Stick.StickTarget} != ${AggroTargetID}) && ${Spawn[${AggroTargetID}].ID} == ${Target.ID} && ${AggroTargetID} && ${Spawn[${AggroTargetID}].PctHPs} <= ${AssistPercent} ${If[${UseCamp},&& ${Spawn[id ${AggroTargetID}].Distance3D} < ${CampRadius},]})
+			/stick behindonce uw 10
+			/delay 1s ${Stick.StickTarget}==${AggroTargetID}
+		}
+        |** Clear target if it is a corpse **|
+        /if (${Target.Type.Equal[Corpse]}) /squelch /target clear
+        |** How to do auto follow code, follow like mercenary here, Always follows AssistTargetName from declares section.**|
+        /if (${Group.Member[1].Distance3D} > 30 && !${Spawn[${AggroTargetID}].ID} && !${Stick.Active} && ${ChaseAssist}) {
+            /stick id ${Spawn[pc ${AssistTargetName}].ID}
+			/delay 5
+        }
+		/if (!${Spawn[${AggroTargetID}].ID} && ${Math.Distance[${Me.Y}, ${Me.X}, ${Me.Z} : ${campY}, ${campX}, ${campZ}]}> 15 && ${UseCamp}) {
+			/makecamp return
+		}
+	/goto :mainloop
+	
+	
+/return
+	:OnExit
+	/if (${UseCamp}) /makecamp off
+
+
+Sub Declares
+	/call CheckPlugin MQ2Melee
+	/call CheckPlugin MQ2MoveUtils
+	/declare Settings string outer Assist_${Me.Name}.ini
+	/declare campX int outer ${Me.X}
+	/declare campY int outer ${Me.Y}
+	/declare campZ int outer ${Me.Z}
+	/declare AggroTargetID int outer 0
+	/declare Debugging bool outer FALSE
+	/call CheckINI ${Settings} Assist AssistTargetName string "${Group.Member[1].Name}"
+	/call CheckINI ${Settings} Assist AssistPercent int 96
+	/call CheckINI ${Settings} Assist MeleeTargets bool TRUE
+	/call CheckINI ${Settings} Camp UseCamp bool TRUE
+	/call CheckINI ${Settings} Camp ChaseAssist bool FALSE
+	/call CheckINI ${Settings} Camp CampRadius int 60
+	/if (${ChaseAssist} && ${UseCamp}) {
+		/echo You can't have UseCamp and ChaseAssist both at the same time, turning off ChaseAssist. Please fix your INI
+		/varset ChaseAssist FALSE
+	}
+/return
+
+Sub CheckINI(string IniName,string Section,string Key,string TypeVar,Default)
+	/if (${Debugging}) /echo Sub CheckINI Entry
+	/if (!${Ini[${IniName},${Section},${Key}].Length}) {
+		/ini ${IniName} ${Section} ${Key} ${Default}
+	}
+	/declare ${Key} ${TypeVar} outer ${Ini[${IniName},${Section},${Key}]}
+	/if (${Debugging}) /echo \atLoading INI ${IniName} ~ Key: ${Key} Type: ${TypeVar} INI Value: ${Ini[${IniName},${Section},${Key}]}
+	/if (${Debugging}) /echo Sub CheckINI Exit
+/return
+
+Sub CheckPlugin(PluginName)
+	/if (${Debugging}) /echo Sub CheckPlugin Entry
+	/if (!${Plugin[${PluginName}].Name.Equal[${PluginName}]}) {
+		/plugin ${PluginName}
+		/delay 3s ${Plugin[${PluginName}].Name.Equal[${PluginName}]}
+		/if (!${Plugin[${PluginName}].Name.Equal[${PluginName}]}) {
+			/echo "The Plugin --> ${PluginName} didn't load for some reason."
+			/varset Endmac TRUE
+		}
+		/if (${PluginName.Equal[MQ2Nav]}) {
+			/delay 2s
+		}
+	}
+	/if (${PluginName.Equal[MQ2EQBC]}) {
+		/if (!${EQBC.Connected}) {
+			/bccmd connect
+			/delay 3s ${EQBC.Connected}
+			/if (!${EQBC.Connected}) {
+				/echo "\arCould not connect to the EQBC Server. Are you sure it's running?"
+				/varset Endmac TRUE
+			}
+		}
+	}
+	/if (${Debugging}) /echo Sub CheckPlugin Exit
+/return
+
+Sub CheckXTarget
+	/declare i int local 0
+	/if (!${Spawn[id ${AggroTargetID}].ID} || ${Spawn[id ${AggroTargetID}].Type.Equal[corpse]}) {
+		/if (${AggroTargetID}) {
+			/if (${Debugging}) /echo \ayClearing AggroTargetID
+			/varset AggroTargetID 0
+		}
+	}
+	/if (!${Me.XTarget}) /return
+	/if (!${AggroTargetID}) {
+		/for i 1 to 5
+			/if (${Me.XTarget[${i}].ID} != 0 && ${Me.XTarget[${i}].Type.NotEqual[Corpse]} && ${Spawn[${Me.XTarget[${i}].ID}].PctHPs} < ${AssistPercent} && ${Spawn[${Me.XTarget[${i}].ID}].PctHPs}) {
+				/if (${Debugging}) /echo \aySetting XTarget # ${i} - ${Spawn[id ${Me.XTarget[${i}].ID}].Name} as AggroTargetID - ${AggroTargetID}
+				/varset AggroTargetID ${Me.XTarget[${i}].ID}
+				/varset i 6
+			}
+		/next i
+	}
+/return 

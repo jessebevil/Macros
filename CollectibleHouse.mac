@@ -1,0 +1,105 @@
+| --------------------------------------------------------------------------------------------
+| SUB: Main
+| --------------------------------------------------------------------------------------------
+Sub Main
+|** Prep work **|
+	/declare i int local 0
+	/declare count int local 0
+	/declare CheckItemName string local
+	/declare CheckItemQuantity int local 0
+	/declare IterateBackNeeded bool local FALSE
+|** Opening your inventory **|
+	/if (!${Window[InventoryWindow].Open}) {
+		/windowstate InventoryWindow open
+		/delay 2s ${Window[InventoryWindow].Open}
+	}
+|** Opening all your bags **|
+	/keypress OPEN_INV_BAGS
+|** Opening the real estate window **|
+	/if (!${Window[RealEstateItemsWnd].Open}) {
+		/notify InventoryWindow IW_PlotItems leftmouseup
+		/delay 2s ${Window[RealEstateItemsWnd].Open}
+	}
+|** This delay gives the RealEstateItemsWnd time to populate data for MQ2 to read. **|
+	/delay 1s
+
+	/for i 1 to 1000
+		/delay 5
+	|** If this item slot doesn't have a string length I've reached the end of the list and should exit the loop ~BASE CASE! **|
+		/if (!${Window[RealEstateItemsWnd].Child[REIW_ItemList].List[${i},2].Length}) /break
+	|** Otherwise, if it's in the vault move it to my inventory so I can inspect it **|
+		/if (${Window[RealEstateItemsWnd].Child[REIW_ItemList].List[${i},3].Equal[V]}) {
+		|** Select the item at index ${i}, then set the name of the item and the quantity stored respectively **|
+			/notify RealEstateItemsWnd REIW_ItemList Listselect ${i}
+			/varset CheckItemName ${Window[RealEstateItemsWnd].Child[REIW_ItemList].List[${i},2]}
+			/varset CheckItemQuantity ${Window[RealEstateItemsWnd].Child[REIW_ItemList].List[${i},4]}
+		|** Move it to my inventory so that I can inspect it **|
+			/notify RealEstateItemsWnd REIW_Move_Inventory_Button leftmouseup
+		|** If it has a quantity greater than 1, the Quantity windows going to open, I just need 1 **|
+			/if (${CheckItemQuantity} > 1) {
+				/delay 2s ${Window[QuantityWnd].Open}
+				/echo Item has a quantity
+				/if (${Window[QuantityWnd].Open}) /notify QuantityWnd QTYW_slider newvalue ${CheckItemQuantity}
+			| Click Accept button
+				/notify QuantityWnd QTYW_Accept_Button leftmouseup
+			} else {
+				/varset IterateBackNeeded TRUE
+			}
+		|** Wait till MQ2 can see it in my inventory **|
+			/delay 5s ${FindItemCount[=${CheckItemName}]}
+		|** Is this item even a collectible? Well if it is, do the following. **|
+			/if (${FindItem[=${CheckItemName}].Collectible}) {
+			|** Press Alt+LeftClick on the item so I can get the ItemDisplayWindow to show up **|
+				/nomodkey /altkey /itemnotify ${FindItem[=${CheckItemName}].InvSlot} leftmouseup
+				/delay 2s ${Window[ItemDisplayWindow].Child[IDW_ItemInfo1].Text.Equal[${CheckItemName}]}
+				/delay 8
+				/if (${Window[ItemDisplayWindow].Child[IDW_ItemInfo1].Text.NotEqual[${CheckItemName}]}) {
+					/echo \arYou may be bugged, \aothe ItemDisplayWindow text is showing MQ2 \ar${Window[ItemDisplayWindow].Child[IDW_ItemInfo1].Text} \aoinstead of \ay${CheckItemName}
+					/echo It is recommended you relog.
+					/end
+				} else {
+				|** The item I was trying to open the ItemDisplayWindow for is showing me under the hood **|
+					/if (${Window[ItemDisplayWindow].Child[IDW_CollectedLabel].Text.Equal[Not Collected]}) {
+						/echo \ap>>> ${CheckItemName} <<< \aghasn't been collected yet. Doing that now.
+						/squelch /echo ${Window[ItemDisplayWindow].DoClose}
+						/nomodkey /itemnotify ${FindItem[=${CheckItemName}].InvSlot} rightmouseup
+						/if (${IterateBackNeeded}) /varcalc i ${i}-1
+						/varcalc count ${count}+1
+					} else {
+					|** This is already collected so I need to put it back in the vault **|
+						/squelch /echo ${Window[ItemDisplayWindow].DoClose}
+						/nomodkey /itemnotify ${FindItem[=${CheckItemName}].InvSlot} leftmouseup
+						/delay 5
+						/notify RealEstateItemsWnd REIW_Move_Closet_Button leftmouseup
+						/if (${FindItemCount[=${CheckItemName}]} > 1) {
+							/delay 2s ${Window[QuantityWnd].Open}
+							/if (${Window[QuantityWnd].Open}) /notify QuantityWnd QTYW_slider newvalue ${FindItemCount[=${CheckItemName}]}
+						| Click Accept button
+							/notify QuantityWnd QTYW_Accept_Button leftmouseup
+						}
+					}
+				}
+			} else {
+			|** I need to put the item back in the vault **|
+				/nomodkey /itemnotify ${FindItem[=${CheckItemName}].InvSlot} leftmouseup
+				/delay 5
+				/notify RealEstateItemsWnd REIW_Move_Closet_Button leftmouseup
+				/if (${CheckItemQuantity} > 1) {
+					/delay 2s ${Window[QuantityWnd].Open}
+					/echo Item has a quantity
+					/if (${Window[QuantityWnd].Open}) /notify QuantityWnd QTYW_slider newvalue ${CheckItemQuantity}
+				| Click Accept button
+					/notify QuantityWnd QTYW_Accept_Button leftmouseup
+				}
+			}
+		}
+	|** Setting these back to blank and 0 for the next iteration **|
+		/varset IterateBackNeeded FALSE
+		/varset CheckItemName
+		/varset CheckItemQuantity 0
+	/next i
+	/cleanup
+	/echo Done! I have collected: ${count}
+	/bc I'm done with my collectibles master! I have collected: ${count}.
+/return
+|  [+++  Formatted by MQ2f using tabs for indents +++]

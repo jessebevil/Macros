@@ -1,0 +1,273 @@
+	#turbo 120
+| --------------------------------------------------------------------------------------------
+| SUB: Main
+| --------------------------------------------------------------------------------------------
+Sub Main
+	/declare PopupTimer timer outer 1s
+	/call OpenAllBankContainers
+	/call CompressBank
+	/call CreateCounts
+	/call GetContents
+	/call SortBankArray
+|/call SortBank
+|/cleanup
+	/end
+/return
+
+|--------------------
+|SUB: Get the counts |
+|--------------------
+Sub CreateCounts
+	/declare Empty int outer 0
+	/declare Occupied int outer 0
+	/declare Largest int outer 0
+	/declare i int local
+	/declare j int local
+
+	/for i 1 to ${BankSlots}
+		/if (${Me.Bank[${i}].Container} > ${Largest}) {
+			/varset Largest ${Me.Bank[${i}].Container}
+		}
+		/for j 1 to ${Me.Bank[${i}].Container}
+			/if (${Me.Bank[${i}].Item[${j}].ID}) {
+			|/echo ${Me.Bank[${i}].Item[${j}].Name} is Bank ${i} in slot ${j}
+				/varset Occupied ${Math.Calc[${Occupied}+1]}
+			} else {
+			|/echo Bank ${i} in slot ${j} is Empty
+				/varset Empty ${Math.Calc[${Empty}+1]}
+			}
+		/next j
+		/if (${PopupTimer} <= 0) {
+			/popup  Getting Counts: ${Int[${Math.Calc[100/${BankSlots}*${i}]}]}% Complete. Run Time: ${Macro.RunTime} seconds!
+			/varset PopupTimer 1s
+		}
+	/next i
+	/declare BankCapacity int outer 0
+	/varset BankCapacity ${Math.Calc[${Occupied}+${Empty}]}
+	/popup  Getting Counts: 100% Complete. Run Time: ${Macro.RunTime} seconds!
+	/echo You have ${Occupied} used slots and ${Empty} empty slots. A total of ${BankCapacity} slots. RunTime: ${Macro.RunTime}
+/return
+
+|--------------
+|SUB: SortBank |
+|--------------
+Sub SortBank
+	/declare s int inner 1
+	/declare i int inner 1
+	/declare k int inner
+	/varset k 1
+	/declare j int inner
+	/varset j 1
+	/declare tempi string inner ""
+	/declare temps string inner ""
+	/for s 1 to ${Int[${Math.Calc[${Occupied}]}]}
+		/if (${Unsorted[${s},1]} != ${Unsorted[${s},3]}) {
+		|**Move item at ${Unsorted[${s},1]} to it's sorted location at ${Unsorted[${s},3]}**|
+			/nomodkey /shiftkey /itemnotify ${Unsorted[${s},1]} leftmouseup
+			/delay 1
+			/nomodkey /shiftkey /itemnotify ${Unsorted[${s},3]} leftmouseup
+			/delay 1
+			/nomodkey /shiftkey /itemnotify ${Unsorted[${s},1]} leftmouseup
+		:jayLoop
+		|**Relocate object replaced by ${Unsorted[${s},1]} to ${Unsorted[${s},1]}'s location in the array**|
+			/if (${j} <= ${Occupied}) {
+				/if (${k} <= ${Unsorted[${s},4].Length}) {
+					/if (${Unsorted[${j},4].Left[${k}].Compare[${Unsorted[${s},4].Left[${k}]}]} == 0) {
+						/varset Unsorted[${j},1] ${Unsorted[${s},1]}
+						/varset Unsorted[${j},2] ${Unsorted[${s},2]}
+					} else /if (!${j} <= ${Occupied}) {
+						/varset j ${Int[${Math.Calc[${j}+1]}]}
+						/goto :jayLoop
+					}
+					/varset k ${Int[${Math.Calc[${k}+1]}]}
+				}
+			}
+		}
+		/varset j 1
+	|/echo Get ${Unsorted[${s},2]} from ${Unsorted[${s},1]} and move to ${Unsorted[${s},3]}
+	|/delay 1s
+
+		/if (${PopupTimer} <= 0) {
+			/popup  Sorting: ${Int[${Math.Calc[100/${Occupied}*${s}]}]}% Complete. Run Time: ${Macro.RunTime} seconds!
+			/varset PopupTimer 1s
+		}
+	/next s
+	/popup  Sorting: 100% Complete. Run Time: ${Macro.RunTime} seconds!!
+	/echo Sorting: 100% Complete. Run Time: ${Macro.RunTime} seconds!!
+/return
+
+|------------------------------------------------------
+|SUB: Open nearest Banker and Open All Bank Containers |
+|------------------------------------------------------
+Sub OpenAllBankContainers
+:OpenContainers
+	/if (${Window[BankWnd].Open}) {
+		/declare BankSlots int outer 16
+	} else /if (${Window[BigBankWnd].Open}) {
+		/declare BankSlots int outer 24
+	} else /if (!${Window[BankWnd].Open} || !${Window[BigBankWnd].Open}) {
+		/echo Targeting banker
+		/target class Banker
+		/if (${Target.Distance} < 20) {
+			/echo Attempting to open bank!
+			/invoke ${Target.RightClick}
+			/goto :OpenContainers
+		} else /if (${Target.Race.Name.Equal[Banker]}) {
+			/echo ${Target.CleanName} is to far away to open the bank, get closer!
+		} else {
+			/echo No Banker in this Zone!!
+			/end
+		}
+	}
+	/declare i int inner 1
+	/for i 1 to ${BankSlots}
+		/if (${Me.Bank[${i}].Container} && !${Window[bank${i}].Open}) {
+			/nomodkey /itemnotify bank${i} rightmouseup
+		}
+		/if (${PopupTimer} <= 0) {
+			/popup  Open Containers: ${Int[${Math.Calc[100/${BankSlots}*${i}]}]}% Complete. Run Time: ${Macro.RunTime} seconds!
+			/varset PopupTimer 1s
+		}
+	/next i
+	/echo Bank and all bags opened!
+/return
+
+|----------------------------------------------------------
+|SUB: Compresses the bank so all open slots are at the end |
+|----------------------------------------------------------
+Sub CompressBank
+	/echo Compressing your bank so all empty slots are last.
+	/declare i int inner
+	/declare j int inner
+	/for i 1 to ${BankSlots}
+		/for j 1 to ${Me.Bank[${i}].Container}
+			/if (${Me.Bank[${i}].Item[${j}].ID}) {
+				/nomodkey /shiftkey /itemnotify ${Me.Bank[${i}].Item[${j}].InvSlot.ID} leftmouseup
+				/if (${Cursor.ID}) {
+					/autobank
+				}
+			} else {
+			|/echo Bank ${i} in slot ${j} is Empty
+			}
+		/next j
+		/if (${PopupTimer} <= 0) {
+			/popup  Compressing Bank: ${Int[${Math.Calc[100/${BankSlots}*${s}]}]}% Complete. Run Time: ${Macro.RunTime} seconds!
+			/varset PopupTimer 1s
+		}
+	/next i
+	/echo Bank Compressed!
+/return
+
+|-----------------------------------------------------------------
+|SUB: Create an Array from items in your bags with their location |
+|-----------------------------------------------------------------
+Sub GetContents
+|**Store Item InvSlot.ID in 1,1 and Item.Name in 1,2 and InvSlot.ID that moves with Item.Name when sorted in 1,3, and Item.ID in 1,4**|
+	/declare Unsorted[${Occupied},4] string outer -1
+
+	/declare i int inner 1
+	/declare j int inner 1
+	/declare k int inner
+	/varset k 1
+
+	/for i 1 to ${BankSlots}
+		/for j 1 to ${Me.Bank[${i}].Container}
+			/if (${Me.Bank[${i}].Item[${j}].ID}) {
+				/varset Unsorted[${k},1] ${Me.Bank[${i}].Item[${j}].InvSlot.ID}
+				/varset Unsorted[${k},2] ${Me.Bank[${i}].Item[${j}].Name}
+				/varset Unsorted[${k},3] ${Me.Bank[${i}].Item[${j}].InvSlot.ID}
+				/varset Unsorted[${k},4] ${Me.Bank[${i}].Item[${j}].ID}
+			|/echo Unsorted Array item at ${k} is ${Unsorted[${k}, 2]} at InvID ${Unsorted[${k}, 1]}
+				/varset k ${Int[${Math.Calc[${k}+1]}]}
+			}
+		/next j
+	/next i
+/return
+
+| --------------------------------------------------------------------------------------------
+| SUB: SortBankArray
+| --------------------------------------------------------------------------------------------
+Sub SortBankArray
+	/declare i int inner
+	/declare j int inner
+	/declare k int inner
+	/declare temps string inner ""
+	/declare tempi string inner ""
+	/varset i 1
+	/varset j 1
+	/varset k 1
+
+:iLoop
+:jLoop
+|/echo ${Unsorted[${i},2].Left[1]} compared to ${Unsorted[${j},2]} is ${Unsorted[${i},2].Compare[${Unsorted[${j},2]}]}
+|/echo ${i} ${j}
+	/if (!${Unsorted[${i},2].Compare[${Unsorted[${j},2]}]} == 0 && ${i} != ${j}) {
+	:kayloop
+		/if (${Unsorted[${i},2].Left[${k}].Compare[${Unsorted[${j},2].Left[${k}]}]} == 0) {
+		|/echo The first ${k} letters are the same!
+			/if (${k} <= ${Unsorted[${i},2].Length}) {
+				/varset k ${Int[${Math.Calc[${k}+1]}]}
+				/goto :kayloop
+			}
+		} else /if (${Unsorted[${i},2].Left[${k}].Compare[${Unsorted[${j},2].Left[${k}]}]} > 0) {
+		|** /echo ${i} is after ${j} **|
+			/varset temps ${Unsorted[${i},2]}
+			/varset tempi ${Unsorted[${i},3]}
+			/varset Unsorted[${i},2] ${Unsorted[${j},2]}
+			/varset Unsorted[${i},3] ${Unsorted[${j},3]}
+			/varset Unsorted[${j},2] ${temps}
+			/varset Unsorted[${j},3] ${tempi} **|
+			/nomodkey /shiftkey /itemnotify ${Unsorted[${i},1]} leftmouseup
+			/nomodkey /shiftkey /itemnotify ${Unsorted[${j},1]} leftmouseup
+			/nomodkey /shiftkey /itemnotify ${Unsorted[${i},1]} leftmouseup
+			/if (${j} < ${Occupied}) {
+				/varset j ${Int[${Math.Calc[${j}+1]}]}
+				/goto :jLoop
+			} else /if (${i} <= ${Int[${Math.Calc[${Occupied}-1]}]}) {
+				/varset i ${Int[${Math.Calc[${i}+1]}]}
+				/varset j 2
+				/goto :iLoop
+			}
+		} else /if (${Unsorted[${i},2].Left[${k}].Compare[${Unsorted[${j},2].Left[${k}]}]} < 0) {
+		|/echo ${i} is before ${j}
+			/if (${i} <= ${Int[${Math.Calc[${Occupied}-1]}]}) {
+				/varset i ${Int[${Math.Calc[${i}+1]}]}
+				/varset j 2
+				/goto :iLoop
+			}
+		}
+	}
+	/if (${PopupTimer} <= 0) {
+		/popup  Calculating Sort: ${Int[${Math.Calc[100/${Occupied}*${i}]}]}% Complete. Run Time: ${Macro.RunTime} seconds!
+		/varset PopupTimer 1s
+	}
+	/if (${j} < ${Occupied}) {
+		/varset j ${Int[${Math.Calc[${j}+1]}]}
+		/goto :jLoop
+	} else /if (${i} < ${Int[${Math.Calc[${Occupied}-1]}]}) {
+		/varset i ${Int[${Math.Calc[${i}+1]}]}
+		/varset j 2
+		/goto :iLoop
+	}
+	/echo Done Sorting Array at ${Macro.RunTime} seconds!
+
+	/for i 1 to ${Occupied}
+		/echo ${Unsorted[${i},2]} was at ${Unsorted[${i},1]} should be moved to ${Unsorted[${i},3]}
+	/next i
+
+/return
+
+|-----------------------------------------------------------------
+|SUB: Find in array |
+|-----------------------------------------------------------------
+Sub Find(int s)
+	/declare i int local
+	/for i 1 to ${Occupied}
+		/if (${Unsorted[${i},1].Compare[${s}]} == 0) {
+		/return ${i}
+	}
+/next i
+/return
+
+
+|  [+++  Formatted by MQ2f using tabs for indents +++]

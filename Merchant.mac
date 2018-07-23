@@ -1,0 +1,173 @@
+Sub Main
+	/declare Debugging bool outer TRUE
+	/declare zradius int outer 60
+	/declare Merchants[${SpawnCount[Merchant zradius ${zradius}]}] int outer -1
+	/declare MerchantCount int outer 0
+	/declare FileName string outer Merchants.ini
+	/call CountMerchantsInINI
+	/call MerchantList
+/return
+	:OnExit
+	/invoke ${Macro.Undeclared}
+	/end
+
+Sub MerchantList
+	/declare i int local 0
+	/declare k int local 0
+	/for i 1 to ${Merchants.Size}
+		|/if (${Debugging}) /echo \awStoring \ao${NearestSpawn[${i},Merchant].CleanName} \awas ID: \ap${NearestSpawn[${i},Merchant].ID}
+		/for k 1 to ${MerchantCount}
+			|If the merchant name at index k has no length, then we should stop looking because we've reached the end of the list.
+			/if (!${Ini[${FileName},Merchant${k},Name].Length}) {
+				/varset Merchants[${i}] ${NearestSpawn[${i},Merchant zradius ${zradius}].ID}
+				/break
+			}
+			/if (${Ini[${FileName},Merchant${k},Name].Equal[${NearestSpawn[${i},Merchant zradius ${zradius}].CleanName}]}) {
+				/break
+			}
+		/next k
+		
+	/next i
+	
+	/for i 1 to ${Merchants.Size}
+		/if (${Merchants[${i}]} == -1) /continue
+		/if (${Debugging}) /echo Checking Merchant in the array at index ${i}.
+		/if (${Debugging}) /echo Merchant: ${Spawn[id ${Merchants[${i}]}].Name.NotEqual[NULL]} ID: ${Merchants[${i}]}
+		/if (${Spawn[id ${Merchants[${i}]}].Name.NotEqual[NULL]}) {
+			/if (${Navigation.PathExists[id ${Spawn[id ${Merchants[${i}]}].ID}]}) {
+				/echo \arNavigating to spawn ${Spawn[id ${Merchants[${i}]}].CleanName}
+				/call WaitNav ${Merchants[${i}]}
+				/echo \ayTargeting Spawn.
+				/target id ${Merchants[${i}]}
+				/echo \awWaiting for my target to be the merchant.
+				/delay 2s ${Target.ID}==${Merchants[${i}]}
+				/echo \arRight Clicking Target
+				/click right target
+				/echo Waiting 5 seconds.
+				/delay 5s
+				/echo \agParsingItems
+				/call ParseItems
+				/if (${Window[MerchantWnd].Open}) /squelch /windowstate MerchantWnd close
+			}
+		}
+	/next i
+/return
+	
+Sub ParseItems
+	/declare j int local 0
+	/declare k int local 0
+	/declare l int local 0
+	/declare duplicateFound bool local FALSE
+	/declare merchantFound bool local FALSE
+	/declare merchantIndex int local ${MerchantCount}
+	/declare MerchantItem string local 
+	/declare ItemPrice float local 
+	/for k 1 to ${MerchantCount}
+		|If the merchant name at index k has no length, then we should stop looking because we've reached the end of the list.
+		/if (!${Ini[${FileName},Merchant${k},Name].Length}) {
+			/varcalc merchantIndex ${MerchantCount}+1
+			/varcalc MerchantCount ${MerchantCount}+1
+			/echo \ayMerchant wasn't found in the INI, merchantIndex: ${merchantIndex} MerchantCount: ${MerchantCount}
+			/break
+		}
+		/if (${Ini[${FileName},Merchant${k},Name].Equal[${Target.CleanName}]}) {
+			/varset merchantIndex ${k}
+			/varset merchantFound TRUE
+			/echo \ayMerchant was found in the INI, merchantIndex: ${merchantIndex} MerchantCount: ${MerchantCount}
+			/break
+		}
+	/next k
+	
+	|j = Item Index on merchant.
+	/for j 1 to 500
+		
+		|If the item at index ${j} doesn't have a text length, there is no more items and I need to break out of the loop
+		/if (!${Window[MerchantWnd].Child[MW_ItemList].List[${j},2].Length}) /break
+		|If quantity of item merchant is selling is not unlimited (--) Skip it.
+		/if (!${Window[MerchantWnd].Child[MW_ItemList].List[${j},3].Equal[--]}) /continue
+		/varset MerchantItem ${Window[MerchantWnd].Child[MW_ItemList].List[${j},2]}
+		/varset ItemPrice ${Window[MerchantWnd].Child[MW_ItemList].List[${j},5].Left[${Math.Calc[${Window[MerchantWnd].Child[MW_ItemList].List[${j},5].Length}-1]}]}
+		/echo \awConsidering \ap${MerchantItem} \agPrice: \aw${ItemPrice}
+		/if (${merchantFound}) {
+			/for l 1 to 500
+				|/if (${Debugging}) /echo \aw${MerchantItem.Equal[${Ini[${FileName},Merchant${merchantFound},Item${l}]}]}
+				/if (${MerchantItem.Equal[${Ini[${FileName},Merchant${merchantIndex},Item${l}]}]}) {
+					/varset duplicateFound TRUE
+					/break
+				}
+			/next l
+			/if (${duplicateFound}) {
+				/if (${Debugging}) /echo \ayDuplicate found, skipping ${MerchantItem}
+			} else {
+				|Find the first empty item# and write to it.
+				/for l 1 to 500
+					/if (!${Ini[${FileName},Merchant${merchantIndex},item${l}].Length}) {
+						/echo \atWriting \ap${MerchantItem} \atto Merchant\ao${merchantIndex} \atas \agItem${l}!
+						/ini "${FileName}" "Merchant${merchantIndex}" "Item${l}" "${MerchantItem}|${ItemPrice}"
+						/break
+					}
+				/next l
+			}
+		} else {
+			/echo \ayMerchant wasn't found, creating a new merchant#! New MerchantCount ${MerchantCount}
+			/varset merchantFound TRUE
+			/for k 1 to ${MerchantCount}
+				|If the merchant name at index k has no length, then it's empty and we need to write here.
+				/if (!${Ini[${FileName},Merchant${k},Name].Length}) {
+					/varset merchantIndex ${k}
+					/echo \at Set merchantIndex to ${k}
+					/break
+				}
+			/next k
+			
+			|Populate the basic merchant information.
+			/ini "${FileName}" "Merchant${merchantIndex}" "Name" "${Window[MerchantWnd].Child[MW_MerchantName].Text}"
+			/ini "${FileName}" "Merchant${merchantIndex}" "Zone" "${Zone}"
+			/ini "${FileName}" "Merchant${merchantIndex}" "Location" "${Me.Y}|${Me.X}|${Me.Z}"
+			|Find the first empty item# and write to it.
+			/for l 1 to 500
+				/if (!${Ini[${FileName},Merchant${merchantIndex},item${l}].Length}) {
+					/echo \atWriting \ap${MerchantItem} \atto Merchant\ao${merchantIndex} \atas \agItem${l}!
+					/ini "${FileName}" "Merchant${merchantIndex}" "Item${l}" "${MerchantItem}|${ItemPrice}"
+					/break
+				}
+			/next l
+		}
+		/varset duplicateFound FALSE
+	/next j
+/return
+
+Sub WaitNav(NavTargetID)
+	/if (${Debugging}) /echo \agEntering Sub WaitNav for ${Spawn[id ${NavTargetID}].Y} ${Spawn[id ${NavTargetID}].X} ${Spawn[id ${NavTargetID}].Z} at Line: ${Macro.CurLine}
+	/if (!${Spawn[id ${NavTargetID}].ID}) /return
+	/while (${Spawn[id ${NavTargetID}].Distance} > 	15  || !${Spawn[${NavTargetID}].LineOfSight}) {
+		/echo ${Spawn[id ${NavTargetID}].Distance} > 	15  || !${Spawn[${NavTargetID}].LineOfSight}
+		/if (!${Spawn[id ${NavTargetID}].ID}) /return
+		/if (${Navigation.Active}) {
+			/delay 10
+		} else {
+			/squelch /nav id ${NavTargetID}
+		}
+	}
+	/if (${Navigation.Active}) /nav stop
+	:target
+	/target id ${NavTargetID}
+	/delay 2s ${Target.CleanName.Equal[${Spawn[id ${NavTargetID}].CleanName}]}
+	/if (!${Target.CleanName.Equal[${Spawn[id ${NavTargetID}].CleanName}]} && ${Spawn[id ${NavTargetID}].ID}) {
+		/goto :target
+	}
+	/echo \agExiting sub WaitNav
+/return
+
+Sub CountMerchantsInINI
+	/declare i int local 0
+	/for i 1 to 5000
+		/if (${Ini[${FileName},Merchant${i},Name].Length}) {
+			/varcalc MerchantCount ${MerchantCount}+1
+		} else {
+			/varcalc MerchantCount ${MerchantCount}+1
+			/break
+		}
+	/next i
+	/echo There are ${MerchantCount} merchants in the INI.
+/return

@@ -1,0 +1,38 @@
+Sub Main
+/declare i int local 0
+/declare j int local 0
+/declare k int local 0
+/declare itemFoundInShopping bool local FALSE
+/declare emptyIndex int local 0
+/for i 1 to 5000
+	/if (${Ini[Blacksmithing.ini,Recipes,Recipe${i}].Arg[2,|].Length}) {
+		/for j 2 to 10
+			/if (${Ini[Blacksmithing.ini,Recipes,Recipe${i}].Arg[${j},|].Length}) {
+				/for k 1 to 50000
+				/if (${Ini[ShoppingList.ini,Blacksmithing,Component${k}].Arg[1,|].Length}) {
+					|/echo \agComparison matches: \ar${Ini[Blacksmithing.ini,Recipes,Recipe${i}].Arg[${j},|].Equal[${Ini[ShoppingList.ini,Blacksmithing,Component${k}].Arg[1,|]}]}
+					/if (${Ini[Blacksmithing.ini,Recipes,Recipe${i}].Arg[${j},|].Equal[${Ini[ShoppingList.ini,Blacksmithing,Component${k}].Arg[1,|]}]}) {
+						|/echo \ayFound ${Ini[Blacksmithing.ini,Recipes,Recipe${i}].Arg[${j},|]} Adding to the count.
+						/varset itemFoundInShopping TRUE
+						|Always returned, only needed to count one.
+						/if (${Ini[Blacksmithing.ini,Recipes,Recipe${i}].Arg[${j},|].Equal[Smithy Hammer]}) /break
+						/ini "ShoppingList.ini" "Blacksmithing" "Component${k}" "${Ini[Blacksmithing.ini,Recipes,Recipe${i}].Arg[${j},|]}|${Math.Calc[${Ini[ShoppingList.ini,Blacksmithing,Component${k}].Arg[2,|]}+1].Int}"
+						
+						/break
+					}
+				} else {
+					/varset emptyIndex ${k}
+					|/echo \atI didn't find Found ${Ini[Blacksmithing.ini,Recipes,Recipe${i}].Arg[${j},|]} in the list, setting emptyIndex to ${k}
+					/break
+				}
+				/next k
+				/if (!${itemFoundInShopping}) {
+					/ini "ShoppingList.ini" "Blacksmithing" "Component${emptyIndex}" "${Ini[Blacksmithing.ini,Recipes,Recipe${i}].Arg[${j},|]}|1"
+				}
+			}
+			/varset itemFoundInShopping FALSE
+		/next j
+	}
+/next i
+
+/return

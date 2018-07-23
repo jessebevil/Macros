@@ -1,0 +1,13 @@
+Sub Main
+	/declare i int local 0
+	/while (TRUE) {
+		/if (${SpawnCount[pccorpse radius 130]}) {
+			/for i 0 to ${Group}
+				/if (${Spawn[corpse ${Group.Member[${i}].Name} radius 130].ID}) {
+				/squelch /target ${Spawn[corpse ${Group.Member[${i}].Name}].Name}
+				/corpse
+			}
+			/next i
+		}
+	}
+/return

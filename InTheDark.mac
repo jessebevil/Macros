@@ -1,0 +1,1737 @@
+|InTheDark.mac by Chatwiththisname BrokenRobotGames@gmail.com
+|
+|Redguides build for use with MQ2EasyFind
+|
+|Things to consider. Philter of Major Translocation x 3, Cloudy Potion x 20
+
+	#event Pole "#*#You can't fish without a fishing pole, go buy one.#*#"
+	#event Pole "#*#fishing pole in your primary hand.#*#"
+	#event poleBroke "#*#fishing pole broke#*#"
+	#event NoBait "#*#without fishing bait#*#"
+	#event noWater "#*#land sharks#*#"
+	#event castLine "#*#cast your line#*#"
+	#event moved "#*#go on your way#*#"
+	#event dryLand "#*#dry land to fish#*#"
+	#event drankAle "#*#You take a swig of Summoned: Ale#*#"
+	#event caughtNothing "#*#You didn't catch anything#*#"
+	#event spillBeer "#*#You spill your beer#*#"
+	#event holdingSomething "#*#You can't fish while holding something.#*#"
+	
+Sub Main
+	/if (${Bool[${Plugin[MQ2Bucles]}]}) {
+        /squelch /plugin MQ2Bucles unload noauto
+        /echo MQ2Bucles detected! This macro doesn't like it! Unloading ...
+    }
+	/call Declares
+	/call CheckThings
+	/call TakeInventory
+	/if (${BuyPotions}) {
+		/if (${Zone.ID} != 202) {
+			/echo ${Red}You need invisibility potions so you need to be in POK. This might not end well.
+		} else {
+			/call NavToLoc -88 -205 -157
+			/target id ${Spawn[npc Mirao].ID}
+			/delay 2s ${Target.ID}==${Spawn[npc Mirao].ID}
+			/invoke ${Target.RightClick}
+			/call BuyItem "Cloudy Potion" 20
+			/delay 1s
+			/cleanup
+		}
+	}
+	/if (${BuyBait}) {
+		/if (${Zone.ID} != 202) {
+			/if (${FindItemCount[Bait]}<50) {
+				/echo ${Red}I only have ${FindItemCount[Bait]} bait and it troubles me deeply. I wanted to buy some but I'm not in POK.
+			} else {
+				/echo ${Red}I only have ${FindItemCount[Bait]} bait and it concerns me. I wanted to buy some but I'm not in POK.
+			}
+		} else { 
+			/call NavToLoc -27 1434 -125
+			:buymore
+			/if (!${Target.ID} || ${Target.ID} != ${Spawn[npc Ramos Jerwan].ID}) /target id ${Spawn[npc Ramos Jerwan].ID}
+			/delay 2s ${Target.ID}==${Spawn[npc Ramos Jerwan].ID}
+			/call BuyItem "Fishing Bait" ${Math.Calc[200-${FindItemCount[bait]}].Int}
+			/delay 1s
+			/cleanup
+			/if (${FindItemCount[bait]}<200) /goto :buymore
+		}
+	}
+	/if (${BuyPoles}) {
+		/if (${Zone.ID} != 202) {
+			/if (${FindItemCount[Fishing Pole]}<3) {
+				/echo ${Red}I only have ${FindItemCount[Fishing Pole]} and this may be an issue.
+			} else {
+				/if (!${FindItemCount[Fishing Pole]}) {
+					/echo ${Red}I don't have any fishing poles. How am I suppose to fish? Ending macro.
+					/end
+				}
+			}
+		} else {
+			/echo I need to purchase some fishing poles!
+			/call NavToLoc -27 1434 -125
+			:buymore2
+			/if (!${Target.ID} || ${Target.ID} != ${Spawn[npc Ramos Jerwan].ID}) /target id ${Spawn[npc Ramos Jerwan].ID}
+			/delay 2s ${Target.ID}==${Spawn[npc Ramos Jerwan].ID}
+			/call BuyItem "Fishing Pole" 1
+			/delay 1s
+			/cleanup
+			/if (${FindItemCount[Fishing Pole]}<10) /goto :buymore2
+			
+		}
+	}
+	/call TaskCheck "Fish Eyes in The Dark"
+	/if (!${Macro.Return.Equal[TRUE]}) {
+		/call WhereAmI
+	}
+	/call GetStep
+	/if (${Me.XTarget}) {
+		/call FarmStuff
+	}
+	|** Corathus stuff **|
+	|** ZoneID == 365 **|
+	|** Corathus fishing hole=-62 1560 -86.6 heading=180 **|
+	|** Corathus to Nektulos Forest=-386 -140 -64 for zoneline **|
+	/if (!${StepCompleted[1]} || !${StepCompleted[2]} || !${StepCompleted[3]} || !${StepCompleted[5]}) {
+		/if (${Zone.ID} != 365) {
+			/if (${Zone.ID} == 202) {
+				/if (${Debugging}) /echo I'm in POK and need to look for Nektulos Forest. 
+				/call CheckConnections "Nektulos Forest"
+				/if (${Debugging}) /echo I just checked for connections to Nektulos Forest. Was there one? ${Macro.Return}
+				/if (${Macro.Return.Equal[TRUE]}) {
+					/if (${Debugging}) /echo Calling EasyFind to travel to Nektulos Forest
+					/call EasyFind "Nektulos Forest"
+				}
+			}
+			|** if you're in Nektulos Forest?? **|
+			/if (${Zone.ID} == 25) {
+				/call CheckConnections "Corathus Creep"
+				/if (${Macro.Return.Equal[TRUE]}) {
+					/call EasyFind "Corathus Creep"
+				} else {
+					/echo ${Red}You are not in a zone connected to Corathus Creep! Please Relocate!
+					/endm
+				}
+			}
+		}
+		|** Corathus Creep **|
+		/if (${Zone.ID} != 365) {
+			/echo ${Red}Something went wrong. I'm supposed to have gone to ${Yellow}Corathus Creep${Red} but EasyFind has failed me.
+			/end
+		}
+		/if (${Zone.ID} == 365) {
+			/call NavToLoc -62 1560 -86.6
+			/face heading 180
+			/varset FishingHole "-62 1560 -86.6"
+			/varset FishingHeading 180
+			:keepFishing1
+			/if (!${StepCompleted[1]} || !${StepCompleted[2]} || !${StepCompleted[3]} || !${StepCompleted[5]}) {
+				/if (!${Me.XTarget}) {
+					/call GoFish
+				} else {
+					/call FarmStuff
+				}
+				/call GetStep
+			}
+			/if (${Zone.ID} == 365 && (!${StepCompleted[1]} || !${StepCompleted[2]} || !${StepCompleted[3]} || !${StepCompleted[5]})) /goto :keepFishing1
+			/if (${Zone.ID} != 365) {
+				/echo ${Yellow}Sadly, I appeared to have ${Red}DIED! ${Yellow}I'm sure my loss will be mourned. ${Red}Ending macro.
+				/endm
+			}
+		}
+		/varset nowater 0
+		/varset dryland 0
+		/cleanup
+	}
+	/call GetStep
+	|** Undershore stuff **|
+	|** ZoneID == 362
+	|** Undershore fishing hole=-1187 -517 -13 heading=-50 **|
+	/if (${Debugging}) /echo Step 7 Complete: ${StepCompleted[7]} \atLine: ${Macro.CurLine}
+	/if (!${StepCompleted[7]}) {
+		/if (${Zone.ID} != 362) {
+			/call CheckConnections "Undershore - 1"
+			/if (${Macro.Return.Equal[TRUE]}) {
+				/if (${Debugging}) /echo Calling EasyFind to travel to Undershore - 1
+				/call EasyFind "Undershore - 1"
+			}
+		}
+		/if (${Zone.ID} == 362) {
+			/if (${Debugging}) /echo I'm in Undershore, lets go fishing. \atLine: ${Macro.CurLine}
+			/call NavToLoc -1187 -517 -13
+			/face heading -50
+			/varset FishingHole "-1187 -517 -13"
+			/varset FishingHeading -50
+			:keepFishing2
+			/if (!${StepCompleted[7]}) {
+				/if (!${Me.XTarget}) {
+					/call GoFish
+				} else {
+					/call FarmStuff
+				}
+				/call GetStep
+			}
+			/if (${Zone.ID} == 362 && !${StepCompleted[7]}) /goto :keepFishing2
+			/if (${Zone.ID} != 362) {
+				/echo ${Yellow}Sadly, I appeared to have ${Red}DIED! ${Yellow}I'm sure my loss will be mourned. ${Red}Ending macro.
+				/endm
+			}
+		} else {
+			/echo ${Red}Something went wrong. I'm supposed to have gone to ${Yellow}Undershore - 1 ${Red}but EasyFind has failed me.
+			/end
+		}
+		/varset nowater 0
+		/varset dryland 0
+		/cleanup
+	}
+	|** Illisan stuff **|
+	|** ZoneID == 347
+	|** Illisan fishing hole=-175 241 -34 heading=-90 **|
+	|** MovetoRequired location /moveto loc -184 38 -46 **|
+	/if (!${StepCompleted[4]}) {
+		/if (${Zone.ID} != 347) {
+			/call CheckConnections "Ruins of Illsalin"
+			/if (${Macro.Return.Equal[TRUE]}) {
+				/call NavToLoc -1313 758 -17
+				/call MoveToWait -1560 728 -40
+				/call Zoning
+			} else {
+				/echo ${Red}You are not in a zone connected to ${Yellow}Ruins of Illisan!${Red} Please Relocate!
+				/endm
+			}
+		}
+		/if (${Zone.ID} == 347) {
+			/call MoveToWait -184 38 -46
+			/call NavToLoc -175 241 -34
+			/face heading -90
+			/call GetStep
+			/varset FishingHole "-175 241 -34"
+			/varset FishingHeading -90
+			:keepFishing3
+			/if (!${StepCompleted[4]}) {
+				/if (!${Me.XTarget}) {
+					/call GoFish
+				} else {
+					/call FarmStuff
+				}
+				/call GetStep
+			}
+			/if (${Zone.ID} == 347 && !${StepCompleted[4]}) /goto :keepFishing3
+			/if (${Zone.ID} != 347) {
+				/echo ${Yellow}Sadly, I appeared to have ${Red}DIED! ${Yellow}I'm sure my loss will be mourned. ${Red}Ending macro.
+				/endm
+			}
+		} else {
+			/echo ${Red}Something went wrong. I'm supposed to have gone to ${Yellow}Ruins of Illisan ${Red}but EasyFind has failed me.
+			/end
+		}
+		/varset nowater 0
+		/varset dryland 0
+		/cleanup
+	}
+	|** Stoneroot Falls stuff **|
+	|** ZoneID == 358 **|
+	|** Fishing hole=294 -1228 7 heading=-90 **|
+	/if (!${StepCompleted[6]}) {
+		/if (${Zone.ID} == 347) {
+			/call MoveToWait -184 38 -46
+			/call MoveToWait -70 34 -39
+			/call Zoning
+		}
+		/if (${Zone.ID} == 362) {
+			/call CheckConnections "Stoneroot Falls - 2"
+			/if (${Macro.Return.Equal[TRUE]}) {
+				/call EasyFind "Stoneroot Falls - 2"
+			} else {
+				/echo ${Red}You are not in a zone connected to ${Yellow}Stoneroot Falls! ${Red}Please Relocate!
+				/endm
+			}
+		}
+		/if (${Zone.ID} == 358) {
+			/call MoveToWait 294 -1228 7
+			/face heading -90
+			/call GetStep
+			/varset FishingHole "294 -1228 7"
+			/varset FishingHeading -90
+			:keepFishing4
+			/if (!${StepCompleted[6]}) {
+				/if (!${Me.XTarget}) {
+					/call GoFish
+				} else {
+					/call FarmStuff
+				}
+				/call GetStep
+			}
+			/if (${Zone.ID} == 358 && !${StepCompleted[6]}) /goto :keepFishing4
+			/if (${Zone.ID} != 358) {
+				/echo ${Yellow}Sadly, I appeared to have ${Red}DIED! ${Yellow}I'm sure my loss will be mourned. ${Red}Ending macro.
+				/endm
+			}
+		} else {
+			/echo ${Red}Something went wrong. I'm supposed to have gone to ${Yellow}Stone root falls ${Red}but EasyFind has failed me.
+			/end
+		}
+		/varset nowater 0
+		/varset dryland 0
+		/cleanup
+	}
+	/echo ${Yellow}Now for the turn-in!
+	/if (!${StepCompleted[8]} || !${StepCompleted[9]} || !${StepCompleted[10]} || !${StepCompleted[11]} || !${StepCompleted[12]} || !${StepCompleted[13]} || !${StepCompleted[14]}) {
+		|** Stoneroot Falls **|
+		/if (${Zone.ID} == 358) {
+			/call MoveToWait 335 -1289 2
+			/call CheckConnections "Undershore"
+			/if (${Macro.Return.Equal[TRUE]}) {
+				/call EasyFind "Undershore"
+			} else {
+				/echo ${Red}You are not in a zone connected to ${Yellow}Undershore! ${Red}Please Relocate!
+				/endm
+			}
+		}
+		|** Undershore **|
+		/if (${Zone.ID} == 362) {
+			/call CheckConnections "Corathus Creep - 1"
+			/if (${Macro.Return.Equal[TRUE]}) {
+				/call EasyFind "Corathus Creep - 1"
+			} else {
+				/echo ${Red}You are not in a zone connected to ${Yellow}Corathus Creep - 1! ${Red}Please Relocate!
+				/endm
+			}
+		}
+		|** Corathus Creep **|
+		/if (${Zone.ID} == 365) {
+			/call CheckConnections "Nektulos Forest"
+			/if (${Macro.Return.Equal[TRUE]}) {
+				/call EasyFind "Nektulos Forest"
+			} else {
+				/echo ${Red}You are not in a zone connected to ${Yellow}Nektulos Forest! ${Red}Please Relocate!
+				/endm
+			}
+		}
+		|** Nektulos Forest **|
+		/if (${Zone.ID} == 25) {
+			/call CheckConnections "Plane of Knowledge"
+			/if (${Macro.Return.Equal[TRUE]}) {
+				/call EasyFind "Plane of Knowledge"
+			} else {
+				/echo ${Red}You are not in a zone connected to ${Yellow}Nektulos Forest! ${Red}Please Relocate!
+				/endm
+			}
+		}
+		|** Plane of Knowledge **|
+		/if (${Zone.ID} == 202) {
+			/call NavToLoc -283 897 -93
+			/target id ${Spawn[npc Cedfer].ID}
+			/delay 2s ${Target.ID}
+			/call GiveItems "Common Bone Fish"
+			/call GiveItems "Common Angler Fish"
+			/call GiveItems "Common Blind Minnow"
+			/call GiveItems "Striped Cave Fish"
+			/call GiveItems "Vampire Flounder"
+			/call GiveItems "Deadly Crawfish"
+			/call GiveItems "Blind Catfish"
+			/delay 2s ${Cursor.ID}
+			/autoinv
+			/delay 2s !${Cursor.ID}
+			/echo \agCongrats on The Bone Rod
+			/if (!${Me.Inventory[mainhand].Name.Equal[${MyWeapon}]}) {
+				/call SwitchGear mainhand "${MyWeapon}"
+			}
+			/cleanup
+			/bc Done with InTheDark.mac
+		}
+	}
+/return
+
+Sub BuyItem(string itemToGet,int amount)
+	/echo ${Yellow}Buying ${Purple}${itemToGet} ${White}x${Green} ${amount}
+	/declare startingCount int local ${FindItemCount[${itemToGet}]}
+	/if (${Target.ID} && !${Window[MerchantWnd].Open}) {
+		/invoke ${Target.RightClick}
+		/delay 10s ${Window[MerchantWnd].Child[MW_ItemList].List[${itemToGet},2]}
+		/notify MerchantWnd MW_ItemList listselect ${Window[MerchantWnd].Child[MW_ItemList].List[${itemToGet},2]}
+		/delay 5
+		/nomodkey /notify MerchantWnd MW_Buy_Button leftmouseup
+		/delay 1s ${Window[QuantityWnd].Open}
+		/if (${Window[QuantityWnd].Open}) {
+			/notify QuantityWnd QTYW_Slider newvalue ${amount}
+			/notify QuantityWnd QTYW_Accept_Button leftmouseup
+		}
+		/delay 5s ${FindItemCount[${itemToGet}]}>${startingCount}
+	}
+/return
+
+Sub TakeInventory
+	/if (${FindItemCount[Cloudy Potion]} < 20) {
+		/if (${Me.Class.ShortName.Equal[NEC]} || ${Me.Class.ShortName.Equal[SHD]}) {
+			/if (!${Me.AltAbility[Cloak of Shadows]}) {
+				/varset BuyPotions TRUE
+			}
+		} else /if (${Me.Class.ShortName.Equal[BRD]}) {
+			/if (!${Me.AltAbility[Shauri's Sonorous Clouding]}) {
+				/varset BuyPotions TRUE
+			}
+		} else /if (${Me.Class.ShortName.Equal[MAG]} || ${Me.Class.ShortName.Equal[WIZ]} || ${Me.Class.ShortName.Equal[ENC]}) {
+			/if (!${Me.AltAbility[Perfected Invisibility]}) {
+				/if (!${Me.AltAbility[Group Perfected Invisibility]}) {
+					/varset BuyPotions TRUE
+				}
+			}
+		} else /if (${Me.Class.ShortName.Equal[SHM]}) {
+			/if (!${Me.AltAbility[Spirit Walk]}) {
+				/varset BuyPotions TRUE
+			}
+		} else /if (${Me.Class.ShortName.Equal[BST]}) {
+			/if (!${Me.AltAbility[Natural Invisibility]}) {
+				/varset BuyPotions TRUE
+			}
+		} else /if (${Me.Class.ShortName.Equal[RNG]} || ${Me.Class.ShortName.Equal[DRU]}) {
+			/if (${Me.AltAbility[Camouflage]}) {
+				/varset BuyPotions TRUE
+			}
+		} else {
+			/varset BuyPotions TRUE
+		}
+		
+	}
+	/if (!${FindItemCount[Endless Worms]}) {
+		/if (${FindItemCount[Bait]} < 200) {
+			/varset BuyBait TRUE
+		}
+	} else {
+		/echo \ayI have Endless Worms so I don't need to buy bait.
+	}
+	/if (!${FindItemCount[Fisherman's Companion]}) {
+		/if (${FindItemCount[Fishing Pole]} < 10) {
+			/if (${Debugging}) /echo I only have ${FindItemCount[Fishing Pole]} poles and I want to have at least 5
+			/varset BuyPoles TRUE
+		}
+	} else {
+		/echo \ayI have Fisherman's Companion so I don't need to buy poles.
+	}
+/return
+
+Sub GiveItems(string itemToGive, int Amount)
+	/if (${Me.Invis}) {
+		/makemevisible
+		/delay 2s !${Me.Invis}
+	}
+	/if (!${Bool[${Amount}]}) /varset Amount 1
+	/if (${Debugging}) /echo "\aoGiving \ay${Amount} \aox \ap${itemToGive} \aoto \ag${Target.CleanName}"
+	/declare i int local 0
+	/keypress OPEN_INV_BAGS
+	/if (!${Window[InventoryWindow].Open}) /windowstate InventoryWindow open
+	/delay 10s ${Window[InventoryWindow].Open}
+	/delay 5
+	
+	/for i 1 to ${Amount}
+		/nomodkey /ctrlkey /itemnotify ${FindItem[=${itemToGive}].InvSlot} leftmouseup
+		/invoke ${Target.LeftClick}
+		/delay 2s !${Cursor.ID}
+	/next i
+	/notify GiveWnd GVW_Give_Button leftmouseup
+	/delay 2s !${Window[GiveWnd].Open}
+/return
+
+Sub Combat
+	/if (${Debugging}) /echo Sub Combat Entry
+	/if (${Target.ID} && (${Target.Type.Equal[npc]} || ${Target.Type.Equal[pet]})) {
+		/if (${Navigation.Active}) /squelch /nav stop
+		/stick uw loose moveback behind 8 
+		/setchattitle Killing ${Target.CleanName}
+		/if (${UseEQBC} && ${assistMe}) {
+			/if (${Debugging}) /bc (Line: ${Macro.CurLine}) killthis
+			/bca //target id ${Me.XTarget[1].ID}
+			/timed 10 /bca //pet attack
+			/timed 15 /bca //pet swarm
+			/timed 20 /bca //killthis
+		}
+		/killthis
+		:waitTillDead
+	
+		/if (${Target.ID} && ${Me.CombatState.Equal[Combat]} && (${Target.Type.Equal[npc]} || ${Target.Type.Equal[pet]})) {
+			/if (!${Me.Combat}) /attack
+			/if (${Me.Class.CanCast}) {
+				/if (!${Defined[i]}) {
+					/declare i int local 0
+				}
+				/if (!${Me.Casting.ID}) {
+					/for i 1 to ${Me.NumGems}
+						/if (!${Me.XTarget}) /break
+						/if (${Me.Gem[${i}].ID}) {
+							/if (${Me.Gem[${i}].TargetType.Equal[Single]} && ${Me.Gem[${i}].SpellType.Equal[Detrimental]} !${Target.Buff[${Me.Gem[${i}].Name}].ID}) {
+								/cast ${i}
+								/delay 3s ${Me.Casting.ID}
+								/echo \agCasting \am${Me.Gem[${i}]} \aw--> \ar${Target.CleanName}
+								/delay ${Math.Calc[${Me.Gem[${i}].CastTime.TotalSeconds}+2].Int}s !${Me.Casting.ID}
+							}
+						}
+					/next i
+				}
+			}
+			/delay 10
+			/goto :waitTillDead
+		} else /if (${Target.Type.Equal[corpse]}) {
+			/target clear
+			/varset myTargetID 0
+		}
+	} else /if (${Me.XTarget[1].ID}) {
+		/if (${Spawn[id ${Me.XTarget[1].ID} radius 30 zradius 50].ID} && ${Spawn[id ${Me.XTarget[1].ID} radius 30 zradius 50].LineOfSight}) {
+			/if (${Navigation.Active}) /nav stop
+			/if (${UseEQBC} && ${assistMe}) {
+				/if (${Debugging}) /bc (Line: ${Macro.CurLine}) target XTarget ${Spawn[id ${Me.XTarget[1].ID}].Name}
+				/bcaa //target id ${Me.XTarget[1].ID}
+			} else {
+				/target id ${Me.XTarget[1].ID}
+			}
+			/setchattitle Handling add, ${Spawn[${Me.XTarget[1].ID}].CleanName}
+		} else /if (${Spawn[id ${Me.XTarget[1].ID}].Distance} > 30 || !${Spawn[id ${Me.XTarget[1].ID} radius 30 zradius 50].LineOfSight}) {
+			/squelch /nav id ${Me.XTarget[1].ID}
+			/if (${UseEQBC} && !${Me.CombatState.Equal[Combat]}) {
+				/if (${Debugging}) /bc (Line: ${Macro.CurLine}) target me and stick (FarmStuff1).
+				/bca //target id ${Me.ID}
+				/delay 5
+				/bca //stick 10 loose moveback uw
+			}
+			/setchattitle Navigating to add ${Spawn[id ${Me.XTarget[1].ID}].CleanName}
+			/while (${Spawn[${Me.XTarget[1].ID}].Distance} > 30) {
+				/if (!${Navigation.Active}) {
+					/squelch /nav id ${Me.XTarget[1].ID}
+					/if (${UseEQBC} && !${Me.CombatState.Equal[Combat]}) {
+						/if (${Debugging}) /bc (Line: ${Macro.CurLine}) target me and stick (FarmStuff2).
+						/bca //target id ${Me.ID}
+						/delay 5
+						/bca //stick 10 loose moveback uw
+					}
+				}
+				/delay 10
+				/if (!${courseCorrection}) {
+					/squelch /nav id ${Me.XTarget[1].ID}
+					/varset courseCorrection ${courseCorrection.OriginalValue}
+				}
+			}
+		}
+		/if (${UseEQBC} && ${assistMe}) {
+			/if (${Debugging}) /bc (Line: ${Macro.CurLine}) killthis
+			/bca //target id ${Me.XTarget[1].ID}
+			/timed 10 /bca //pet attack
+			/timed 15 /bca //pet swarm
+			/timed 20 /bca //killthis
+		}
+		/killthis
+		/setchattitle Killing ${Target.CleanName}
+		/goto :waitTillDead
+	}
+	/if (${Debugging}) /echo Sub Combat Exit
+/return
+
+Sub ReturnToCampWait
+	/if (${Debugging}) /echo Sub ReturnToCampWait Entry
+	:ReturnToCamp
+	/if (${Math.Distance[${CampY}, ${CampX}, ${CampZ} : ${Spawn[id ${Me.XTarget[1].ID}].Y}, ${Spawn[id ${Me.XTarget[1].ID}].X}, ${Spawn[id ${Me.XTarget[1].ID}].Z}]} < ${CampRadius} && ${Me.XTarget} && ${Math.Distance[${Me.Y}, ${Me.X}, ${Me.Z} : ${CampY}, ${CampX}, ${CampZ}]} < ${CampRadius}) /return
+	/if (${Math.Distance[${Me.Y}, ${Me.X}, ${Me.Z} : ${CampY}, ${CampX}, ${CampZ}]} > 30) {
+		/if (${Debugging} && !${DebugRepeatTimer}) {
+			/echo \ayI'm More than 30 from camp. Returning to camp to wait for PullMob!
+			/varset DebugRepeatTimer ${DebugRepeatTimer.OriginalValue}
+		}
+		/if (!${Navigation.Active}) /nav loc ${CampY} ${CampX} ${CampZ}
+		/delay 5
+		/goto :ReturnToCamp
+	} else /if (${Math.Distance[${CampY}, ${CampX}, ${CampZ} : ${Spawn[id ${Me.XTarget[1].ID}].Y}, ${Spawn[id ${Me.XTarget[1].ID}].X}, ${Spawn[id ${Me.XTarget[1].ID}].Z}]} > ${CampRadius} && ${Me.XTarget}) {
+		/if (${Debugging}) {
+			/echo \atWaiting on ${Spawn[id ${Me.XTarget[1].ID}].Name} to arrive within ${CampRadius} of the camp location. CamptoMobDistance: ${Math.Distance[${CampY}, ${CampX}, ${CampZ} : ${Spawn[id ${Me.XTarget[1].ID}].Y}, ${Spawn[id ${Me.XTarget[1].ID}].X}, ${Spawn[id ${Me.XTarget[1].ID}].Z}]} > CampRadius: 60 && I have aggro: ${Me.XTarget}
+			/varset DebugRepeatTimer ${DebugRepeatTimer.OriginalValue}
+		}
+		/delay 5
+		/goto :ReturnToCamp
+	}
+	/if (${Debugging}) /echo Sub ReturnToCampWait Exit
+/return
+
+Sub CheckConnections(string Destination)
+	/if (${Debugging}) /echo Sub CheckConnections Entry
+	/declare i int local 0
+	/for i 0 to ${EasyFind.Items}
+		/if (${EasyFind.Item[${i}].Name.Equal[${Destination}]}) {
+			/if (${Debugging}) /echo Sub CheckConnections Exit
+			/return TRUE
+		}
+	/next i
+	/if (${Debugging}) /echo Sub CheckConnections Exit
+/return FALSE
+
+Sub EasyFind(Location)
+	/if (${Debugging}) /echo Sub EasyFind Entry
+	/setchattitle Traveling to ${Location}
+	/echo \ayUsing EasyFind to navigate to ${Location}
+	/declare i int local 0
+	:Traveling
+	/if (!${Navigation.Active}) {
+		/if (!${Window[FindLocationWnd].Open}) /keypress CTRL+F
+		/for i 1 to ${EasyFind.Items}
+		/if (${Window[FindLocationWnd].Child[FLW_FindLocationList].List[${i},2].Equal[${Location}]}) {
+			/notify FindLocationWnd FLW_FindLocationList listselect ${i}
+			/break
+		}
+		/next i
+	}
+	/delay 1s ${Navigation.Active}
+	
+	/if (${startZone} == ${Zone.ID}) {
+		/if (${Location.Equal[${Zone}]}) /goto :Zone
+		/if (${Navigation.Active}) {
+			/if (${Me.XTarget[1].ID}) {
+				/if (${Navigation.Active}) /nav stop
+				/call FarmStuff
+			} else {
+				/if (${Zone.ID} != 202) {
+					/call CheckInvis
+				}
+				/call GroupDeathChk
+				/call GroupHealthChk
+				/call GroupEndChk
+				/call GroupManaChk
+				/call CheckMerc
+			}
+			/if (${Me.Combat} && !${Me.XTarget[1].ID} || ${Target.Type.Equal[corpse]}) /squelch /target clear
+			/delay 10
+		} else {
+			/if (${Me.XTarget[1].ID}) {
+				/if (${Navigation.Active}) /nav stop
+				/if (${UseEQBC}) {
+					/if (${Debugging}) /bc (Line: ${Macro.CurLine}) target xtarget ${Spawn[id ${Me.XTarget[1].ID}].Name}
+					/bcaa //target id ${Me.XTarget[1].ID}
+				} else {
+					/target id ${Me.XTarget[1].ID}
+				}
+				/call FarmStuff
+			} else {
+				/if (${Zone.ID} != 202) {
+					/call CheckInvis
+				}
+				/call GroupDeathChk
+				/call GroupHealthChk
+				/call GroupEndChk
+				/call GroupManaChk
+				/call CheckMerc
+			}
+			/if (${Me.Combat} && !${Me.XTarget[1].ID}) /squelch /target clear
+			/echo startZone ${startZone} Zone.ID: ${Zone.ID}
+			/if (${startZone} == ${Zone.ID}) {
+				/goto :Traveling
+				
+			}
+			/if (${UseEQBC} && !${Me.CombatState.Equal[Combat]}) {
+				/if (${Debugging}) /bc (Line: ${Macro.CurLine}) target me and stick (WaitNav).
+				/bca //target id ${Me.ID}
+				/delay 5
+				/bca //stick 10 loose moveback uw behind
+			}
+		}
+	}
+	/if (${startZone} == ${Zone.ID}) /goto :Traveling
+	:Zone
+	/call Zoning
+	/if (${Debugging}) /echo Sub EasyFind Exit
+/return
+
+Sub MoveToWait(int Y, int X, int Z)
+	/if (${Debugging}) /echo Moving to ${Y} ${X} ${Z}
+	/if (${Debugging}) /echo Sub MoveToWait Entry
+	/moveto loc ${Y} ${X} ${Z}
+	/while (${MoveTo.Moving}) {
+		/delay 10
+	}
+	/if (${Debugging}) /echo Sub MoveToWait Exit
+/return
+
+Sub Zoning
+	/if (${Debugging}) /echo Sub Zoning Entry
+	:Zoning
+	/delay 2m ${Zone.ID}!=${startZone}
+	/target id ${Me.ID}
+	/delay 1s ${Target.ID}==${Me.ID}
+	/if (!${Navigation.MeshLoaded}) /goto :Zoning
+	/delay 5s
+	/varset startZone ${Zone.ID}
+	/squelch /target clear
+	/call CheckMesh
+	/if (${Debugging}) /echo Sub Zoning Exit
+/return
+
+Sub GetStep
+	/if (${Debugging}) /echo Sub GetStep Entry
+	/call OpenTaskWnd
+	/declare i int local 0
+	/for i 1 to ${StepCompleted.Size}
+		/if (${Window[TaskWnd].Child[TASK_TaskElementList].List[${i},2].Equal[Done]}) {
+			/if (!${StepCompleted[${i}]}) /echo ${Yellow}Setting Step ${i} as ${Green}completed
+			/varset StepCompleted[${i}] 1
+		} else {
+			/if (${Debugging}) /echo ${Yellow}Step ${i} is ${Red}not completed.
+		}
+	/next i
+	/if (${Debugging}) /echo Sub GetStep Exit
+/return
+
+Sub CheckThings
+	/if (${Debugging}) /echo Sub CheckThings Entry
+	/call CheckPlugin MQ2Nav
+	/call CheckMesh
+	/call CheckPlugin MQ2Melee
+	/call CheckPlugin MQ2EasyFind
+	|/call CheckPlugin MQ2EQBC
+	/if (${Endmac}) /end
+	/if (${Debugging}) /echo Sub CheckThings Exit
+/return
+
+Sub SwitchGear(string slot, string switchTo)
+	/if (!${Debugging}) /echo Sub SwitchGear Entry
+	/echo \aoSwitching \ap${switchTo} \aointo my \ay${slot}
+	/if (${FindItemCount[${switchTo}]}) {
+		/call OpenAllContainers
+		/delay 10
+		/nomodkey /ctrl /itemnotify ${FindItem[=${switchTo}].InvSlot} leftmouseup
+		/delay 2s ${Cursor.ID}
+		/nomodkey /itemnotify ${slot} leftmouseup
+		/delay 1s ${Me.Inventory[${slot}].Name.Equal[${switchTo}]}
+		/delay 1s ${Cursor.ID}
+		/autoinventory
+	}
+	/if (${Debugging}) /echo Sub SwitchGear Exit
+/return
+
+
+Sub FarmStuff(string Enemy)
+	/if (${Debugging}) /echo Farming Stuff Sub Entry
+	/if (${MyWeapon.Length}) {
+		/if (!${Me.Inventory[mainhand].Name.Equal[${MyWeapon}]}) {
+			/call SwitchGear mainhand "${MyWeapon}"
+		}
+	}
+	/varset CampX ${Me.X}
+	/varset CampY ${Me.Y}
+	/varset CampZ ${Me.Z}
+	/if (${Bool[${Enemy}]}) {
+		/varset FarmMob ${Enemy}
+		/if (${Debugging} && !${reportTarget}) {
+			/echo Looking for: ${FarmMob}
+			/varset reportTarget ${reportTarget.OriginalValue}
+		}
+	} else /if (!${reportTarget}) {
+		/echo Attacking anything I can get my grubby paws on.
+		/varset reportTarget ${reportTarget.OriginalValue}
+	}
+	:findMob
+	/if (${Target.Type.Equal[corpse]}) {
+		/if (${Target.ID} == ${myTargetID}) /varset myTargetID 0
+		/squelch /target clear
+	}
+	/if (${Window[RespawnWnd].Open}) /call GroupDeathChk
+	/if (!${Me.XTarget[1].ID}) {
+		/call GroupDeathChk
+		/call GroupHealthChk
+		/call GroupEndChk
+		/call GroupManaChk
+	}
+	/if (${Debugging}) /echo \aymyTargetID has an ID: ${Spawn[id ${myTargetID}].ID} - is a corpse: ${Spawn[id ${myTargetID}].Type.Equal[Corpse]} - I have an XTarget: !${Me.XTarget[1].ID}
+	/if (!${Spawn[id ${myTargetID}].ID} || ${Spawn[id ${myTargetID}].Type.Equal[Corpse]} && !${Me.XTarget[1].ID}) {
+		/if (${Debugging}) /echo "Getting a target!"
+		/varset myTargetID 0
+		/call TargetShortest
+		/if (${Debugging} && ${myTargetID}) /echo Target is ${Spawn[id ${myTargetID}]}
+	} else {
+		/if (${Debugging}) /echo \ayI have an XTarget so I'm going to set that as my target. 
+		/varset myTargetID ${Me.XTarget[1].ID}
+		/call Combat
+	}
+	:navto
+	|/if (${Target.ID}) /squelch /target clear
+	/if (${Spawn[${myTargetID}].Distance} > ${If[${PullAbilityRange},${PullAbilityRange},1]} && !${Me.XTarget[1].ID} ${If[${PullRequiresLineOfSight}, || !${Spawn[${myTargetID}].LineOfSight},]}) {
+		/if (!${Spawn[${myTargetID}].ID}) {
+			/if (${Debugging}) /echo \ar My target ID was null, so I'm returning out of the sub. 
+			/return
+		}
+		/if (${Debugging}) /echo \ayNavigating to ${Spawn[${myTargetID}].Name} ID: ${myTargetID} Distance: ${Spawn[${myTargetID}].Distance} > ${If[${PullAbilityRange},${PullAbilityRange},30]} - Line of Sight: ${Spawn[${myTargetID}].LineOfSight}
+		/call WaitNav ${myTargetID}
+		/delay 10
+		/echo Navigating to the enemy.
+		/goto :navto
+	} else /if (!${Target.ID} || ${Target.ID} != ${myTargetID} && ${Target.ID} != ${Me.ID} && ${myTargetID} != 0 && !${Me.XTarget[1].ID}) {
+		/target id ${myTargetID}
+		/if (${Navigation.Active}) /nav stop
+	}
+	/delay 5
+	/docommand ${If[${PullAbilityRange}>30,/stop,/stick moveback uw 10]}
+	/if (${Debugging}) /echo Sub FarmStuff Exit
+/return
+
+Sub TargetShortest
+	/if (${Debugging}) /echo Sub TargetShortest Entry
+	/declare PullTargetID int local 0
+	/declare Shortest int local 0
+	
+	/if (!${Me.XTarget[1].ID}) {
+		|In order if I should even loop through to see how many mobs are in range I need to get a count based on my conditions
+		/declare MobsInRange int local ${SpawnCount[npc noalert 1 targetable radius ${PullRange} zradius ${ZRadius} "${FarmMob}"]}
+		/if (${Debugging}) /echo There were ${MobsInRange} ${FarmMob} in radius of ${PullRange} and ZRad: ${ZRadius}.
+		/declare i int local 0
+		/declare j int local 1
+		/if (${MobsInRange}) {
+			/if (${MobsInRange} > 100) {
+				/if (!${Debugging}) /echo There were more than 100 mobs in range, cutting down the list.
+				/varset MobsInRange 100
+			}
+		|** PullList[#,1] = ID of mob, PullList[#,2] = PathLength **|
+		|I created an array and made it the size of the mobcount by the 2 to store each mob's ID and the length of their nav path
+			/declare PullList[${MobsInRange},2] int local 0
+			|I set i equal to 1 and I iterate through each mob
+			/for i 1 to ${MobsInRange}
+				|just in case something dies, I don't to result in NULL during my check producing results
+				|I also want to ignore mobs in the ignores section.
+				/if (${NearestSpawn[${i},npc noalert 1 targetable radius ${PullRange} zradius ${ZRadius} "${FarmMob}"].Name.NotEqual[NULL]} && !${Ini[${MobIgnore},${Zone.ShortName},Ignored].Find[${NearestSpawn[${i},npc noalert 1 targetable radius ${PullRange} zradius ${ZRadius} "${FarmMob}"].CleanName}|]}) {
+					|/echo \atFound one. Maybe, lets see if it has a path. 
+					|If there is a path and only if there is a path will I enter the following block statement. This is done to avoid adding mobs to the array that don't have a path.
+					/if (${Navigation.PathExists[id ${NearestSpawn[${i},npc noalert 1 targetable radius ${PullRange} zradius ${ZRadius} "${FarmMob}"].ID}]} && ${Int[${NearestSpawn[${i},npc noalert 1 targetable radius ${PullRange} zradius ${ZRadius} "${FarmMob}"].Distance3D}]} <= ${Int[${Navigation.PathLength[id ${NearestSpawn[${i},npc noalert 1 targetable radius ${PullRange} zradius ${ZRadius} "${FarmMob}"].ID}]}]}) {
+						|** Before I add them to the pull list, let me also check that they still have 100% Hps. **|
+						/if (${NearestSpawn[${i},npc noalert 1 targetable radius ${PullRange} zradius ${ZRadius} "${FarmMob}"].PctHPs} == 100) {
+							|Now that I know this mob has a Navigation path, I need to add it to the array where ${j} is incremented only if I add a mob's ID and Path Length
+							|/echo Adding a mob to the pullList
+							/varset PullList[${j},1] ${NearestSpawn[${i},npc noalert 1 targetable radius ${PullRange} zradius ${ZRadius} "${FarmMob}"].ID}
+							/varset PullList[${j},2] ${Int[${Navigation.PathLength[id ${NearestSpawn[${i},npc noalert 1 targetable radius ${PullRange} zradius ${ZRadius} "${FarmMob}"].ID}]}]}
+							|If this is the first mob I've added to the array, it is now my target and it has the shortest path. 
+							/if (${j}==1) {
+								/varset PullTargetID ${PullList[${j},1]}
+								/varset Shortest ${PullList[${j},2]}
+							} else /if (${PullList[${j},2]} < ${Shortest}) {
+								|Otherwise if the mob I added has a PathLength shorter that the current shortest Nav Path, make it my target and set it as the shortest.
+								/varset PullTargetID ${PullList[${j},1]}
+								/varset Shortest ${PullList[${j},2]}
+							}
+							|Since I added a mob I need to increment j by 1 in the PullList Array. 
+							/varcalc j ${j}+1
+						}
+					} else {
+						/if (${Debugging}) {
+							/echo \at${NearestSpawn[${i},npc noalert 1 targetable radius ${PullRange} zradius ${ZRadius} "${FarmMob}"].Name} was not a valid pull target.
+							/echo \ar${Navigation.PathExists[id ${NearestSpawn[${i},npc noalert 1 targetable radius ${PullRange} zradius ${ZRadius} "${FarmMob}"].ID}]} && ${Int[${NearestSpawn[${i},npc noalert 1 targetable radius ${PullRange} zradius ${ZRadius} "${FarmMob}"].Distance3D}]} <= ${Int[${Navigation.PathLength[id ${NearestSpawn[${i},npc noalert 1 targetable radius ${PullRange} zradius ${ZRadius} "${FarmMob}"].ID}]}]})
+						}
+					}
+				}
+			|Check the next mob in the NearestSpawn meeting my conditions loop 
+			/next i
+			|Now that I've exited the loop, the PullTargetID variable is the one I want to navigate to and kill. 
+			/varset myTargetID ${PullTargetID}
+			|Set the chattitle of the MQ2 window to the macro's status (Suggestion by Kaen01)
+			/setchattitle Going to kill ${Spawn[id ${myTargetID}].CleanName}!
+		} else /if (${Me.Standing}) {
+			/if (!${Me.Casting.ID} && !${SitDelay}) {
+				/sit
+				/varset SitDelay ${SitDelay.OriginalValue}
+			}
+		}
+	} else {
+		/varset myTargetID ${Me.XTarget[1].ID}
+		/if (${Debugging}) /echo \atI had an XTarget and have set myTargetID: ${myTargetID} - ${Spawn[${myTargetID}].Name}
+	}
+	/if (${Debugging}) /echo Sub TargetShortest exit
+/return
+
+| --------------------------------------------------------------------------------------------
+| SUB: GroupDeathChk
+| --------------------------------------------------------------------------------------------
+Sub GroupDeathChk
+	/if (${Debugging}) /echo Sub GroupDeathChk Entry
+	
+	/if (${Me.State.Equal[DEAD]}) {
+		/echo \arYOU~ have died! Waiting for YOU to get off your face.
+		/setchattitle "You died, waiting for rez!"
+		/while (${Me.State.Equal[DEAD]} ) {
+			/delay 10
+		}
+	}
+	/if (${Me.XTarget[1].ID}) /return
+	/if (${Group}) {
+		/declare i int local
+		/for i 1 to ${Group}
+			/if (${Group.Member[${i}].State.Equal[DEAD]} ) {
+				/echo ${Group.Member[${i}].Name} has died. Waiting for them to get off their face.
+				/setchattitle "${Group.Member[${i}].Name} has died. Waiting for Rez"
+				/if (!${Me.XTarget[1].ID}) {
+					/if (${UseEQBC}) {
+						/bccmd names
+					}
+					/while (${Group.Member[${i}].State.Equal[DEAD]} && !${Me.XTarget[1].ID}) {
+						/if ((${Me.Standing}) && (!${Me.Casting.ID}) && (!${Me.Mount.ID})) /sit
+						/if (${UseEQBC}) {
+							/if (!${Defined[j]}) /declare j int local
+							/for j 0 to ${Group}
+								/if (${j} != ${i}) {
+									/if (${Debugging}) /echo \ayConnected to the server? : ${EQBC.Names.Find[${Group.Member[${j}].Name}]}
+									/if (${Group.Member[${j}].State.Equal[Stand]} && !${Group.Member[${j}].Type.Equal[Mercenary]} && !${Group.Member[${j}].State.Equal[DEAD]} && ${EQBC.Names.Find[${Group.Member[${j}].Name}]}) {
+										/echo ${Group.Member[${j}].Name} was connected to EQBC and not sitting. So I'm going to get them to sit. 
+										/bct ${Group.Member[${j}].Name} //sit
+									}
+								}
+							/next j
+						}
+						/delay 10
+					}
+					/if (${UseEQBC}) {
+						/bcaa //stand
+					}
+				}
+			}
+		/next i
+	}
+	/if (${Debugging}) /echo Sub GroupDeathChk Exit
+/return
+
+Sub WhereAmI
+	/if (${Debugging}) /echo Sub WhereAmI Entry
+	/if (${Zone.ID} != 202) {
+		/call TaskCheck "Fish Eyes in the Dark"
+		/if (!${Macro.Return.Equal[TRUE]}) {
+			/echo \arYou need to be in Plane of Knowledge to get the task from Cedfer
+			/call EasyFind "Plane of Knowledge"
+			/delay 1s ${Navigation.Active}
+			/if (!${Navigation.Active}) {
+				/echo "${Red}You are not in Plane of Knowledge or a connecting zone. Ending macro."
+				/endm
+			}
+		}
+	} else {
+		/call TaskCheck "Fish Eyes in the Dark"
+		/if (!${Macro.Return.Equal[TRUE]}) {
+			/call GetTask
+		}
+	}
+	/if (${Debugging}) /echo Sub WhereAmI Exit
+/return
+
+Sub GetTask
+	/if (${Debugging}) /echo Sub GetTask Entry
+	/squelch /target clear
+	/call NavToLoc -283 897 -93
+	/target id ${Spawn[npc Cedfer].ID}
+	/delay 2s ${Target.ID}
+	/say Fish
+	/delay 5
+	/call AcceptTask
+	/delay 1s
+	/call TaskCheck "Fish Eyes in the Dark"
+	/if (${Debugging}) /echo Sub GetTask Exit
+/return
+
+Sub AcceptTask
+	/if (${Debugging}) /echo Sub AcceptTask Entry
+	/delay 5s ${Window[TaskSelectWnd].Open}
+	/notify TaskSelectWnd TSEL_AcceptButton leftmouseup
+	/delay 5s !${Window[TaskSelectWnd].Open}
+	/delay 5
+	/if (${Debugging}) /echo Sub AcceptTaskExit
+/return
+
+Sub CheckMerc
+	/if (${Debugging}) /echo Sub CheckMerc Entry
+	/if (${Mercenary.State.Equal[DEAD]} && ${UseMerc}) {
+		/echo Your mercenary has died. Waiting to be able to revive them. 
+		:waitForMerc
+		/if (${Group} && ${Window[MMGW_ManageWnd].Child[MMGW_SuspendButton].Tooltip.Equal[Revive your current mercenary.]} && ${Window[MMGW_ManageWnd].Child[MMGW_SuspendButton].Enabled}) /notify MMGW_ManageWnd MMGW_SuspendButton leftmouseup
+		/if (${Mercenary.State.Equal[DEAD]} && !${Me.XTarget[1].ID}) /goto :waitForMerc
+	}
+	/if (${Debugging}) /echo Sub CheckMerc Exit
+/return
+
+Sub NavToLoc(int Y,int X,int Z)
+	/if (${Debugging}) /echo Sub NavToLoc Entry
+	/if (${Debugging}) /echo Entering Sub NavToLoc for ${Y} ${X} ${Z} at Line: ${Macro.CurLine}
+	/while (${Math.Distance[${Me.Y}, ${Me.X}, ${Me.Z}: ${Y}, ${X}, ${Z}]} > 15) {
+		/if (${Navigation.Active}) {
+			/if (${Me.XTarget[1].ID}) {
+				/if (${Navigation.Active}) /nav stop
+				/call FarmStuff
+			} else {
+				/if (${Zone.ID} != 202) {
+					/call CheckInvis
+				}
+				/call GroupDeathChk
+				/call GroupHealthChk
+				/call GroupEndChk
+				/call GroupManaChk
+				/call CheckMerc
+			}
+			/if (${Me.Combat} && !${Me.XTarget[1].ID}) /squelch /target clear
+			/delay 10
+		} else {
+			/if (${Me.XTarget[1].ID}) {
+				/if (${Navigation.Active}) /nav stop
+				/call FarmStuff
+			} else {
+				/if (${Zone.ID} != 202) {
+					/call CheckInvis
+				}
+				/call GroupDeathChk
+				/call GroupHealthChk
+				/call GroupEndChk
+				/call GroupManaChk
+				/call CheckMerc
+			}
+			/if (${Me.Combat} && !${Me.XTarget[1].ID}) /squelch /target clear
+			/nav loc ${Y} ${X} ${Z}
+		}
+	}
+	/if (${Navigation.Active}) /nav stop
+	/if (${Debugging}) /echo Sub NavToLoc Exit
+/return
+
+Sub WaitNav(NavTargetID)
+	/if (${Debugging}) /echo Sub WaitNav Entry
+	/if (${Debugging}) /echo \agEntering Sub WaitNav for ${Spawn[id ${NavTargetID}].Y} ${Spawn[id ${NavTargetID}].X} ${Spawn[id ${NavTargetID}].Z} at Line: ${Macro.CurLine}
+	/if (!${Spawn[id ${NavTargetID}].ID}) /return
+	/while (${Spawn[id ${NavTargetID}].Distance} > ${If[${PullAbilityRange},${PullAbilityRange},30]}  || !${Spawn[${myTargetID}].LineOfSight}) {
+		/if (!${Spawn[id ${NavTargetID}].ID}) /return
+		/if (${Navigation.Active}) {
+			/if (${Me.XTarget[1].ID}) {
+				/if (${Navigation.Active}) /nav stop
+				
+				/call FarmStuff
+			} else {
+				/if (${Zone.ID} != 202) {
+					/call CheckInvis
+				}
+				/call GroupDeathChk
+				/call GroupHealthChk
+				/call GroupEndChk
+				/call GroupManaChk
+				/call CheckMerc
+			}
+			/if (${Me.Combat} && !${Me.XTarget[1].ID}) /squelch /target clear
+			/if (!${courseCorrection}) {
+				/squelch /nav id ${NavTargetID}
+				/varset courseCorrection ${courseCorrection.OriginalValue}
+			}
+			/delay 10
+		} else {
+			/if (${Me.XTarget[1].ID}) {
+				/if (${Navigation.Active}) /nav stop
+				/if (${UseEQBC}) {
+					/if (${Debugging}) /bc (Line: ${Macro.CurLine}) target xtarget ${Spawn[id ${Me.XTarget[1].ID}].Name}
+					/bcaa //target id ${Me.XTarget[1].ID}
+				} else {
+					/target id ${Me.XTarget[1].ID}
+				}
+				/call FarmStuff
+			} else {
+				/if (${Zone.ID} != 202) {
+					/call CheckInvis
+				}
+				/call GroupDeathChk
+				/call GroupHealthChk
+				/call GroupEndChk
+				/call GroupManaChk
+				/call CheckMerc
+			}
+			/if (${Me.Combat} && !${Me.XTarget[1].ID}) /squelch /target clear
+			/squelch /nav id ${NavTargetID}
+		}
+	}
+	/if (${Navigation.Active}) /nav stop
+	:target
+	/target id ${NavTargetID}
+	/delay 2s ${Target.CleanName.Equal[${Spawn[id ${NavTargetID}].CleanName}]}
+	/if (!${Target.CleanName.Equal[${Spawn[id ${NavTargetID}].CleanName}]} && ${Spawn[id ${NavTargetID}].ID}) {
+		/goto :target
+	}
+	/if (${Debugging}) /echo Sub WaitNav Exit
+/return
+
+Sub TaskCheck(string CheckFor)
+	/if (${Debugging}) /echo Sub TaskCheck Entry
+	/call OpenTaskWnd
+	/declare i int local
+	/for i 1 to 10
+	/if (${Window[TaskWND].Child[Task_TaskList].List[${i},3].Equal[${CheckFor}]}) {
+		/notify TaskWnd Task_TaskList listselect ${i} leftmouseup
+		/if (${Debugging}) /echo Sub TaskCheck Exit
+		/return TRUE
+	}
+	/next i
+	/if (${Debugging}) /echo Sub TaskCheck Exit
+/return FALSE
+
+Sub OpenTaskWnd
+	/if (!${Window[TaskWnd].Open}) /keypress ALT+Q
+	/delay 5s ${Window[TaskWnd].Open}
+	/delay 10
+/return
+
+Sub CheckInvis
+	/if (!${Me.Invis}) {
+		/echo \arNeed to make myself invisible!
+		/if (${Me.Class.ShortName.Equal[NEC]} || ${Me.Class.ShortName.Equal[SHD]}) {
+			/if (${Me.AltAbility[Cloak of Shadows]}) {
+				/alt act ${Me.AltAbility[Cloak of Shadows]}
+			} else /if (${FindItemCount[Cloudy Potion]}) {
+				/casting "Cloudy Potion|Item"
+			} else {
+				/echo \arI don't have any more cloudy potions :-(). Guess I'm fighting my way through!
+			}
+		} else /if (${Me.Class.ShortName.Equal[BRD]}) {
+			/if (${Me.AltAbility[Shauri's Sonorous Clouding]}) {
+				/alt act ${Me.AltAbility[Shauri's Sonorous Clouding]}
+				/delay 5
+				/removebuff "Shauri's Lev"
+			} else /if (${FindItemCount[Cloudy Potion]}) {
+				/casting "Cloudy Potion|Item"
+			} else {
+				/echo \arI don't have any more cloudy potions :-(). Guess I'm fighting my way through!
+			}
+		} else /if (${Me.Class.ShortName.Equal[MAG]} || ${Me.Class.ShortName.Equal[WIZ]} || ${Me.Class.ShortName.Equal[ENC]}) {
+			/if (${Me.AltAbility[Perfected Invisibility]}) {
+				/alt act ${Me.AltAbility[Perfected Invisibility]}
+			} else /if (${Me.AltAbility[Group Perfected Invisibility]}) {
+				/alt act ${Me.AltAbility[Group Perfected Invisibility]}
+			} else /if (${FindItemCount[Cloudy Potion]}) {
+				/casting "Cloudy Potion|Item"
+			} else {
+				/echo \arI don't have any more cloudy potions :-(). Guess I'm fighting my way through!
+			}
+		} else /if (${Me.Class.ShortName.Equal[SHM]}) {
+			/if (${Me.AltAbility[Spirit Walk]}) {
+				/alt act ${Me.AltAbility[Spirit Walk]}
+			} else /if (${FindItemCount[Cloudy Potion]}) {
+				/casting "Cloudy Potion|Item"
+			} else {
+				/echo \arI don't have any more cloudy potions :-(). Guess I'm fighting my way through!
+			}
+		} else /if (${Me.Class.ShortName.Equal[BST]}) {
+			/if (${Me.AltAbility[Natural Invisibility]}) {
+				/alt act ${Me.AltAbility[Natural Invisibility]}
+			} else /if (${FindItemCount[Cloudy Potion]}) {
+				/casting "Cloudy Potion|Item"
+			} else {
+				/echo \arI don't have any more cloudy potions :-(). Guess I'm fighting my way through!
+			}
+		} else /if (${Me.Class.ShortName.Equal[RNG]} || ${Me.Class.ShortName.Equal[DRU]}) {
+			/if (${Me.AltAbility[Camouflage]}) {
+				/alt act ${Me.AltAbility[Camouflage]}
+			} else /if (${FindItemCount[Cloudy Potion]}) {
+				/casting "Cloudy Potion|Item"
+			} else {
+				/echo \arI don't have any more cloudy potions :-(). Guess I'm fighting my way through!
+			
+			}
+		} else /if (${FindItemCount[Cloudy Potion]}) {
+			/casting "Cloudy Potion|Item"
+		} else {
+			/echo \arI don't have any more cloudy potions :-(). Guess I'm fighting my way through!
+		}
+	}
+/return
+
+Sub CheckPlugin(PluginName)
+	/if (${Debugging}) /echo Sub CheckPlugin Entry
+	/if (!${Plugin[${PluginName}].Name.Equal[${PluginName}]}) {
+		/plugin ${PluginName}
+		/delay 3s ${Plugin[${PluginName}].Name.Equal[${PluginName}]}
+		/if (!${Plugin[${PluginName}].Name.Equal[${PluginName}]}) {
+			/echo "The Plugin --> ${PluginName} didn't load for some reason."
+			/varset Endmac TRUE
+		}
+		/if (${PluginName.Equal[MQ2Nav]}) {
+			/delay 2s
+		}
+	}
+	/if (${PluginName.Equal[MQ2EQBC]}) {
+		/if (!${EQBC.Connected}) {
+			/bccmd connect
+			/delay 3s ${EQBC.Connected}
+			/if (!${EQBC.Connected}) {
+				/echo "\arCould not connect to the EQBC Server. Are you sure it's running?"
+				/varset Endmac TRUE
+			}
+		}
+	}
+	/if (${Debugging}) /echo Sub CheckPlugin Exit
+/return
+
+Sub CheckMesh
+	/if (${Debugging}) /echo Sub CheckMesh Entry
+	/if (!${Navigation.MeshLoaded}) {
+		/nav reload
+		/delay 3s ${Navigation.MeshLoaded}
+		/if (!${Navigation.MeshLoaded}) {
+			/echo "\arNo navigational mesh could be found for this zone. Make one and try again"
+			/varset Endmac TRUE
+		}
+	}
+	/if (${Debugging}) /echo Sub CheckMesh Exit
+/return
+
+Sub CheckINI(string IniName,string Section,string Key,string TypeVar,Default)
+	/if (${Debugging}) /echo Sub CheckINI Entry
+	/if (!${Ini[${IniName},${Section},${Key}].Length}) {
+		/ini ${IniName} ${Section} ${Key} ${Default}
+	}
+	/declare ${Key} ${TypeVar} outer ${Ini[${IniName},${Section},${Key}]}
+	/echo \atLoading INI ${IniName} ~ Key: ${Key} Type: ${TypeVar} INI Value: ${Ini[${IniName},${Section},${Key}]}
+	/if (${Debugging}) /echo Sub CheckINI Exit
+/return
+
+Sub GetPullAbilityCommand
+	/if (${Debugging}) /echo Sub GetPullAbilityCommand Entry
+	/if (!${Me.Skill[${PullAbility}]} && !${Me.Book[${PullAbility}]} && !${Me.AltAbility[${PullAbility}]} && !${Me.CombatAbility[${PullAbility}]} && !${PullAbility.Equal[pet]}) {
+		/echo \ar${PullAbility} is not a Skill, Spell, AltAbility, or CombatAbility. Check your INI.
+		/end
+	} else {
+		/if (${Me.Skill[${PullAbility}]}) {
+			/if (${Debugging}) /echo \ayPullAbility:${PullAbility} is a skill
+			/declare PullCommand string outer /doability ${PullAbility}
+		} else /if (${Me.AltAbility[${PullAbility}]}) {
+			/if (${Debugging}) /echo \ayPullAbility:${PullAbility} is an Alt Ability
+			/declare PullCommand string outer /alt act ${Me.AltAbility[${PullAbility}].ID}
+		} else /if (${Me.Book[${PullAbility}]}) {
+			/if (${Debugging}) /echo \ayPullAbility:${PullAbility} is a spell.
+			/declare PullCommand string outer /casting "${Spell[${PullAbility}].RankName}"
+		} else /if (${Me.CombatAbility[${PullAbility}]}) {
+			/if (${Debugging}) /echo \ayPullAbility:${PullAbility} is a disc.
+			/declare PullCommand string outer /multiline ; ${If[${Me.CombatAbilityReady[${Spell[${PullAbility}].RankName}]},/disc ${PullAbility},]} ; ${If[${Me.CombatAbilityReady[${Spell[${PullAbility}].RankName}]},/doability "${Spell[${PullAbility}].RankName}",]}
+		} else /if (${PullAbility.Equal[pet]}) {
+			/if (${Debugging}) /echo \ayPullAbility: pet. 
+			/declare PullCommand string outer /call PetPull
+		}
+	}
+	/if (${Debugging}) /echo Sub GetPullAbilityCommand Exit
+/return
+
+| --------------------------------------------------------------------------------------------
+| SUB: GroupManaChk
+| --------------------------------------------------------------------------------------------
+Sub GroupManaChk
+	/if (${Debugging}) /echo Sub GroupManaChk Entry
+	/if (${Me.XTarget[1].ID}) /return
+	 
+	/if (!${Me.Combat}) {
+		/setchattitle "Group Mana Check"
+		/if (${Me.PctMana} < ${MedAt} && ${Me.Class.CanCast} && !${Me.State.Equal[DEAD]}) {
+			/echo \arYOU are low on mana!
+			/setchattitle "Waiting on YOUR mana to reach ${MedTill}%"
+			/if (!${Me.XTarget[1].ID}) {
+				/if (${UseEQBC}) {
+					/bccmd names
+				}
+				/while (${Me.PctMana} < ${MedTill} && !${Me.XTarget[1].ID} && !${Me.State.Equal[DEAD]}) {
+					/if (${Me.Standing} && !${Me.Casting.ID} && !${Me.Mount.ID}) /sit
+					/if (${UseEQBC}) {
+						/if (!${Defined[j]}) /declare j int local
+						/for j 1 to ${Group}
+							/if (${Debugging}) /echo \ayConnect to the server? : ${EQBC.Names.Find[${Group.Member[${j}].Name}]}
+							/if (${Group.Member[${j}].State.Equal[Stand]} && !${Group.Member[${j}].Type.Equal[Mercenary]} && ${EQBC.Names.Find[${Group.Member[${j}].Name}]}) /bct ${Group.Member[${j}].Name} //sit
+						/next j
+					}
+					/delay 10
+				}
+				/if (${UseEQBC}) {
+					/bcaa //stand
+				}
+			}
+		}
+		/if (${Group}) {
+			/declare i int local
+			/for i 1 to ${Group}
+				/if ((${Group.Member[${i}].PctMana} < ${MedAt}) && ${Group.Member[${i}].Class.CanCast} && !${Group.Member[${i}].State.Equal[DEAD]}) {
+					/echo \ar${Group.Member[${i}].Name} is low on mana!
+					/setchattitle "Waiting on ${Group.Member[${i}].Name}'s mana to reach ${MedTill}%"
+					/if (!${Me.XTarget[1].ID}) {
+						/if (${UseEQBC}) {
+							/bccmd names
+						}
+						/while (${Group.Member[${i}].PctMana} < ${MedTill} && !${Me.XTarget[1].ID} && !${Group.Member[${i}].State.Equal[DEAD]}) {
+							/if (${Me.Standing} && !${Me.Casting.ID} && !${Me.Mount.ID}) /sit
+							/if (${UseEQBC}) {
+							/if (!${Defined[j]}) /declare j int local
+							/for j 1 to ${Group}
+								/if (${Group.Member[${j}].State.Equal[Stand]} && !${Group.Member[${j}].Type.Equal[Mercenary]} && !${Group.Member[${j}].State.Equal[DEAD]} && ${EQBC.Names.Find[${Group.Member[${j}].Name}]}) {
+									/echo ${Group.Member[${j}].Name} was connected to EQBC and not sitting. So I'm going to get them to sit. 
+									/bct ${Group.Member[${j}].Name} //sit
+								}
+							/next j
+							}
+							/delay 10
+						}
+						/if (${UseEQBC}) {
+							/bcaa //stand
+						}
+					}
+				}
+			/next i
+		}
+	}
+	/if (${Debugging}) /echo Sub GroupManaChk Exit
+/return
+
+| --------------------------------------------------------------------------------------------
+| SUB: GroupHealthChk
+| --------------------------------------------------------------------------------------------
+Sub GroupHealthChk
+	/if (${Debugging}) /echo Sub GroupHealthChk Entry
+	/if (${Me.XTarget[1].ID}) /return
+	 
+	/setchattitle "GroupHealthCheck"
+	/if (!${Me.Combat}) {
+		/if (${Me.PctHPs} < ${HealAt} && !${Me.State.Equal[DEAD]}) {
+			/echo \arYOU are low on Health!
+			/setchattitle "Waiting on YOUR health to reach ${HealTill}%"
+			/if (!${Me.XTarget[1].ID}) {
+				/if (${UseEQBC}) {
+					/bccmd names
+				}
+				/while (${Me.PctHPs} < ${HealTill} && !${Me.XTarget[1].ID} && !${Me.State.Equal[DEAD]}) {
+					/if ((${Me.Standing}) && (!${Me.Casting.ID}) && (!${Me.Mount.ID})) /sit
+					/if (${UseEQBC}) {
+						/if (!${Defined[j]}) /declare j int local
+						/for j 1 to ${Group}
+							/if (${Group.Member[${j}].State.Equal[Stand]} && !${Group.Member[${j}].Type.Equal[Mercenary]} && !${Group.Member[${j}].State.Equal[DEAD]} && ${EQBC.Names.Find[${Group.Member[${j}].Name}]}) {
+								/echo ${Group.Member[${j}].Name} was connected to EQBC and not sitting. So I'm going to get them to sit. 
+								/bct ${Group.Member[${j}].Name} //sit
+							}
+						/next j
+					}
+					/delay 10
+				}
+				/if (${UseEQBC}) {
+					/bcaa //stand
+				}
+			}
+		}
+		/if (${Group}) {
+			/declare i int local
+			/for i 1 to ${Group}
+				/if (${Group.Member[${i}].ID}) {
+					/if (${Group.Member[${i}].PctHPs} < ${HealAt} && !${Group.Member[${i}].State.Equal[DEAD]}) {
+						/echo ${Group.Member[${i}].Name} is low on Health!
+						/setchattitle "Waiting on ${Group.Member[${i}].Name} health to reach ${HealTill}%"
+						/if (!${Me.XTarget[1].ID}) {
+							/if (${UseEQBC}) {
+								/bccmd names
+							}
+							/while (${Group.Member[${i}].PctHPs} < ${HealTill} && !${Me.XTarget[1].ID} && !${Group.Member[${i}].State.Equal[DEAD]}) {
+								/if ((${Me.Standing}) && (!${Me.Casting.ID}) && (!${Me.Mount.ID})) /sit
+								/if (${UseEQBC}) {
+									/if (!${Defined[j]}) /declare j int local
+									/for j 0 to ${Group}
+									/if (${Group.Member[${j}].State.Equal[Stand]} && !${Group.Member[${j}].Type.Equal[Mercenary]} && !${Group.Member[${j}].State.Equal[DEAD]} && ${EQBC.Names.Find[${Group.Member[${j}].Name}]}) {
+										/echo ${Group.Member[${j}].Name} was connected to EQBC and not sitting. So I'm going to get them to sit. 
+										/bct ${Group.Member[${j}].Name} //sit
+									}
+									/next j
+								}
+								/delay 10
+							}
+							/if (${UseEQBC}) {
+								/bcaa //stand
+							}
+						}
+					}
+				}
+			/next i
+		}
+	}
+	/if (${Debugging}) /echo Sub GroupHealthChk Exit
+/return
+
+| --------------------------------------------------------------------------------------------
+| SUB: GroupEndChk
+| --------------------------------------------------------------------------------------------
+Sub GroupEndChk
+	/if (${Debugging}) /echo Sub GroupEndChk Entry
+	/if (${Me.XTarget[1].ID}) /return
+	 
+	/setchattitle "GroupEnduranceCheck"
+	/if (!${Me.Combat}) {
+		/if (${Me.PctEndurance} < ${MedEndAt} && !${Me.State.Equal[DEAD]}) {
+			/echo \arYOU are low on Endurance!
+			/setchattitle "Waiting on YOUR Endurance to reach ${MedEndTill}%"
+			/if (!${Me.XTarget[1].ID}) {
+				/if (${UseEQBC}) {
+					/bccmd names
+				}
+				/while (${Me.PctEndurance} < ${MedEndTill} && !${Me.XTarget[1].ID} && !${Me.State.Equal[DEAD]}) {
+					/if (${Me.Standing} && !${Me.Casting.ID} && !${Me.Mount.ID}) /sit
+					/if (${UseEQBC}) {
+						/if (!${Defined[j]}) /declare j int local
+						/for j 1 to ${Group}
+							/if (${Group.Member[${j}].State.Equal[Stand]} && !${Group.Member[${j}].Type.Equal[Mercenary]} && ${EQBC.Names.Find[${Group.Member[${j}].Name}]}) /bct ${Group.Member[${j}].Name} //sit
+						/next j
+					}
+					/delay 10
+				}
+				/if (${UseEQBC}) {
+					/bcaa //stand
+				}
+			}
+		}
+		/if (${Group}) {
+			/declare i int local
+			/for i 1 to ${Group}
+				/if (${Group.Member[${i}].ID}) {
+					/if (${Group.Member[${i}].PctEndurance} < ${MedEndAt} && !${Group.Member[${i}].State.Equal[DEAD]}) {
+						/echo \ar${Group.Member[${i}].Name} is low on Endurance!
+						/setchattitle "Waiting on ${Group.Member[${i}].Name} Endurance to reach ${MedEndTill}%"
+						/if (!${Me.XTarget[1].ID}) {
+							/if (${UseEQBC}) {
+								/bccmd names
+							}
+							/while (${Group.Member[${i}].PctEndurance} < ${MedEndTill} && !${Me.XTarget[1].ID} && !${Group.Member[${i}].State.Equal[DEAD]}) {
+								/if ((${Me.Standing}) && (!${Me.Casting.ID}) && (!${Me.Mount.ID})) /sit
+								/if (${UseEQBC}) {
+									/if (!${Defined[j]}) /declare j int local
+									/for j 0 to ${Group}
+										/if (${Group.Member[${j}].State.Equal[Stand]} && !${Group.Member[${j}].Type.Equal[Mercenary]} && !${Group.Member[${j}].State.Equal[DEAD]} && ${EQBC.Names.Find[${Group.Member[${j}].Name}]}) {
+											/echo ${Group.Member[${j}].Name} was connected to EQBC and not sitting. So I'm going to get them to sit. 
+											/bct ${Group.Member[${j}].Name} //sit
+										}
+									/next j
+								}
+								/delay 10
+							}
+							/if (${UseEQBC}) {
+								/bcaa //stand
+							}
+						}
+					}
+				}
+			/next i
+		}
+	}
+	/if (${Debugging}) /echo Sub GroupEndChk Exit
+/return
+
+Sub Declares(int Param0, string Param1)
+	/declare FarmMob string outer ${Param1}
+	/declare PullRange int outer ${Param0}
+	/declare BuyPotions bool outer FALSE
+	/declare BuyBait bool outer FALSE
+	/declare BuyPoles bool outer FALSE
+	/declare FishingHole string outer ""
+	/declare FishingHeading int outer 0
+	/declare nowater int outer 0
+	/declare dryland int outer 0
+	/declare Filename string outer FarmSettings_${Me}.ini
+	/declare Settings string outer FarmSettings_${Me}.ini
+	/declare MobIgnore string outer FarmMobIgnored.ini
+	/echo \ay${Settings} is the INI being used.
+	/call CheckINI ${Settings} General Debugging "bool" FALSE
+	/declare Targets string outer
+	/declare myTargetID int outer 0
+	/declare reportTarget timer outer 5s
+	/declare startZone int outer ${Zone.ID}
+	/declare courseCorrection timer outer 1s
+	/declare CampY int outer ${Me.Y}
+	/declare CampX int outer ${Me.X}
+	/declare CampZ int outer ${Me.Z}
+	/declare DebugRepeatTimer timer outer 1s
+	/declare SitDelay timer outer 5s
+	/declare Endmac bool outer FALSE
+	/declare StepCompleted[14] int outer 0
+	/declare Black 		string outer \ab
+	/declare Blue   	string outer \au
+	/declare Brown      string outer \a-o
+	/declare Cyan   	string outer \at
+	/declare Gray		string outer \a-w
+	/declare Green		string outer \ag
+	/declare Pink   	string outer \am
+	/declare Orange   	string outer \ao
+	/declare Purple   	string outer \ap
+	/declare Red   		string outer \ar
+	/declare Teal   	string outer \at
+	/declare White   	string outer \aw
+	/declare Yellow  	string outer \ay
+	/declare DarkGreen 	string outer \a-g
+	/declare DarkMaroon	string outer \a-m
+	/declare DarkPurple	string outer \a-p
+	/declare DarkRed	string outer \a-r
+	/declare DarkCyan	string outer \a-t
+	/declare DarkBlue	string outer \a-u
+	/declare DarkYellow	string outer \a-y
+	|** Fish.mac Declares **|
+	|**************Settings**************|
+	/declare Destroy bool outer TRUE
+	/declare getDrunk bool outer FALSE
+	/declare reportSummoning bool outer FALSE
+	|**********End of Settings**********|
+	/declare DelayMult int outer 1
+	/declare alesDrank int outer 0
+	/declare beerSpills int outer 0
+	/declare caughtNothing int outer 0
+	/declare CurrentSub string outer Main
+	/declare MyWeapon string outer ${Me.Inventory[mainhand].Name}
+	|** End Fish.mac Declares **|
+	/call CheckINI ${Settings} General useLogOut bool FALSE
+	/call CheckINI ${Settings} General assistMe bool TRUE
+	/call CheckINI ${Settings} General UseEQBC bool FALSE
+	/call CheckINI ${Settings} General UseMerc bool FALSE
+	/call CheckINI ${Settings} Camp CampRadius int 60
+	/call CheckINI ${Settings} Pull ZRadius int 500
+	/call CheckINI ${Settings} Pull PullAbility string ReplaceMeWithYourSkill
+	/call CheckINI ${Settings} Pull PullAbilityRange int 150
+	/call CheckINI ${Settings} Pull PullRequiresLineOfSight bool TRUE
+	/call CheckINI ${Settings} Health HealAt int  70
+	/call CheckINI ${Settings} Health HealTill int 100
+	/call CheckINI ${Settings} Endurance MedEndAt int 8
+	/call CheckINI ${Settings} Endurance MedEndTill int 100
+	/call CheckINI ${Settings} Mana MedAt int 30
+	/call CheckINI ${Settings} Mana MedTill int 100
+/return
+
+Sub GoFish
+	/varset CurrentSub CheckPole
+	/if (${Debugging}) {
+		/echo \ag[Fish.mac]\aw Entering Sub ${CurrentSub}
+	}
+	/call OpenAllContainers
+	/call CheckPole
+	/call CheckBait
+	:Fish
+	/doability Fishing
+	/doevents
+	/delay 65
+	/doevents
+	/if (!${Cursor.ID} && !${Me.XTarget}) /goto :Fish
+	/call KeepItem
+
+/return
+
+| --------------------------------------------------------------------------------------------
+| SUB: KeepItem
+| --------------------------------------------------------------------------------------------
+Sub KeepItem
+	/varset CurrentSub KeepItem
+	/if (${Debugging}) {
+		/echo \ag[Fish.mac]\aw Entering Sub ${CurrentSub}
+	}
+	/if (${Cursor.Name.Find[bait]}) {
+		/autoinventory
+		/delay 5
+	}
+
+	/if (${Destroy}) {
+		/if (${Cursor.Name.Equal[Tattered Cloth Sandal]}) {
+			/destroy
+			/delay 1s
+		} else /if (${Cursor.Name.Equal[Rusty Dagger]}) {
+			/destroy
+			/delay 1s
+		}
+	}
+	/if (${Cursor.Name.Equal[Summoned: Ale]}) {
+		/autoinventory
+		/delay 5
+	}
+
+	/if (${Cursor.Name.NotEqual[Fish Scales]} && !${Cursor.Name.Equal[Summoned: Ale]} && !${Cursor.Name.Equal[Rusty Dagger]} && !${Cursor.Name.Equal[Tattered Cloth Sandal]}) {
+		/echo \ag[Fish.mac]\aw Caught ${Cursor.Name}
+		/autoinventory
+		/delay 5
+	} else /if (${Cursor.Name.Equal[Fish Scales]}) {
+		/autoinventory
+		/delay 5
+	}
+	/if (${Cursor.ID}) {
+		/call KeepItem
+	}
+/return
+
+| --------------------------------------------------------------------------------------------
+| SUB: CheckPole
+| --------------------------------------------------------------------------------------------
+Sub CheckPole
+	/varset CurrentSub CheckPole
+	/if (${Debugging}) {
+		/echo \ag[Fish.mac]\aw Entering Sub ${CurrentSub}
+	}
+	/call OpenAllContainers
+	/if (${Me.Inventory[mainhand].Name.Find[Fishing Pole]} || ${Me.Inventory[mainhand].Name.Find[Brell's Fishin' Pole]}) /return
+
+	/if (!${Me.Inventory[mainhand].Name.Find[Fishing Pole]} && ${FindItemCount[=Fisherman's Companion]} == 0) {
+		/if (${FindItemCount[=Fishing Pole]}>0) {
+			/echo \ag[Fish.mac]\aw Equiping ---> Fishing Pole <---
+			/delay ${Math.Calc[${DelayMult}*1]}s
+		:ReEquip1
+			/nomodkey /ctrl /itemnotify ${FindItem[=Fishing Pole].InvSlot} leftmouseup
+			/delay 2s ${Cursor.ID}
+			/nomodkey /itemnotify mainhand leftmouseup
+			/delay 1s
+			/autoinventory
+			/delay ${Math.Calc[${DelayMult}*2]}s
+			/if (!${Me.Inventory[mainhand].Name.Find[Fishing Pole]} && ${FindItemCount[=Fishing Pole]}) /goto :ReEquip1
+			/if (${Me.Inventory[mainhand].Name.Find[Fishing Pole]}>0) /return
+		}
+	}
+
+	/if (!${Me.Inventory[mainhand].Name.Find[Fishing Pole]} && !${Me.Inventory[mainhand].Name.Find[Brell's Fishin' Pole]}) {
+		/if (${FindItemCount[=Brell's Fishin' Pole]}) {
+			/goto :ReEquip2
+		}
+		/if (${FindItemCount[=Fisherman's Companion]}) {
+		:ReCast
+			/if (${reportSummoning}) {
+				/echo \ag[Fish.mac]\ap Summoning \aw--->\ap Brell's Fishin' Pole \aw<---
+			}
+			/casting 29175|item
+			/delay 12s
+			/if (${Cursor.ID}) /autoinventory
+			/delay 2s ${FindItemCount[Brell's Fishin' Pole]}
+			/if (${Me.Inventory[mainhand].Name.Find[Brell's Fishin' Pole]}) {
+				/return
+			} else {
+				/echo \ag[Fish.mac]\aw Equiping ---> Brell's Fishin' Pole <---
+				/delay ${Math.Calc[${DelayMult}*1]}s
+			:ReEquip2
+				/nomodkey /ctrl /itemnotify ${FindItem[=Brell's Fishin' Pole].InvSlot} leftmouseup
+				/delay 2s ${Cursor.ID}
+				/nomodkey /itemnotify mainhand leftmouseup
+				/delay 1s
+				/autoinventory
+				/delay ${Math.Calc[${DelayMult}*2]}s
+				/if (!${Me.Inventory[mainhand].Name.Find[Brell's Fishin' Pole]} && ${FindItemCount[=Brell's Fishin' Pole]}) /goto :ReEquip2
+				/if (${Me.Inventory[mainhand].Name.Find[Brell's Fishin' Pole]}>0) /return
+			}
+		}
+	}
+	/if (!${Me.Inventory[mainhand].Name.Equal[Brell's Fishin' Pole]} || !${Me.Inventory[mainhand].Name.Find[Fishing Pole]}) {
+		/echo  \ag[Fish.mac]\aw You need to put your fishing pole in your primary hand.
+		/endm
+	}
+	/return
+
+| --------------------------------------------------------------------------------------------
+| SUB: CheckBait
+| --------------------------------------------------------------------------------------------
+Sub CheckBait
+	/varset CurrentSub CheckBait
+	/if (${Debugging}) {
+		/echo \ag[Fish.mac]\aw Entering Sub ${CurrentSub}
+	}
+|** Your bags must be open or FindItem invslot checks will result in NULL!!!**|
+	/call OpenAllContainers
+|** If you have no more bait **|
+	/if (${FindItemCount[Bait]}) /return
+	/if (!${FindItemCount[Bait]}) {
+	:WaitForWorms
+		/if (${FindItemCount[Endless Worms]}) {
+			/if (!${FindItem[Endless Worms].TimerReady}) {
+				/delay ${Math.Calc[${DelayMult}*1]}s
+				/nomodkey /ctrl /itemnotify ${FindItem[=Endless Worms].InvSlot} rightmouseup
+				/delay 4s ${Cursor.Name.Equal[Bait Worm]}
+				/autoinventory
+			} else {
+				/echo \ag[Fish.mac]\aw Waiting for Endless Worms to be ready!
+				/delay 1s ${FindItem[Endless Worms].TimerReady}
+				/goto :WaitForWorms
+			}
+		} else {
+			/stats
+			/echo \ag[Fish.mac]\aw You have run out of bait!
+			/echo \ag[Fish.mac]\aw Ending Macro!
+			/end
+		}
+	}
+/return
+
+| --------------------------------------------------------------------------------------------
+| SUB: OpenAllContainers
+| --------------------------------------------------------------------------------------------
+Sub OpenAllContainers
+	/varset CurrentSub OpenAllContainers
+	/if (${Debugging}) {
+		/echo \ag[Fish.mac]\aw Entering Sub ${CurrentSub}
+	}
+|** Done only once declare invslot count (calculation to remove the first 23 slots because those are your worn items.) **|
+	/if (!${Defined[InvSlots]}) {
+		/declare InvSlots int outer 32
+		/echo \ag[Fish.mac]\aw All packs opened, you must leave them open for macro to work. Move them if they are in your way!!
+	}
+
+|** Opening your inventory **|
+	/if (!${Window[InventoryWindow].Open}) {
+		/windowstate InventoryWindow open
+	}
+
+|** Opening all your bags **|
+	/declare i int local
+	/for i 23 to ${InvSlots}
+		/if (${Me.Inventory[${i}].Container} && !${Me.Inventory[${i}].Open}) {
+			/nomodkey /itemnotify pack${Int[${Math.Calc[${i}-22]}]} rightmouseup
+		}
+	/next i
+
+/return
+
+| --------------------------------------------------------------------------------------------
+| SUB: Event_Pole
+| --------------------------------------------------------------------------------------------
+Sub Event_Pole
+	/call CheckPole
+/return
+
+| --------------------------------------------------------------------------------------------
+| SUB: Event_NoBait
+| --------------------------------------------------------------------------------------------
+Sub Event_NoBait
+	/call CheckBait
+/return
+
+| --------------------------------------------------------------------------------------------
+| SUB: Event_moved
+| --------------------------------------------------------------------------------------------
+Sub Event_moved
+	/echo \ag[Fish.mac]\aw Stop moving around or type /end to stop Fish.mac!
+/return
+
+
+| --------------------------------------------------------------------------------------------
+| SUB: Event_noWater
+| --------------------------------------------------------------------------------------------
+Sub Event_noWater
+	/echo \ag[Fish.mac]\aw There's no water here. Attempting to relocate you.
+	/call MoveToWait ${FishingHole.Arg[1, ]} ${FishingHole.Arg[2, ]} ${FishingHole.Arg[3, ]}
+	/face heading ${FishingHeading}
+	/varcalc nowater ${nowater}+1
+	/if (${nowater}>5) {
+		/echo ${Red}Seems I can't be bothered to cast into the water. Ending macro for your safety.
+		/camp
+		/delay 30s
+		/call Zoning
+		/end
+	}
+/return
+
+| --------------------------------------------------------------------------------------------
+| SUB: Event_dryLand
+| --------------------------------------------------------------------------------------------
+Sub Event_dryLand
+	/echo \ag[Fish.mac]\aw Trying to do some spear fishing? Get out of the water knucklehead!
+	/call MoveToWait ${FishingHole.Arg[1, ]} ${FishingHole.Arg[2, ]} ${FishingHole.Arg[3, ]}
+	/face heading ${FishingHeading}
+	/varcalc ${dryland}+1
+	/if (${dryland}>5) {
+		/echo ${Red}Seems I can't be bothered to get out of the water. Ending macro for your safety.
+		/camp
+		/delay 30s
+		/call Zoning
+		/end
+	}
+/return
+
+| --------------------------------------------------------------------------------------------
+| SUB: Event_poleBroke
+| --------------------------------------------------------------------------------------------
+Sub Event_poleBroke
+	/call CheckPole
+/return
+
+Sub Event_holdingSomething
+	/autoinv
+/return
+

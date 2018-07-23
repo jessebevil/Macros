@@ -1,0 +1,1199 @@
+	|||||||||||||||||||||||||||||||||||||||||||||||||||
+|Farm.mac by Chatwiththisname
+|v2.00 ~ Initial release 2/15/2018
+|	   ~ Ignores Update 3/15/2018
+|	   ~ Now generates a quick list of named, merchants,
+|		 bankers, and NPCs, as well as a permanent ignore list
+|		 that you can easily copy/paste from other list per zone.
+|	   ~ Now features /permignore to add things to the permanent 
+|		 ignore list in FarmMobIgnored.ini [${Zone.ShortName}]
+|		 Ignores=|mob1|mob2|mob3| etc. NOTE: /ignorethese and 
+|		 /ignorethis is temporary and uses alert lists which reset
+|		 when you leave. You can access a list of temporarily ignored
+|		 mobs by typing /alert list 1
+|
+|	  ~ 3/15/2018 - Now includes a UseEQBC & assistMe boolean in the declares sub found 
+|		in the last sub of the code. UseEQBC will tell your crew to follow
+|		you every time you issue a navigation command. assistMe will tell 
+|		your crew to target the same mobs, and assist with killing it. 
+|		This assumes you are farming lowbie crap, and thus there is no
+|		required hp for engaging, it's immediate and often your group will
+|		engage first because the macro runner is waiting for the navigation
+|		path to finish. If you just want them to follow you for EXP or loot
+|		just turn on UseEQBC, if you want them to help kill, turn on assistMe
+|		WARNING: You -definitely- look like a bot with assistMe this lol.
+|
+|	  ~ Now verifies your starting zone and will end the macro if you change zones
+|		now includes useCamp boolean to know if you want to /exit when you leave 
+|		your starting zone. If UseEQBC is TRUE it will /exit all other toons on
+|		the EQBC Server, that said, make sure that's what you want to do when using
+|		this feature.
+|
+|	  ~ 3/30/2018 - Added in my personal Buff.mac code for buff routines prior to each pull.
+|		Does not currently support items. :-( Sadface. But I'm sure I'll get around to adding
+|		it at a later date. 
+
+|
+|Usage: /mac PullFarm radius target ~~ /mac farm 500 pyrilen
+|		/mac Pullfarm radius ~~ /mac farm 1000
+|		
+|
+|Purpose: Will kill and move anything forever in a radius
+|			near you. This is the camped based version of PullFarm
+|			
+|		If you provide it a target's partial/full name it will 
+|		only hunt down those creatures. But it will react to adds.
+|
+|		/ignorethis to ignore your current target only.
+|		/ignorethese to ignore all spawns with your targets full name.
+|		/permignore to permanently ignore all spawns with your targets full name. 
+|
+	|||||||||||||||||||||||||||||||||||||||||||||||||||
+	
+#Event beginCast "#*#You begin casting#*#"
+#Event beginCast "#*#You begin singing#*#"
+#Event Fizzle "#*#Your spell fizzles!#*#"
+#Event Interrupted "#*#Your spell is interrupted#*#"
+#Event noTarget "#*#You must first select a target#*#"
+#Event noMana "#*#Insufficient Mana to cast#*#"
+
+#bind AddToIgnore /ignorethese
+#bind AddThisIgnore /ignorethis
+#bind PermIgnore /permignore
+
+#warning
+
+Sub Main(int Param0, string Param1)
+	/call CheckPlugin MQ2Melee
+	/call CheckPlugin MQ2Nav
+	/call CheckMesh
+	/call Declares ${Param0} ${Param1}
+	/if (${Bool[${FarmMob}]}) {
+		/echo Attempting to farm ${FarmMob}.
+	} else {
+		/echo Attacking anything I can get my grubby paws on.
+	}
+	/echo Usage: /farm radius mobstring, example: /farm 10000 cave_bear
+	/call GenerateList
+	/delay 2s
+	/if (${UseEQBC} && !${EQBC.Connected}) {
+		/varset UseEQBC FALSE
+		/echo \ayYou were set to use EQBC but you aren't connected. Turning it off.
+	}
+	/while (${Zone.ID} == ${startZone}) {
+		/if (${startZone} != ${Zone.ID}) /break
+		/call BuffRoutine
+		/call Farmstuff ${FarmMob}
+	}
+	/if (${useLogOut} && ${Zone.ID} != ${startZone}) {
+		/if (${UseEQBC}) /bca //exit
+		/exit
+	}
+	
+/return
+	:OnExit
+	/invoke ${Macro.Undeclared}
+	/setchattitle MQ2
+	/end
+
+Sub TargetShortest
+	/declare PullTargetID int local 0
+	/declare Shortest int local 0
+	
+	/if (!${Me.XTarget[1].ID}) {
+		|In order if I should even loop through to see how many mobs are in range I need to get a count based on my conditions
+		/declare MobsInRange int local ${SpawnCount[npc noalert 1 targetable radius ${PullRange} zradius ${ZRadius} "${FarmMob}"]}
+		/if (${Debugging}) /echo There were ${MobsInRange} ${FarmMob} in radius of ${PullRange} and ZRad: ${ZRadius}.
+		/declare i int local 0
+		/declare j int local 1
+		/if (${MobsInRange}) {
+			/if (${MobsInRange} > 100) {
+				/if (${Debugging}) /echo There were more than 100 mobs in range, cutting down the list.
+				/varset MobsInRange 100
+			}
+		|** PullList[#,1] = ID of mob, PullList[#,2] = PathLength **|
+		|I created an array and made it the size of the mobcount by the 2 to store each mob's ID and the length of their nav path
+			/declare PullList[${MobsInRange},2] int local 0
+			|I set i equal to 1 and I iterate through each mob
+			/for i 1 to ${MobsInRange}
+				|just in case something dies, I don't to result in NULL during my check producing results
+				|I also want to ignore mobs in the ignores section.
+				/if (${NearestSpawn[${i},npc noalert 1 targetable radius ${PullRange} zradius ${ZRadius} "${FarmMob}"].Name.NotEqual[NULL]} && !${Ini[${MobIgnore},${Zone.ShortName},Ignored].Find[${NearestSpawn[${i},npc noalert 1 targetable radius ${PullRange} zradius ${ZRadius} "${FarmMob}"].CleanName}|]}) {
+					|/echo \atFound one. Maybe, lets see if it has a path. 
+					|If there is a path and only if there is a path will I enter the following block statement. This is done to avoid adding mobs to the array that don't have a path.
+					/if (${Navigation.PathExists[id ${NearestSpawn[${i},npc noalert 1 targetable radius ${PullRange} zradius ${ZRadius} "${FarmMob}"].ID}]} && ${Int[${NearestSpawn[${i},npc noalert 1 targetable radius ${PullRange} zradius ${ZRadius} "${FarmMob}"].Distance3D}]} <= ${Int[${Navigation.PathLength[id ${NearestSpawn[${i},npc noalert 1 targetable radius ${PullRange} zradius ${ZRadius} "${FarmMob}"].ID}]}]}) {
+						|** Before I add them to the pull list, let me also check that they still have 100% Hps. **|
+						/if (${NearestSpawn[${i},npc noalert 1 targetable radius ${PullRange} zradius ${ZRadius} "${FarmMob}"].PctHPs} == 100) {
+							|Now that I know this mob has a Navigation path, I need to add it to the array where ${j} is incremented only if I add a mob's ID and Path Length
+							|/echo Adding a mob to the pullList
+							/varset PullList[${j},1] ${NearestSpawn[${i},npc noalert 1 targetable radius ${PullRange} zradius ${ZRadius} "${FarmMob}"].ID}
+							/varset PullList[${j},2] ${Int[${Navigation.PathLength[id ${NearestSpawn[${i},npc noalert 1 targetable radius ${PullRange} zradius ${ZRadius} "${FarmMob}"].ID}]}]}
+							|If this is the first mob I've added to the array, it is now my target and it has the shortest path. 
+							/if (${j}==1) {
+								/varset PullTargetID ${PullList[${j},1]}
+								/varset Shortest ${PullList[${j},2]}
+							} else /if (${PullList[${j},2]} < ${Shortest}) {
+								|Otherwise if the mob I added has a PathLength shorter that the current shortest Nav Path, make it my target and set it as the shortest.
+								/varset PullTargetID ${PullList[${j},1]}
+								/varset Shortest ${PullList[${j},2]}
+							}
+							|Since I added a mob I need to increment j by 1 in the PullList Array. 
+							/varcalc j ${j}+1
+						}
+					} else {
+						/if (${Debugging}) {
+							/echo \at${NearestSpawn[${i},npc noalert 1 targetable radius ${PullRange} zradius ${ZRadius} "${FarmMob}"].Name} was not a valid pull target.
+							/echo \ar${Navigation.PathExists[id ${NearestSpawn[${i},npc noalert 1 targetable radius ${PullRange} zradius ${ZRadius} "${FarmMob}"].ID}]} && ${Int[${NearestSpawn[${i},npc noalert 1 targetable radius ${PullRange} zradius ${ZRadius} "${FarmMob}"].Distance3D}]} <= ${Int[${Navigation.PathLength[id ${NearestSpawn[${i},npc noalert 1 targetable radius ${PullRange} zradius ${ZRadius} "${FarmMob}"].ID}]}]})
+						}
+					}
+				}
+			|Check the next mob in the NearestSpawn meeting my conditions loop 
+			/next i
+			|Now that I've exited the loop, the PullTargetID variable is the one I want to navigate to and kill. 
+			/varset myTargetID ${PullTargetID}
+			|Set the chattitle of the MQ2 window to the macro's status (Suggestion by Kaen01)
+			/setchattitle Going to kill ${Spawn[id ${myTargetID}].CleanName}!
+		} else /if (${Me.Standing}) {
+			/if (!${Me.Casting.ID} && !${SitDelay}) {
+				/sit
+				/varset SitDelay ${SitDelay.OriginalValue}
+			}
+		}
+	} else {
+		/varset myTargetID ${Me.XTarget[1].ID}
+		/if (${Debugging}) /echo \atI had an XTarget and have set myTargetID: ${myTargetID} - ${Spawn[${myTargetID}].Name}
+	}
+/return
+
+Sub BuffRoutine
+	/if (${Me.XTarget}) /return
+	/if (${Me.Hovering}) /return
+	/if (!${TotalBuffs}) /return
+	
+	/declare i int local
+	/declare j int local
+	/declare k int local
+	/if (!${BuffCheckFrequency}) {
+		/if (${Ini[${Filename},BuffSettings,BuffGroup?]}) {
+			/if (${Group}) {
+				/for j 0 to ${Group}
+					/setchattitle Buff Check on ${Group.Member[${j}].CleanName}
+					
+					/for i 1 to ${TotalBuffs}
+						/if ((${Spell[${Buff${i}}].TargetType.Equal[Self]} || ${Buff${i}Targets.Find[Self]} || ${Spell[${Buff${i}}].TargetType.Equal[Group v2]}) && ${j}!=0) /continue
+						/if (${Target.ID} != ${Group.Member[${j}].ID}) {
+							/target id ${Group.Member[${j}].ID}
+							/delay 2s ${Target.ID}==${Group.Member[${j}].ID}&&${Target.BuffsPopulated}
+						}
+						/if (${Buff${i}Targets.Find[${Target.Class.ShortName}]} || ${Buff${i}Targets.Find[Group]} || ${Buff${i}Targets.Find[All]} || ${Buff${i}Targets.Find[Self]}) {
+							/if (${Debugging}) /buffecho Checking ${Buff${i}} conditions ${Buff${i}Conditions}
+							/if (!${Defined[NeedsBuff]}) /declare NeedsBuff bool outer TRUE
+							/varset NeedsBuff TRUE
+							/if ((!${Buff${i}Conditions.Length} || ${Buff${i}Conditions}) && ${GlobalConditions}) {
+								/if (${Debugging}) /buffecho Conditions Passed
+								/if (${Target.Buff[${Buff${i}}].ID}) {
+									/if (${Target.Buff[${Buff${i}}].Duration.TotalSeconds} < ${Math.Calc[${Spell[${Buff${i}}].CastTime.TotalSeconds}+2]}) {
+										/varset NeedsBuff TRUE
+									} else {
+										/varset NeedsBuff FALSE
+										/if (${Debugging}) /buffecho ${Target} doesn't need ${Buff${i}}
+										/continue
+									}
+								}
+								/if (${Debugging}) /buffecho ${Target.Name} Needs ${Buff${i}}: ${NeedsBuff}
+								/if (${NeedsBuff}) {
+									/if (${BuffCmd${i}.Find[gem]} && !${Me.Gem[${Buff${i}}]}) {
+										/if (${BuffCmd${i}.Length} == 4) {
+											:waitForMem
+											/mem "${Buff${i}}" ${BuffCmd${i}.Right[1]}
+											/delay 5
+											/if (!${Me.Gem[${Buff${i}}]}) /goto :waitForMem
+											/delay 10s !${Me.GemTimer[${Buff${i}}]}
+										} else /if (${BuffCmd${i}.Length} == 5) {
+											:waitForMem
+											/mem "${Buff${i}}" ${BuffCmd${i}.Right[2]}
+											/delay 5
+											/if (!${Me.Gem[${Buff${i}}]}) /goto :waitForMem
+											/delay 10s !${Me.GemTimer[${Buff${i}}]}
+										}
+									}
+									/buffecho ${Purple}${Target.Name} ${White}--> ${Green}${Buff${i}}
+									/if (${Buff${i}Conditions}) {
+									:castAgain
+										/docommand /${BuffCmd${i}}
+									:beginCastCheck
+										/delay 5
+										/doevents
+										/if (${noTarget}) {
+											/target id ${Group.Member[${j}].ID}
+											/goto :castAgain
+										}
+										/if (!${Debugging}) /buffecho noMana: ${noMana} Recast Needed: ${RecastNeeded} Have I began cast:${beginCast}
+										/if (${noMana}) /call GroupManaChk
+										/if (${RecastNeeded}) /goto :castAgain
+										/if (!${beginCast}) /goto :castAgain
+										/varset beginCast FALSE
+										/varset Fizzle FALSE
+										/varset Interrupted FALSE
+										/varset noTarget FALSE
+										/echo Wait till not casting
+										/if (!${Me.Class.Name.Equal[BARD]}) {
+											/delay 1m !${Me.Casting.ID}
+										} else {
+											/if (!${Me.Song[${Buff${i}}].ID} && !${Me.Buff[${Buff${i}}].ID}) /goto :castAgain
+										}
+										/echo I've finished casting
+										/if (${Target.Name.Equal[${Me}]}) /squelch /target clear
+										/if (${myTargetID}) /target id ${myTargetID}
+									|** Global Spell cooldown delay **|
+										/delay 2s
+									}
+								}
+							}
+						}
+					/next i
+
+				/next j
+
+			}
+		}
+		/squelch /target clear
+		/varset BuffCheckFrequency ${Ini[${Filename},BuffSettings,BuffCheckFrequency]}
+	}
+
+/return
+
+| --------------------------------------------------------------------------------------------
+| SUB: GroupManaChk
+| --------------------------------------------------------------------------------------------
+Sub GroupManaChk
+	/if (${Me.XTarget[1].ID}) /return
+	 
+	/if (!${Me.Combat}) {
+		/setchattitle "Group Mana Check"
+		/if (${Me.PctMana} < ${MedAt} && ${Me.Class.CanCast} && !${Me.State.Equal[DEAD]}) {
+			/echo \arYOU are low on mana!
+			/setchattitle "Waiting on YOUR mana to reach ${MedTill}%"
+			/if (!${Me.XTarget[1].ID}) {
+				/if (${UseEQBC}) {
+					/bccmd names
+				}
+				/while (${Me.PctMana} < ${MedTill} && !${Me.XTarget[1].ID} && !${Me.State.Equal[DEAD]}) {
+					/if (${Me.Standing} && !${Me.Casting.ID} && !${Me.Mount.ID}) /sit
+					/if (${UseEQBC}) {
+						/if (!${Defined[j]}) /declare j int local
+						/for j 1 to ${Group}
+							/if (${Debugging}) /echo \ayConnect to the server? : ${EQBC.Names.Find[${Group.Member[${j}].Name}]}
+							/if (${Group.Member[${j}].State.Equal[Stand]} && !${Group.Member[${j}].Type.Equal[Mercenary]} && ${EQBC.Names.Find[${Group.Member[${j}].Name}]}) /bct ${Group.Member[${j}].Name} //sit
+						/next j
+					}
+					/delay 10
+				}
+				/if (${UseEQBC}) {
+					/bcaa //stand
+				}
+			}
+		}
+		/if (${Group}) {
+			/declare i int local
+			/for i 1 to ${Group}
+				/if ((${Group.Member[${i}].PctMana} < ${MedAt}) && ${Group.Member[${i}].Class.CanCast} && !${Group.Member[${i}].State.Equal[DEAD]}) {
+					/echo \ar${Group.Member[${i}].Name} is low on mana!
+					/setchattitle "Waiting on ${Group.Member[${i}].Name}'s mana to reach ${MedTill}%"
+					/if (!${Me.XTarget[1].ID}) {
+						/if (${UseEQBC}) {
+							/bccmd names
+						}
+						/while (${Group.Member[${i}].PctMana} < ${MedTill} && !${Me.XTarget[1].ID} && !${Group.Member[${i}].State.Equal[DEAD]}) {
+							/if (${Me.Standing} && !${Me.Casting.ID} && !${Me.Mount.ID}) /sit
+							/if (${UseEQBC}) {
+							/if (!${Defined[j]}) /declare j int local
+							/for j 1 to ${Group}
+								/if (${Group.Member[${j}].State.Equal[Stand]} && !${Group.Member[${j}].Type.Equal[Mercenary]} && !${Group.Member[${j}].State.Equal[DEAD]} && ${EQBC.Names.Find[${Group.Member[${j}].Name}]}) {
+									/if (${Debugging}) /echo ${Group.Member[${j}].Name} was connected to EQBC and not sitting. So I'm going to get them to sit. 
+									/bct ${Group.Member[${j}].Name} //sit
+								}
+							/next j
+							}
+							/delay 10
+						}
+						/if (${UseEQBC}) {
+							/bcaa //stand
+						}
+					}
+				}
+			/next i
+		}
+	}
+/return
+
+| --------------------------------------------------------------------------------------------
+| SUB: GroupHealthChk
+| --------------------------------------------------------------------------------------------
+Sub GroupHealthChk
+	/if (${Me.XTarget[1].ID}) /return
+	 
+	/setchattitle "GroupHealthCheck"
+	/if (!${Me.Combat}) {
+		/if (${Me.PctHPs} < ${HealAt} && !${Me.State.Equal[DEAD]}) {
+			/echo \arYOU are low on Health!
+			/setchattitle "Waiting on YOUR health to reach ${HealTill}%"
+			/if (!${Me.XTarget[1].ID}) {
+				/if (${UseEQBC}) {
+					/bccmd names
+				}
+				/while (${Me.PctHPs} < ${HealTill} && !${Me.XTarget[1].ID} && !${Me.State.Equal[DEAD]}) {
+					/if ((${Me.Standing}) && (!${Me.Casting.ID}) && (!${Me.Mount.ID})) /sit
+					/if (${UseEQBC}) {
+						/if (!${Defined[j]}) /declare j int local
+						/for j 1 to ${Group.GroupSize}
+							/if (${Group.Member[${j}].State.Equal[Stand]} && !${Group.Member[${j}].Type.Equal[Mercenary]} && !${Group.Member[${j}].State.Equal[DEAD]} && ${EQBC.Names.Find[${Group.Member[${j}].Name}]}) {
+								/if (${Debugging}) /echo ${Group.Member[${j}].Name} was connected to EQBC and not sitting. So I'm going to get them to sit. 
+								/bct ${Group.Member[${j}].Name} //sit
+							}
+						/next j
+					}
+					/delay 10
+				}
+				/if (${UseEQBC}) {
+					/bcaa //stand
+				}
+			}
+		}
+		/if (${Group}) {
+			/declare i int local
+			/for i 1 to ${Group}
+				/if (${Group.Member[${i}].ID}) {
+					/if (${Group.Member[${i}].PctHPs} < ${HealAt} && !${Group.Member[${i}].State.Equal[DEAD]}) {
+						/echo ${Group.Member[${i}].Name} is low on Health!
+						/setchattitle "Waiting on ${Group.Member[${i}].Name} health to reach ${HealTill}%"
+						/if (!${Me.XTarget[1].ID}) {
+							/if (${UseEQBC}) {
+								/bccmd names
+							}
+							/while (${Group.Member[${i}].PctHPs} < ${HealTill} && !${Me.XTarget[1].ID} && !${Group.Member[${i}].State.Equal[DEAD]}) {
+								/if ((${Me.Standing}) && (!${Me.Casting.ID}) && (!${Me.Mount.ID})) /sit
+								/if (${UseEQBC}) {
+									/if (!${Defined[j]}) /declare j int local
+									/for j 0 to ${Group}
+									/if (${Group.Member[${j}].State.Equal[Stand]} && !${Group.Member[${j}].Type.Equal[Mercenary]} && !${Group.Member[${j}].State.Equal[DEAD]} && ${EQBC.Names.Find[${Group.Member[${j}].Name}]}) {
+										/if (${Debugging}) /echo ${Group.Member[${j}].Name} was connected to EQBC and not sitting. So I'm going to get them to sit. 
+										/bct ${Group.Member[${j}].Name} //sit
+									}
+									/next j
+								}
+								/delay 10
+							}
+							/if (${UseEQBC}) {
+								/bcaa //stand
+							}
+						}
+					}
+				}
+			/next i
+		}
+	}
+/return
+
+| --------------------------------------------------------------------------------------------
+| SUB: GroupEndChk
+| --------------------------------------------------------------------------------------------
+Sub GroupEndChk
+	/if (${Me.XTarget[1].ID}) /return
+	 
+	/setchattitle "GroupEnduranceCheck"
+	/if (!${Me.Combat}) {
+		/if (${Me.PctEndurance} < ${MedEndAt} && !${Me.State.Equal[DEAD]}) {
+			/echo \arYOU are low on Endurance!
+			/setchattitle "Waiting on YOUR Endurance to reach ${MedEndTill}%"
+			/if (!${Me.XTarget[1].ID}) {
+				/if (${UseEQBC}) {
+					/bccmd names
+				}
+				/while (${Me.PctEndurance} < ${MedEndTill} && !${Me.XTarget[1].ID} && !${Me.State.Equal[DEAD]}) {
+					/if (${Me.Standing} && !${Me.Casting.ID} && !${Me.Mount.ID}) /sit
+					/if (${UseEQBC}) {
+						/if (!${Defined[j]}) /declare j int local
+						/for j 1 to ${Group}
+							/if (${Group.Member[${j}].State.Equal[Stand]} && !${Group.Member[${j}].Type.Equal[Mercenary]} && ${EQBC.Names.Find[${Group.Member[${j}].Name}]}) /bct ${Group.Member[${j}].Name} //sit
+						/next j
+					}
+					/delay 10
+				}
+				/if (${UseEQBC}) {
+					/bcaa //stand
+				}
+			}
+		}
+		/if (${Group}) {
+			/declare i int local
+			/for i 1 to ${Group}
+				/if (${Group.Member[${i}].ID}) {
+					/if (${Group.Member[${i}].PctEndurance} < ${MedEndAt} && !${Group.Member[${i}].State.Equal[DEAD]}) {
+						/echo \ar${Group.Member[${i}].Name} is low on Endurance!
+						/setchattitle "Waiting on ${Group.Member[${i}].Name} Endurance to reach ${MedEndTill}%"
+						/if (!${Me.XTarget[1].ID}) {
+							/if (${UseEQBC}) {
+								/bccmd names
+							}
+							/while (${Group.Member[${i}].PctEndurance} < ${MedEndTill} && !${Me.XTarget[1].ID} && !${Group.Member[${i}].State.Equal[DEAD]}) {
+								/if ((${Me.Standing}) && (!${Me.Casting.ID}) && (!${Me.Mount.ID})) /sit
+								/if (${UseEQBC}) {
+									/if (!${Defined[j]}) /declare j int local
+									/for j 0 to ${Group}
+										/if (${Group.Member[${j}].State.Equal[Stand]} && !${Group.Member[${j}].Type.Equal[Mercenary]} && !${Group.Member[${j}].State.Equal[DEAD]} && ${EQBC.Names.Find[${Group.Member[${j}].Name}]}) {
+											/if (${Debugging}) /echo ${Group.Member[${j}].Name} was connected to EQBC and not sitting. So I'm going to get them to sit. 
+											/bct ${Group.Member[${j}].Name} //sit
+										}
+									/next j
+								}
+								/delay 10
+							}
+							/if (${UseEQBC}) {
+								/bcaa //stand
+							}
+						}
+					}
+				}
+			/next i
+		}
+	}
+/return
+
+| --------------------------------------------------------------------------------------------
+| SUB: GroupDeathChk
+| --------------------------------------------------------------------------------------------
+Sub GroupDeathChk
+	
+	/if (${Me.State.Equal[DEAD]}) {
+		/echo \arYOU~ have died! Waiting for YOU to get off your face.
+		/setchattitle "You died, waiting for rez!"
+		/while (${Me.State.Equal[DEAD]} ) {
+			/delay 10
+		}
+	}
+	/if (${Me.XTarget[1].ID}) /return
+	/if (${Group}) {
+		/declare i int local
+		/for i 1 to ${Group}
+			/if (${Group.Member[${i}].State.Equal[DEAD]} ) {
+				/echo ${Group.Member[${i}].Name} has died. Waiting for them to get off their face.
+				/setchattitle "${Group.Member[${i}].Name} has died. Waiting for Rez"
+				/if (!${Me.XTarget[1].ID}) {
+					/if (${UseEQBC}) {
+						/bccmd names
+					}
+					/while (${Group.Member[${i}].State.Equal[DEAD]} && !${Me.XTarget[1].ID}) {
+						/if ((${Me.Standing}) && (!${Me.Casting.ID}) && (!${Me.Mount.ID})) /sit
+						/if (${UseEQBC}) {
+							/if (!${Defined[j]}) /declare j int local
+							/for j 0 to ${Group}
+								/if (${j} != ${i}) {
+									/if (${Debugging}) /echo \ayConnected to the server? : ${EQBC.Names.Find[${Group.Member[${j}].Name}]}
+									/if (${Group.Member[${j}].State.Equal[Stand]} && !${Group.Member[${j}].Type.Equal[Mercenary]} && !${Group.Member[${j}].State.Equal[DEAD]} && ${EQBC.Names.Find[${Group.Member[${j}].Name}]}) {
+										/if (${Debugging}) /echo ${Group.Member[${j}].Name} was connected to EQBC and not sitting. So I'm going to get them to sit. 
+										/bct ${Group.Member[${j}].Name} //sit
+									}
+								}
+							/next j
+						}
+						/delay 10
+					}
+					/if (${UseEQBC}) {
+						/bcaa //stand
+					}
+				}
+			}
+		/next i
+	}
+/return
+
+Sub WaitNav(NavTargetID)
+	/if (${Debugging}) /echo \agEntering Sub WaitNav for ${Spawn[id ${NavTargetID}].Y} ${Spawn[id ${NavTargetID}].X} ${Spawn[id ${NavTargetID}].Z} at Line: ${Macro.CurLine}
+	/if (!${Spawn[id ${NavTargetID}].ID}) /return
+	/while (${Spawn[id ${NavTargetID}].Distance} > ${If[${PullAbilityRange},${PullAbilityRange},30]}  || !${Spawn[${myTargetID}].LineOfSight}) {
+		/if (!${Spawn[id ${NavTargetID}].ID}) /return
+		/if (${Navigation.Active}) {
+			/if (${Me.XTarget[1].ID}) {
+				/if (${Navigation.Active}) /nav stop
+				/call FarmStuff
+			} else {
+				/call GroupDeathChk
+				/call GroupHealthChk
+				/call GroupEndChk
+				/call GroupManaChk
+				/call CheckMerc
+			}
+			/if (${Me.Combat} && !${Me.XTarget[1].ID}) /squelch /target clear
+			/if (!${courseCorrection} && ${Navigation.PathExists[id ${NavTargetID}]}) {
+				/squelch /nav id ${NavTargetID}
+				/varset courseCorrection ${courseCorrection.OriginalValue}
+			} else /if (!${Navigation.PathExists[id ${NavTargetID}]}) {
+				/varset myTargetID 0
+				/return
+			}
+			/delay 10
+		} else {
+			/if (${Me.XTarget[1].ID}) {
+				/if (${Navigation.Active}) /nav stop
+				/if (${UseEQBC}) {
+					/if (${Debugging}) /bc (Line: ${Macro.CurLine}) target xtarget ${Spawn[id ${Me.XTarget[1].ID}].Name}
+					/bcaa //target id ${Me.XTarget[1].ID}
+				} else {
+					/target id ${Me.XTarget[1].ID}
+				}
+				/call FarmStuff
+			} else {
+				/call GroupDeathChk
+				/call GroupHealthChk
+				/call GroupEndChk
+				/call GroupManaChk
+				/call CheckMerc
+			}
+			/if (${Me.Combat} && !${Me.XTarget[1].ID}) /squelch /target clear
+			/echo PathExists: ${Navigation.PathExists[id ${NavTargetID}]}
+			/if (${Navigation.PathExists[id ${NavTargetID}]}) {
+				/squelch /nav id ${NavTargetID}
+			} else {
+				/varset myTargetID 0
+				/return
+			}
+		}
+	}
+	/if (${Navigation.Active}) /nav stop
+	:target
+	/target id ${NavTargetID}
+	/delay 2s ${Target.CleanName.Equal[${Spawn[id ${NavTargetID}].CleanName}]}
+	/if (!${Target.CleanName.Equal[${Spawn[id ${NavTargetID}].CleanName}]} && ${Spawn[id ${NavTargetID}].ID}) {
+		/goto :target
+	}
+/return
+
+Sub NavToLoc(int Y,int X,int Z)
+	/if (${Debugging}) /echo Entering Sub NavToLoc for ${Y} ${X} ${Z} at Line: ${Macro.CurLine}
+	/while (${Math.Distance[${Me.Y}, ${Me.X}, ${Me.Z}: ${Y}, ${X}, ${Z}]} > 15) {
+		/if (${Navigation.Active}) {
+			/if (${Me.XTarget[1].ID}) {
+				/if (${Navigation.Active}) /nav stop
+				/call FarmStuff
+			} else {
+				/call GroupDeathChk
+				/call GroupHealthChk
+				/call GroupEndChk
+				/call GroupManaChk
+				/call CheckMerc
+			}
+			/if (${Me.Combat} && !${Me.XTarget[1].ID}) /squelch /target clear
+			/delay 10
+		} else {
+			/if (${Me.XTarget[1].ID}) {
+				/if (${Navigation.Active}) /nav stop
+				/call FarmStuff
+			} else {
+				/call GroupDeathChk
+				/call GroupHealthChk
+				/call GroupEndChk
+				/call GroupManaChk
+				/call CheckMerc
+			}
+			/if (${Me.Combat} && !${Me.XTarget[1].ID}) /squelch /target clear
+			/nav loc ${Y} ${X} ${Z}
+		}
+	}
+	/if (${Navigation.Active}) /nav stop
+/return
+
+Sub FarmStuff(string Enemy)
+	/if (${Bool[${Enemy}]}) {
+		/varset FarmMob ${Enemy}
+		/if (${Debugging} && !${reportTarget}) {
+			/echo Looking for: ${FarmMob}
+			/varset reportTarget ${reportTarget.OriginalValue}
+		}
+	} else /if (!${reportTarget}) {
+		/echo Attacking anything I can get my grubby paws on.
+		/varset reportTarget ${reportTarget.OriginalValue}
+	}
+	:findMob
+	/if (${Target.Type.Equal[corpse]}) {
+		/if (${Target.ID} == ${myTargetID}) /varset myTargetID 0
+		/squelch /target clear
+	}
+	/if (${Window[RespawnWnd].Open}) /call GroupDeathChk
+	/if (!${Me.XTarget[1].ID}) {
+		/call GroupDeathChk
+		/call GroupHealthChk
+		/call GroupEndChk
+		/call GroupManaChk
+	}
+	/if (${Debugging}) /echo \aymyTargetID has an ID: ${Spawn[id ${myTargetID}].ID} - is a corpse: ${Spawn[id ${myTargetID}].Type.Equal[Corpse]} - I have an XTarget: !${Me.XTarget[1].ID}
+	/if (!${Spawn[id ${myTargetID}].ID} || ${Spawn[id ${myTargetID}].Type.Equal[Corpse]} && !${Me.XTarget[1].ID}) {
+		/if (${Debugging}) /echo "Getting a target!"
+		/varset myTargetID 0
+		/call TargetShortest
+		/if (${Debugging} && ${myTargetID}) /echo Target is ${Spawn[id ${myTargetID}]}
+	} else {
+		/if (${Debugging}) /echo \ayI have an XTarget so I'm going to set that as my target. 
+		/varset myTargetID ${Me.XTarget[1].ID}
+		/call Combat
+	}
+	:navto
+	|/if (${Target.ID}) /squelch /target clear
+	/if (${Spawn[${myTargetID}].Distance} > ${If[${PullAbilityRange},${PullAbilityRange},1]} && !${Me.XTarget[1].ID} ${If[${PullRequiresLineOfSight}, || !${Spawn[${myTargetID}].LineOfSight},]}) {
+		/if (!${Bool[${Spawn[${myTargetID}].ID}]}) {
+			/if (${Debugging}) /echo \ar My target ID was null, so I'm returning out of the sub. 
+			/return
+		}
+		|/if (${Debugging}) 
+		/echo \ayNavigating to ${Spawn[${myTargetID}].Name} ID: ${myTargetID} Distance: ${Spawn[${myTargetID}].Distance} > ${If[${PullAbilityRange},${PullAbilityRange},30]} - Line of Sight: ${Spawn[${myTargetID}].LineOfSight}
+		/call WaitNav ${myTargetID}
+		/delay 10
+		/goto :navto
+	} else /if (!${Target.ID} || ${Target.ID} != ${myTargetID} && ${Target.ID} != ${Me.ID} && ${myTargetID} != 0 && !${Me.XTarget[1].ID}) {
+		/target id ${myTargetID}
+		/if (${Navigation.Active}) /nav stop
+	}
+	/delay 5
+	/docommand ${If[${PullAbilityRange}>30,/stop,/stick moveback uw 10]}
+	:PullAbility
+	/if (${Spawn[${myTargetID}].Distance} > ${If[${PullAbilityRange},${PullAbilityRange},1]} && !${Me.XTarget[1].ID} || !${Spawn[${myTargetID}].LineOfSight}) /goto :navto
+	/if (${Debugging}) /echo \ayPull Ability - Ability: ${Me.AbilityReady[${PullAbility}]} || Spell: ${Me.SpellReady[${PullAbility}]} || AltAbility: ${Me.AltAbilityReady[${PullAbility}]} || CombatAbility: ${Me.CombatAbilityReady[${PullAbility}]}
+	/if (${Me.AbilityReady[${PullAbility}]} || ${Me.SpellReady[${PullAbility}]} || ${Me.AltAbilityReady[${PullAbility}]} || ${Me.CombatAbilityReady[${PullAbility}]} || ${PullAbility.Equal[pet]} || !${FindItem[=${PullAbility}].TimerReady}) {
+		/if (${Debugging}) /echo \arShould be issuing the PullCommand ${PullCommand}
+		/if (!${Me.XTarget} && ${PullAbility.NotEqual[pet]}) {
+			/docommand ${PullCommand}
+		} else /if (${PullAbility.Equal[pet]}) {
+			/call PetPull
+		}
+	}
+	/if (${Me.XTarget}) {
+		/if (${Debugging}) /echo \ayI have an XTarget return to camp. 
+		/squelch /target id ${Me.XTarget[1].ID}
+		/delay 2s ${Target.ID}
+		/if (${Target.ID} != ${myTargetID}) /varset myTargetID ${Target.ID}
+		/call ReturnToCampWait
+		/call Combat
+	} else /if (${Spawn[id ${myTargetID}].Type.NotEqual[Corpse]} && ${Spawn[id ${myTargetID}].ID}) {
+		/if (${Debugging}) /echo \aymyTargetID not a corpse: ${Spawn[id ${myTargetID}].Type.NotEqual[Corpse]} - Has an ID: ${Spawn[id ${myTargetID}].ID} == ${myTargetID}
+		/delay 1s ${Me.XTarget[1].ID}
+		/goto :PullAbility
+	}
+/return
+
+Sub ReturnToCampWait
+	:ReturnToCamp
+	/if (${Math.Distance[${CampY}, ${CampX}, ${CampZ} : ${Spawn[id ${Me.XTarget[1].ID}].Y}, ${Spawn[id ${Me.XTarget[1].ID}].X}, ${Spawn[id ${Me.XTarget[1].ID}].Z}]} < ${CampRadius} && ${Me.XTarget} && ${Math.Distance[${Me.Y}, ${Me.X}, ${Me.Z} : ${CampY}, ${CampX}, ${CampZ}]} < ${CampRadius}) /return
+	/if (${Math.Distance[${Me.Y}, ${Me.X}, ${Me.Z} : ${CampY}, ${CampX}, ${CampZ}]} > 30) {
+		/if (${Debugging} && !${DebugRepeatTimer}) {
+			/echo \ayI'm More than 30 from camp. Returning to camp to wait for PullMob!
+			/varset DebugRepeatTimer ${DebugRepeatTimer.OriginalValue}
+		}
+		/if (!${Navigation.Active} && ${Navigation.PathExists[loc ${CampY} ${CampX} ${CampZ}]}) /nav loc ${CampY} ${CampX} ${CampZ}
+		/delay 5
+		/if (${Navigation.PathExists[loc ${CampY} ${CampX} ${CampZ}]}) {
+			/goto :ReturnToCamp
+		} else {
+			/echo \arI couldn't find a path back to the camp. Skipping return to camp. 
+		}
+	} else /if (${Math.Distance[${CampY}, ${CampX}, ${CampZ} : ${Spawn[id ${Me.XTarget[1].ID}].Y}, ${Spawn[id ${Me.XTarget[1].ID}].X}, ${Spawn[id ${Me.XTarget[1].ID}].Z}]} > ${CampRadius} && ${Me.XTarget}) {
+		/if (${Debugging}) {
+			/echo \atWaiting on ${Spawn[id ${Me.XTarget[1].ID}].Name} to arrive within ${CampRadius} of the camp location. CamptoMobDistance: ${Math.Distance[${CampY}, ${CampX}, ${CampZ} : ${Spawn[id ${Me.XTarget[1].ID}].Y}, ${Spawn[id ${Me.XTarget[1].ID}].X}, ${Spawn[id ${Me.XTarget[1].ID}].Z}]} > CampRadius: 60 && I have aggro: ${Me.XTarget}
+			/varset DebugRepeatTimer ${DebugRepeatTimer.OriginalValue}
+		}
+		/delay 5
+		/goto :ReturnToCamp
+	}	
+/return
+
+Sub Combat
+	/if (${Target.ID} && (${Target.Type.Equal[npc]} || ${Target.Type.Equal[pet]})) {
+		/if (${Navigation.Active}) /squelch /nav stop
+		/if (!${Me.Class.PureCaster} ${Target.LineOfSight}) /stick uw loose moveback behind 8 
+		/setchattitle Killing ${Target.CleanName}
+		/if (${UseEQBC} && ${assistMe}) {
+			/if (${Debugging}) /bc (Line: ${Macro.CurLine}) killthis
+			/bca //target id ${Me.XTarget[1].ID}
+			/timed 10 /bca //pet attack
+			/timed 15 /bca //pet swarm
+			/timed 20 /bca //killthis
+		}
+		/pet attack
+		/pet swarm
+		/if (!${Me.Class.PureCaster}) /killthis
+		:waitTillDead
+	
+		/if (${Target.ID} && ${Me.CombatState.Equal[Combat]} && (${Target.Type.Equal[npc]} || ${Target.Type.Equal[pet]})) {
+			/if (!${Me.Combat}) {
+				/if (!${Me.Class.PureCaster}) /attack
+			}
+			/delay 10
+			/goto :waitTillDead
+		} else /if (${Target.Type.Equal[corpse]}) {
+			/target clear
+			/varset myTargetID 0
+		}
+	} else /if (${Me.XTarget[1].ID}) {
+		/if (${Spawn[id ${Me.XTarget[1].ID} radius 30 zradius 50].ID} && ${Spawn[id ${Me.XTarget[1].ID} radius 30 zradius 50].LineOfSight}) {
+			/if (${Navigation.Active}) /nav stop
+			/if (${UseEQBC} && ${assistMe}) {
+				/if (${Debugging}) /bc (Line: ${Macro.CurLine}) target XTarget ${Spawn[id ${Me.XTarget[1].ID}].Name}
+				/bcaa //target id ${Me.XTarget[1].ID}
+			} else {
+				/target id ${Me.XTarget[1].ID}
+			}
+			/setchattitle Handling add, ${Spawn[${Me.XTarget[1].ID}].CleanName}
+		} else /if (${Spawn[id ${Me.XTarget[1].ID}].Distance} > 30 || !${Spawn[id ${Me.XTarget[1].ID} radius 30 zradius 50].LineOfSight}) {
+			/squelch /nav id ${Me.XTarget[1].ID}
+			/if (${UseEQBC} && !${Me.CombatState.Equal[Combat]}) {
+				/if (${Debugging}) /bc (Line: ${Macro.CurLine}) target me and stick (FarmStuff1).
+				/bca //target id ${Me.ID}
+				/delay 5
+				/bca //stick 10 loose moveback uw
+			}
+			/setchattitle Navigating to add ${Spawn[id ${Me.XTarget[1].ID}].CleanName}
+			/while (${Spawn[${Me.XTarget[1].ID}].Distance} > 30) {
+				/if (!${Navigation.Active}) {
+					/squelch /nav id ${Me.XTarget[1].ID}
+					/if (${UseEQBC} && !${Me.CombatState.Equal[Combat]}) {
+						/if (${Debugging}) /bc (Line: ${Macro.CurLine}) target me and stick (FarmStuff2).
+						/bca //target id ${Me.ID}
+						/delay 5
+						/bca //stick 10 loose moveback uw
+					}
+				}
+				/delay 10
+				/if (!${courseCorrection}) {
+					/squelch /nav id ${Me.XTarget[1].ID}
+					/varset courseCorrection ${courseCorrection.OriginalValue}
+				}
+			}
+		}
+		/if (${UseEQBC} && ${assistMe}) {
+			/if (${Debugging}) /bc (Line: ${Macro.CurLine}) killthis
+			/bca //target id ${Me.XTarget[1].ID}
+			/timed 10 /bca //pet attack
+			/timed 15 /bca //pet swarm
+			/timed 20 /bca //killthis
+		}
+		/killthis
+		/setchattitle Killing ${Target.CleanName}
+		/goto :waitTillDead
+	}
+/return
+
+Sub CheckMerc
+	/if (${Mercenary.State.Equal[DEAD]} && ${UseMerc}) {
+		/echo Your mercenary has died. Waiting to be able to revive them. 
+		:waitForMerc
+		/if (${Group} && ${Window[MMGW_ManageWnd].Child[MMGW_SuspendButton].Tooltip.Equal[Revive your current mercenary.]} && ${Window[MMGW_ManageWnd].Child[MMGW_SuspendButton].Enabled}) /notify MMGW_ManageWnd MMGW_SuspendButton leftmouseup
+		/if (${Mercenary.State.Equal[DEAD]} && !${Me.XTarget[1].ID}) /goto :waitForMerc
+	}
+/return
+
+Sub XTargetCheck
+	/declare i int local
+	/for i 1 to ${Me.XTarget}
+		/if (${Me.XTarget[${i}].TargetType.Equal[Auto Hater]}) /return TRUE
+	/next i
+/return FALSE
+
+Sub Bind_AddToIgnore
+	/alert add 1 ${Target.CleanName}
+	/varset myTargetID 0
+	/squelch /target clear
+/return 
+
+Sub Bind_AddThisIgnore
+	/alert add 1 ${Target.Name}
+	/varset myTargetID 0
+	/squelch /target clear
+/return
+
+Sub Bind_PermIgnore
+	/echo In the PermIgnore Bind
+	/alert add 1 ${Target.CleanName}
+	/if (!${Ini[FarmMobIgnored.ini,${Zone.ShortName},Ignored].Find[${Target.CleanName}]}) {
+		/echo \atAdding ${Target.CleanName} to FarmMobIgnored.ini for zone ${Zone.ShortName}
+		/ini "FarmMobIgnored.ini" "${Zone.ShortName}" "Ignored" "${If[${Bool[${Ini[FarmMobIgnored.ini,${Zone.ShortName},Ignored]}]},${Ini[FarmMobIgnored.ini,${Zone.ShortName},Ignored]},]}${Target.CleanName}|"
+		/varset myTargetID 0
+		/squelch /target clear
+	} else {
+		/echo \ar${Target.CleanName} is already on the permanent ignore list. Maybe you got aggro?
+	}
+/return
+
+Sub Bind_showignored
+	/echo \au${Ini[FarmMobIgnored.ini,${Zone.ShortName,Ignored]}
+/return
+
+Sub GenerateList
+	/declare i int local
+	/echo \ayGetting Named Mobs currently up in ${Zone}.
+	/if (!${Ini[FarmMobIgnored.ini,${Zone.ShortName},Ignored].Length}) /ini "FarmMobIgnored.ini" "${Zone.ShortName}" "Ignored" "|"
+	/for i 1 to ${SpawnCount[npc named]}
+		/if (${NearestSpawn[${i},npc named].Name.NotEqual[NULL]}) {
+			/if (!${Ini[FarmMobIgnored.ini,${Zone.ShortName},NamedList].Find[${NearestSpawn[${i},npc named].CleanName}]}) {
+				/if (${Ini[FarmMobIgnored.ini,${Zone.ShortName},NamedList].Length} < 1900) {	
+					/echo \ayFound - \ar${NearestSpawn[${i},npc named].CleanName}
+					/ini "FarmMobIgnored.ini" "${Zone.ShortName}" "NamedList" "${If[${Bool[${Ini[FarmMobIgnored.ini,${Zone.ShortName},NamedList]}]},${Ini[FarmMobIgnored.ini,${Zone.ShortName},NamedList]},]}${NearestSpawn[${i},npc named].CleanName}|"
+				}
+			}
+		}
+	/next i
+	/echo \ayGetting Merchants currently up in ${Zone}.
+	/if (!${Ini[FarmMobIgnored.ini,${Zone.ShortName},Merchants].Length}) /ini "FarmMobIgnored.ini" "${Zone.ShortName}" "Merchants" "|"
+	/for i 1 to ${SpawnCount[Merchant]}
+		/if (${NearestSpawn[${i},Merchant].Name.NotEqual[NULL]}) {
+			/if (!${Ini[FarmMobIgnored.ini,${Zone.ShortName},Merchants].Find[${NearestSpawn[${i},Merchant].CleanName}]}) {
+				/if (${Ini[FarmMobIgnored.ini,${Zone.ShortName},Merchants].Length} < 1900) {	
+					/echo \ayFound - \ar${NearestSpawn[${i},Merchant].CleanName}
+					/ini "FarmMobIgnored.ini" "${Zone.ShortName}" "Merchants" "${If[${Bool[${Ini[FarmMobIgnored.ini,${Zone.ShortName},Merchants]}]},${Ini[FarmMobIgnored.ini,${Zone.ShortName},Merchants]},]}${NearestSpawn[${i},Merchant].CleanName}|"
+				} else {
+					/echo The Merchants list was too large and was cut short.
+					/break
+				}
+			}
+		}
+	/next i
+	/echo \ayGetting Bankers currently up in ${Zone}.
+	/if (!${Ini[FarmMobIgnored.ini,${Zone.ShortName},Bankers].Length}) /ini "FarmMobIgnored.ini" "${Zone.ShortName}" "Bankers" "|"
+	/for i 1 to ${SpawnCount[Banker]}
+		/if (${NearestSpawn[${i},Banker].Name.NotEqual[NULL]}) {
+			/if (!${Ini[FarmMobIgnored.ini,${Zone.ShortName},Bankers].Find[${NearestSpawn[${i},Banker].CleanName}]}) {
+				/if (${Ini[FarmMobIgnored.ini,${Zone.ShortName},Bankers].Length} < 1900) {
+					/echo \ayFound - \ar${NearestSpawn[${i},Banker].CleanName}
+					/ini "FarmMobIgnored.ini" "${Zone.ShortName}" "Bankers" "${If[${Bool[${Ini[FarmMobIgnored.ini,${Zone.ShortName},Bankers]}]},${Ini[FarmMobIgnored.ini,${Zone.ShortName},Bankers]},]}${NearestSpawn[${i},Banker].CleanName}|"
+				} else {
+					/echo The Bankers list was too large and was cut short.
+					/break
+				}
+			}
+		}
+	/next i
+	/echo \ayGetting Objects currently up in ${Zone}.
+	/if (!${Ini[FarmMobIgnored.ini,${Zone.ShortName},Objects].Length}) /ini "FarmMobIgnored.ini" "${Zone.ShortName}" "Objects" "|"
+	/for i 1 to ${SpawnCount[Object]}
+		/if (${NearestSpawn[${i},Object].Name.NotEqual[NULL]}) {
+			/if (!${Ini[FarmMobIgnored.ini,${Zone.ShortName},Objects].Find[${NearestSpawn[${i},Object].CleanName}]}) {
+				/if (${Ini[FarmMobIgnored.ini,${Zone.ShortName},Objects].Length} < 1900) {
+					/echo \ayFound - \ar${NearestSpawn[${i},Object].CleanName}
+					/ini "FarmMobIgnored.ini" "${Zone.ShortName}" "Objects" "${If[${Bool[${Ini[FarmMobIgnored.ini,${Zone.ShortName},Objects]}]},${Ini[FarmMobIgnored.ini,${Zone.ShortName},Objects]},]}${NearestSpawn[${i},Object].CleanName}|"
+				} else {
+					/echo The Objects list was too large and was cut short.
+					/break
+				}
+			}
+		}
+	/next i
+	/echo \ayGetting NPCs currently up in ${Zone}.
+	/if (!${Ini[FarmMobIgnored.ini,${Zone.ShortName},NPCs].Length}) /ini "FarmMobIgnored.ini" "${Zone.ShortName}" "NPCs" "|"
+	/for i 1 to ${SpawnCount[npc]}
+		/if (${NearestSpawn[${i},NPC].Name.NotEqual[NULL]} && ${NearestSpawn[${i},NPC].Class.Name.NotEqual[Merchant]} && ${NearestSpawn[${i},NPC].Class.Name.NotEqual[Banker]} && !${NearestSpawn[${i},NPC].Named}) {
+			/if (!${Ini[FarmMobIgnored.ini,${Zone.ShortName},NPCs].Find[${NearestSpawn[${i},NPC].CleanName}]}) {
+				/if (${Ini[FarmMobIgnored.ini,${Zone.ShortName},NPCs].Length} < 1900) {
+					/echo \ayFound - \ar${NearestSpawn[${i},NPC].CleanName}
+					/ini "FarmMobIgnored.ini" "${Zone.ShortName}" "NPCs" "${If[${Bool[${Ini[FarmMobIgnored.ini,${Zone.ShortName},NPCs]}]},${Ini[FarmMobIgnored.ini,${Zone.ShortName},NPCs]},]}${NearestSpawn[${i},NPC].CleanName}|"
+				} else {
+					/echo The NPCs list was too large and was cut short.
+					/break
+				}
+			}
+		}
+	/next i
+	/echo \agDone, list is stored in FarmMobIgnored.ini
+/return
+
+Sub GetPullAbilityCommand
+	/if (!${Me.Skill[${PullAbility}]} && !${Me.Book[${PullAbility}]} && !${Me.AltAbility[${PullAbility}]} && !${Me.CombatAbility[${PullAbility}]} && !${PullAbility.Equal[pet]} && !${FindItem[${PullAbility}].ID}) {
+		/echo \ar${PullAbility} is not a Skill, Spell, AltAbility, or CombatAbility, or Item. Check your INI.
+		/end
+	} else {
+		/if (${Me.Skill[${PullAbility}]}) {
+			/if (${Debugging}) /echo \ayPullAbility:${PullAbility} is a skill
+			/declare PullCommand string outer /doability ${PullAbility}
+		} else /if (${Me.AltAbility[${PullAbility}]}) {
+			/if (${Debugging}) /echo \ayPullAbility:${PullAbility} is an Alt Ability
+			/declare PullCommand string outer /alt act ${Me.AltAbility[${PullAbility}].ID}
+		} else /if (${Me.Book[${PullAbility}]}) {
+			/if (${Debugging}) /echo \ayPullAbility:${PullAbility} is a spell.
+			/declare PullCommand string outer /casting "${Spell[${PullAbility}].RankName}"
+		} else /if (${Me.CombatAbility[${PullAbility}]}) {
+			/if (${Debugging}) /echo \ayPullAbility:${PullAbility} is a disc.
+			/declare PullCommand string outer /multiline ; ${If[${Me.CombatAbilityReady[${Spell[${PullAbility}].RankName}]},/disc ${PullAbility},]} ; ${If[${Me.CombatAbilityReady[${Spell[${PullAbility}].RankName}]},/doability "${Spell[${PullAbility}].RankName}",]}
+		} else /if (${PullAbility.Equal[pet]}) {
+			/if (${Debugging}) /echo \ayPullAbility: pet. 
+			/declare PullCommand string outer /call PetPull
+		} else /if (${FindItem[${PullAbility}].ID}) {
+			/if (${Debugging}) /echo \ayPullAbility is an item.
+			/declare PullCommand string outer /casting "${PullAbility}|Item"
+		}
+	}
+/return
+
+Sub PetPull
+	/echo Entering pet pull Line: ${Macro.CurLine}
+	/while (!${Me.XTarget[1].ID}) {
+		/if (!${Me.Pet.ID}) /call SummonPet
+		/if (${Me.Pet.ID}) {
+			/echo \aySending Pet to attack ${Target.CleanName}
+			/pet attack
+			/delay 2s ${Me.XTarget[1].ID}
+		}
+	}
+	/if (${Me.XTarget[1].ID}) {
+		/pet back
+	}
+/return
+
+Sub SummonPet
+
+/return
+
+Sub CheckINI(string IniName,string Section,string Key,string TypeVar,Default)
+	/if (!${Ini[${IniName},${Section},${Key}].Length}) {
+		/ini ${IniName} ${Section} ${Key} ${Default}
+	}
+	/declare ${Key} ${TypeVar} outer ${Ini[${IniName},${Section},${Key}]}
+	/if (${Debugging}) /echo \atLoading INI ${IniName} ~ Key: ${Key} Type: ${TypeVar} INI Value: ${Ini[${IniName},${Section},${Key}]}
+/return
+
+Sub CheckPlugin(PluginName)
+	/if (!${Plugin[${PluginName}].Name.Equal[${PluginName}]}) {
+		/plugin ${PluginName}
+		/delay 3s ${Plugin[${PluginName}].Name.Equal[${PluginName}]}
+		/if (!${Plugin[${PluginName}].Name.Equal[${PluginName}]}) {
+			/echo "The Plugin --> ${PluginName} didn't load for some reason. Ending the Macro."
+		}
+	}
+/return
+
+Sub CheckMesh
+	/if (!${Navigation.MeshLoaded}) {
+		/nav reload
+		/delay 3s ${Navigation.MeshLoaded}
+		/if (!${Navigation.MeshLoaded}) {
+			/echo "\arNo navigational mesh could be found for this zone. Make one and try again"
+			/echo "\arEnding Macro."
+			/end
+		}
+	}
+/return
+
+Sub GenerateINIBuff
+	/ini "${Filename}" "BuffSettings" "BuffGroup?" "TRUE"
+	/ini "${Filename}" "BuffSettings" "DefaultGem" "gem1"
+	/ini "${Filename}" "BuffSettings" "BuffCheckFrequency" "10s"
+	/ini "${Filename}" "BuffSettings" "GlobalConditions" "(TRUE)"
+	/declare i int local
+	/for i 1 to 20
+		/ini "${Filename}" "Buffs" "${i}-------------------${i}" "--------"
+		/if (!${Ini[${Filename},Buffs,Buff${i}].Length}) {
+			/ini "${Filename}" "Buffs" "Buff${i}" ""
+		}
+		/if (!${Ini[${Filename},Buffs,Buff${i}Slot].Length}) {
+			/ini "${Filename}" "Buffs" "Buff${i}Slot" ""
+		}
+		/if (!${Ini[${Filename},Buffs,Buff${i}Conditions].Length}) {
+			/ini "${Filename}" "Buffs" "Buff${i}Conditions" "(TRUE)"
+		}
+		/if (!${Ini[${Filename},Buffs,Buff${i}Targets].Length}) {
+			/ini "${Filename}" "Buffs" "Buff${i}Targets" ""
+		}
+	/next i
+	/ini "${Filename}" "MacroBuiltInCheck" "BuffINIGenerated" "TRUE"
+	/echo \aw[\agBuff.mac\aw]\aoINI Generated. Please Edit the INI ${Filename} in your Macro's folder.
+	/echo \aw[\agBuff.mac\aw]\aoBuff1=Spirit of Wolf
+	/echo \aw[\agBuff.mac\aw]\aoBuff1Targets=Single
+	/noparse /echo \aw[\agBuff.mac\aw]\aoBuff1Conditions=(!${Me.Zoning} && !${Me.Invis} && ${Me.PctMana} > 20 && !${Me.Moving} && !${Me.Sitting} && !${Me.Combat})
+	/echo \aw[\agBuff.mac\aw]\aoBuff2=Talisman of the Doomscale
+	/echo \aw[\agBuff.mac\aw]\aoBuff2Targets=Group
+	/noparse /echo \aw[\agBuff.mac\aw]\aoBuff2Conditions=(!${Me.Zoning} && !${Me.Invis} && ${Me.PctMana} > 20 && !${Me.Moving} && !${Me.Sitting} && !${Me.Combat})
+/return
+
+Sub CheckINIBuffs
+	/if (${Ini[${Filename},MacroBuiltInCheck,BuffINIGenerated].Length}) {
+		/if (${Debugging}) /echo Buffs Ini Generated? ${Ini[${Filename},MacroBuiltInCheck,BuffINIGenerated]} \atLine: ${Macro.CurLine}
+		/declare INIGenerated bool local ${Ini[${Filename},MacroBuiltInCheck,BuffINIGenerated]}
+	} else {
+		/declare INIGenerated bool local FALSE
+	}
+	/if (!${INIGenerated}) {
+		/echo \ar Generating the INI again. 
+		/call GenerateINIBuff
+	}
+	/declare i int local
+	/for i 1 to 20
+		/if (${Debugging}) /echo Checking ${Filename} Buff Buff${i}  ${Ini[${Filename},Buffs,Buff${i}].Length}
+		/if (${Ini[${Filename},Buffs,Buff${i}].Length}) {
+			/varset TotalBuffs ${Math.Calc[${TotalBuffs}+1]}
+		} else /break
+	/next i
+
+/return
+
+| --------------------------------------------------------------------------------------------
+| SUB: Event_beginCast
+| --------------------------------------------------------------------------------------------
+Sub Event_beginCast
+	/if (${Debugging}) /buffecho Begin Casting Sub
+	/varset beginCast TRUE
+/return
+
+| --------------------------------------------------------------------------------------------
+| SUB: Event_Fizzle
+| --------------------------------------------------------------------------------------------
+Sub Event_Fizzle
+	/varset Fizzle TRUE
+/return
+
+| --------------------------------------------------------------------------------------------
+| SUB: Event_Interrupted
+| --------------------------------------------------------------------------------------------
+Sub Event_Interrupted
+	/varset Interrupted TRUE
+/return
+
+| --------------------------------------------------------------------------------------------
+| SUB: Event_noTarget
+| --------------------------------------------------------------------------------------------
+Sub Event_noTarget
+	/varset noTarget TRUE
+/return
+
+| --------------------------------------------------------------------------------------------
+| SUB: Event_noMana
+| --------------------------------------------------------------------------------------------
+Sub Event_noMana
+	/varset noMana TRUE
+/return
+
+Sub Declares(int Param0, string Param1)
+	/declare FarmMob string outer ${Param1}
+	/declare PullRange int outer ${Param0}
+	|** Buffs declared INI is the same as the Settings because I didn't want to change every call to ${Filename} **|
+	/declare Filename string outer FarmSettings_${Me}.ini
+	/declare Settings string outer FarmSettings_${Me}.ini
+	/declare MobIgnore string outer FarmMobIgnored.ini
+	/echo \ay${Settings} is the INI being used.
+	/call CheckINI ${Settings} General Debugging bool FALSE
+	/declare Targets string outer
+	/declare myTargetID int outer 0
+	/declare reportTarget timer outer 5s
+	/declare startZone int outer ${Zone.ID}
+	/declare courseCorrection timer outer 1s
+	/declare CampY int outer ${Me.Y}
+	/declare CampX int outer ${Me.X}
+	/declare CampZ int outer ${Me.Z}
+	/declare DebugRepeatTimer timer outer 1s
+	/declare SitDelay timer outer 5s
+	|** Buff.mac imported declares **|
+	/declare TotalBuffs int outer 0
+	/call CheckINIBuffs
+	/declare Black 		string outer \ab
+	/declare Blue   	string outer \au
+	/declare Brown      string outer \a-o
+	/declare Cyan   	string outer \at
+	/declare Gray		string outer \a-w
+	/declare Green		string outer \ag
+	/declare Pink   	string outer \am
+	/declare Orange   	string outer \ao
+	/declare Purple   	string outer \ap
+	/declare Red   		string outer \ar
+	/declare Teal   	string outer \at
+	/declare White   	string outer \aw
+	/declare Yellow  	string outer \ay
+	/declare DarkGreen 	string outer \a-g
+	/declare DarkMaroon	string outer \a-m
+	/declare DarkPurple	string outer \a-p
+	/declare DarkRed	string outer \a-r
+	/declare DarkCyan	string outer \a-t
+	/declare DarkBlue	string outer \a-u
+	/declare DarkYellow	string outer \a-y
+	/declare OldGroupSize int outer ${Group}
+	/declare beginCast bool outer FALSE
+	/declare Fizzle bool outer FALSE
+	/declare Interrupted bool outer FALSE
+	/declare noTarget bool outer FALSE
+	/declare noMana bool outer FALSE
+	/declare DefaultGem string outer ${Ini[${Filename},BuffSettings,DefaultGem]}
+	/noparse /declare RecastNeeded string outer (${noTarget} || ${Interrupted} || ${Fizzle})
+	/declare BuffCheckFrequency timer outer 0s
+	/declare GlobalConditions string outer ${Ini[${Filename},BuffSettings,GlobalConditions]}
+	/alias /buffecho /echo ${White}[${Green}Buffs${White}]${Orange}
+	/if (${TotalBuffs}) {
+		/declare i int local
+		/for i 1 to ${TotalBuffs}
+			/declare Buff${i} string outer ${Ini[${Filename},Buffs,Buff${i}]}
+			/declare Buff${i}Slot string outer ${Ini[${Filename},Buffs,Buff${i}Slot]}
+			/declare Buff${i}Conditions string outer ${Ini[${Filename},Buffs,Buff${i}Conditions,TRUE]}
+			/declare Buff${i}Targets string outer
+			/declare Buff${i}Type string outer ${Ini[${Filename},Buffs,Buff${i}Type,Spell]}
+			/declare BuffCmd${i} string outer ""
+			|** Only look here if Buff${i} isn't NULL **|
+			/if (!${Buff${i}.Equal[NULL]} && ${Buff${i}.Length}) {
+				/if (${Debugging}) /buffecho Setting buff command \atLine: ${Macro.CurLine}
+				|** Is this an AltAbility? **|
+				/if (${Me.AltAbility[${Buff${i}}].ID}) {
+					/varset BuffCmd${i} alt act ${Me.AltAbility[${Buff${i}}]}
+					/if (${Debugging}) /buffecho Buff Command is: ${BuffCmd${i}} \atLine: ${Macro.CurLine}
+					|** Is this a spell I have? **|
+				} else /if (${Me.Book[${Buff${i}}]}) {
+					/if (${Debugging}) /buffecho ${Buff${i}} was in my book. \atLine: ${Macro.CurLine}
+					|** Do I already have this Memorized? **|
+					/if (${Debugging}) /buffecho Do I have it memorized? ${Me.Gem[${Buff${i}}]} \atLine: ${Macro.CurLine}
+					/if (${Me.Gem[${Buff${i}}]}) {
+						/varset BuffCmd${i} casting "${Buff${i}}"|gem${Me.Gem[${Buff${i}}]}
+						/if (${Debugging}) /buffecho Buff Command is: ${BuffCmd${i}} \atLine: ${Macro.CurLine}
+						|** If I don't have it memorized which gem do I use? **|
+					} else /if (!${Bool[${Buff${i}Slot}]}) {
+						/if (${Debugging}) /buffecho Did I assign it a slot? ${Buff${i}Slot} \atLine: ${Macro.CurLine}
+						/varset BuffCmd${i} casting "${Buff${i}}"|${DefaultGem}
+						/if (${Debugging}) /buffecho Buff Command is: ${BuffCmd${i}} \atLine: ${Macro.CurLine}
+					} else {
+						/if (${Debugging}) /buffecho Did I assign it a slot? ${Buff${i}Slot} \atLine: ${Macro.CurLine}
+						/varset BuffCmd${i} casting "${Buff${i}}"|${Buff${i}Slot}
+						/if (${Debugging}) /buffecho Buff Command is: ${BuffCmd${i}} \atLine: ${Macro.CurLine}
+					}
+					|** Is this a CombatAbility? **|
+				} else /if (${Me.CombatAbility[${Buff${i}}]}) {
+					/varset BuffCmd${i} disc "${Me.CombatAbility[${Buff${i}}]}"
+					/if (${Debugging}) /buffecho Buff Command is: ${BuffCmd${i}}
+					|** If I haven't figured out what it is by now, then I don't think we have it. ~~~~~~~~~~~~~~~Expand to include an itemcheck **|
+				} else {
+					/varcalc TotalBuffs ${TotalBuffs}-1
+					/buffecho ${Red} There was a problem with Buff${i}: ${Buff${i}}. It doesn't seem to be a AltAbility, Spell, or CombatAbility. Please check the INI entry.
+					/continue
+				}
+				/varset Buff${i}Targets ${Ini[${Filename},Buffs,Buff${i}Targets]}
+			}
+		/next i
+		
+		|** Show me what buffs I have loaded **|
+		/for i 1 to ${TotalBuffs}
+			/buffecho ${Green} ${Buff${i}} <--
+		/next i
+	}
+	|** If I don't have any buffs setup that I actually have the say so **|
+	/if (!${TotalBuffs}) {
+		/buffecho ${Red}No Buffs Loaded, edit ${Filename} located in the macros folder.
+	}
+	|** How many buffs do I have setup correctly? **|
+	/buffecho ${White}(${Red} ${TotalBuffs} ${White}) ${Green}Buffs${Orange} Loaded
+	|** End of Buff.mac imported declares **|
+	/call CheckINI ${Settings} General useLogOut bool FALSE
+	/call CheckINI ${Settings} General assistMe bool TRUE
+	/call CheckINI ${Settings} General UseEQBC bool FALSE
+	/call CheckINI ${Settings} General UseMerc bool FALSE
+	/call CheckINI ${Settings} Camp CampRadius int 60
+	/call CheckINI ${Settings} Pull ZRadius int 500
+	/call CheckINI ${Settings} Pull PullAbility string ReplaceMeWithYourSkill
+	/call CheckINI ${Settings} Pull PullAbilityRange int 150
+	/call CheckINI ${Settings} Pull PullRequiresLineOfSight bool TRUE
+	/call CheckINI ${Settings} Health HealAt int  70
+	/call CheckINI ${Settings} Health HealTill int 100
+	/call CheckINI ${Settings} Endurance MedEndAt int 8
+	/call CheckINI ${Settings} Endurance MedEndTill int 100
+	/call CheckINI ${Settings} Mana MedAt int 30
+	/call CheckINI ${Settings} Mana MedTill int 100
+	/call GetPullAbilityCommand
+/return

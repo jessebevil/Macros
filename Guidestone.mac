@@ -1,0 +1,257 @@
+	|||||||||||||||||||||||||||||||||||||||||||||||||||
+|Guidestone.mac by Chatwiththisname
+|v1.0 ~ Initial release 3/1/2018
+|Usage: /mac Guidestone
+|       
+|Purpose: It will complete combines for Guidestone to 
+|		   include purchasing the Stone of Marking and 
+|		   then sell the Guidestones back to the vendor
+|		   so long as you have Ethernere Essence on you.
+|
+|Requirements: Go to North Karana with your classes combine
+|				combine container in a top level inventory 
+|				slot. Will use MoveUtils to navigate to 
+|				Tak Whistler and calculate the amount of 
+|				Stone of Marking to buy. It accounts for 
+|				total Inv size less the combine container
+|				and total Ethernere Essences. 
+|
+|			Special thanks to Dborgar for his donation
+|			to have this made. 
+	|||||||||||||||||||||||||||||||||||||||||||||||||||
+
+
+Sub Main
+	/cleanup
+	/call Declares
+	/call CheckRequirements
+	/call CheckSettings
+	/call OpenInvFindHybrid
+	
+	/while (${FindItemCount[=Ethernere Essence]}) {
+		/call getCounts
+		/if (${BuyAmount}) {
+			/call buyItem "Stone of Marking" ${BuyAmount}
+		}
+		
+		/while (${FindItemCount[=Ethernere Essence]} && ${FindItemCount[=Stone of Marking]}) {
+			/call Combine
+		}
+		
+		/if (${FindItemCount[GuideStone]}) {
+			/call SellToVendor Guidestone
+		}
+	}
+	/echo \ayMacro has made all it can. Ending
+/return
+
+Sub OpenInvFindHybrid
+	/if (!${Window[InventoryWindow].Open}) {
+		/windowstate InventoryWindow open
+		/delay 2s ${Window[InventoryWindow].Open}
+	}
+	
+	/declare i int local 0
+	/if (${FindItemCount[=${Container}]}) {
+		/for i 23 to 32
+			/if (${Debugging}) /echo ${Window[InventoryWindow].Child[InvSlot${i}].Tooltip}
+			/if (${Window[InventoryWindow].Child[InvSlot${i}].Tooltip.Equal[${Container}]}) {
+				/varset ContainerLoc InvSlot${i}
+				/break
+			}
+		/next i
+		
+		/if (!${ContainerLoc.Equal[InvSlot32]}) {
+			/notify InventoryWindow ${ContainerLoc} leftmouseup
+			/delay 2s ${Cursor.Name.Equal[${Container}]}
+			/notify InventoryWindow InvSlot32 leftmouseup
+			/delay 5
+			/varset ContainerLoc InvSlot32
+			/if (${Cursor.ID}) /autoinv
+		}
+		
+		/notify InventoryWindow ${ContainerLoc} rightmouseup
+		/keypress OPEN_INV_BAGS
+		/delay 5
+	} else {
+		/echo \ayI couldn't find your ${Container}. Ending Macro.
+		/end
+	}
+	/call CleanOutContainer
+/return
+
+Sub getCounts
+	/varset CanMake ${FindItemCount[=Ethernere Essence]}
+	/echo \arYou have ${Me.FreeInventory} open inventory slots. You can make ${CanMake} GuideStone(s).
+	/if (${Int[${Math.Calc[${Me.FreeInventory}-10]}]} > 0 && ${Int[${Math.Calc[${Me.FreeInventory}-10]}]} < ${CanMake}) {
+		/if (${Int[${Math.Calc[${Me.FreeInventory}-10]}]} > 0) {
+			/varset BuyAmount ${Int[${Math.Calc[${Me.FreeInventory}-10]}]}
+			/varcalc BuyAmount ${BuyAmount}-${FindItemCount[Stone of Marking]}
+		}
+	} else /if (${Int[${Math.Calc[${Me.FreeInventory}-10]}]} <= 0) {
+		/echo \ayNot enough Inventory space for crafting. Please clean up your inventory and try again. \arEnding Macro!
+		/end
+	} else {
+		/varset BuyAmount ${Int[${Math.Calc[${CanMake}-${FindItemCount[Stone of Marking]}]}]}
+	}
+	/echo BuyAmount is ${BuyAmount}
+/return
+
+Sub Combine
+	/itemnotify ${FindItem[=Stone of Marking].InvSlot} leftmouseup
+	/itemnotify in pack10 1 leftmouseup
+	/delay 5
+	/nomodkey /ctrlkey /itemnotify ${FindItem[=Ethernere Essence].InvSlot} leftmouseup
+	/itemnotify in pack10 2 leftmouseup
+	/delay 5
+	/notify ContainerWindow Container_Combine leftmouseup
+	/delay 5
+	/if (${Cursor.ID}) /autoinv
+	/delay 5
+	/call CleanOutContainer
+	/delay 2
+	
+/return
+
+Sub CheckSettings
+	/if (!${Window[OptionsWindow].Open}) {
+		/windowstate OptionsWindow open
+		/delay 2s ${Window[OptionsWindow].Open}
+	}
+	
+	/if (!${Window[OptionsWindow].Child[OGP_TradeskillCtrlClickCheckbox].Checked}) {
+		/notify OptionsWindow OGP_TradeskillCtrlClickCheckbox leftmouseup
+	}
+/return
+
+Sub BuyItem(string itemToBuy, int Quantity)
+	/if (${Cursor.ID}) /autoinv
+	/if (${Quantity}) {
+		/if (${Window[MerchantWnd].Open}) {
+			:buy
+			/delay 2s ${Window[MerchantWnd].Child[MW_ItemList].List[=${itemToBuy},2]}
+			/if (${Window[MerchantWnd].Child[MW_ItemList].List[=${itemToBuy},2]}) {
+				/declare currentInv int local ${FindItemCount[=Stone of Marking]}
+				/echo "\arBuying ${Quantity} Stone of Marking"
+				/declare i int local
+				/for i 1 to ${Quantity}
+					/nomodkey /notify merchantwnd MW_ItemList listselect ${Window[MerchantWnd].Child[MW_ItemList].List[=Stone of Marking,2]}
+					/delay 5
+					/nomodkey /shiftkey /notify merchantwnd MW_Buy_Button leftmouseup
+					/delay 2s ${FindItemCount[Stone of Marking]} > ${currentInv}
+					/varset currentInv ${FindItemCount[Stone of Marking]}
+				/next i
+				/echo \ayPurchasing Complete. I now have ${FindItemCount[=Stone of Marking]}
+			}
+		} else {
+			/if (${Spawn[Tak Whistler].Distance} > 20) {
+				/moveto id ${Spawn[Tak Whistler].ID}
+				/while (${MoveTo.Moving}) {
+					/delay 1
+				}
+			}
+			/target id ${Spawn[Tak Whistler].ID}
+			/if (${Target.Distance} < 20) {
+				/invoke ${Target.RightClick}
+				/delay 10s ${Merchant.Items}
+				/if (${Window[MerchantWnd].Child[MW_UsableButton].Checked}) {
+					/notify MerchantWnd MW_UsableButton leftmouseup
+				}
+				/goto :buy
+			} else /if (${Target.Race.Name.Equal[Merchant]}) {
+				/echo ${Target.CleanName} is to far away to open the Merchant, get closer!
+			} else {
+				/echo No Merchant in this Zone!!
+				/end
+			}
+		}
+	}
+	/notify MerchantWnd MW_Done_Button leftmouseup
+/return
+
+Sub checkVend(string buyItem)
+/return ${Window[MerchantWnd].Child[MW_ItemList].List[=Stone of Marking,2]}
+
+Sub CheckRequirements
+	/if (${Zone.ID} != 13) {
+		/echo \arYou need to go to North Karana for this macro to work, ending Macro!
+		/end
+	}
+	/if (!${FindItemCount[Ethernere Essence]}) {
+		/echo \ayYou don't have any Ethernere Essence, these can be foraged in Ethernere Tainted West Karana, Neriak Fourth Gate, and The Dead Hills!
+		/echo \ayAlternately you can purchase it from other players in the bazaar. \arEnding Macro.
+		/end
+	}
+	/if (!${FindItemCount[${Container}]}) {
+		/echo \ayYou don't have a ${Container} on you. It's Required to run this macro, \arEnding!
+		/end
+	}
+/return
+
+Sub SellToVendor(ItemToSell)
+	/if (${Window[MerchantWnd].Open}) {
+		:sell
+		/echo "\agSelling ${ItemToSell}"
+		/declare startCount int local
+		/while (${FindItem[${ItemToSell}].InvSlot}) {
+			/varset startCount ${FindItemCount[=${ItemToSell}]}
+			/nomodkey /itemnotify ${FindItem[=${ItemToSell}].InvSlot} leftmouseup
+			/delay 5
+			/nomodkey /shiftkey /notify merchantwnd MW_Sell_Button leftmouseup
+			/delay 2s ${FindItemCount[=${ItemToSell}]}<${startCount}
+			/varset startCount ${FindItemCount[=${ItemToSell}]}
+		}
+	} else {
+		/target id ${Spawn[Tak Whistler].ID}
+		/if (${Target.Distance} < 20) {
+			/echo Attempting to open merchant!
+			/invoke ${Target.RightClick}
+			/delay 10s ${Merchant.Items}
+			/goto :sell
+		} else /if (${Target.Race.Name.Equal[Merchant]}) {
+			/echo ${Target.CleanName} is to far away to open the Merchant, get closer!
+		} else {
+			/echo No Merchant in this Zone!!
+			/end
+		}
+	}
+	/notify MerchantWnd MW_Done_Button leftmouseup
+/return
+
+Sub Declares
+	/declare Debugging bool outer TRUE
+	/declare ContainerLoc string outer
+	/declare CanMake int outer
+	/declare BuyAmount int outer
+	/declare Container string outer
+	/declare HybridResearchClasses string outer PAL RNG SHD BST
+	/declare SpellResearchClasses string outer NEC WIZ MAG ENC
+	/declare PrayerWritClasses string outer CLR DRU SHM BST
+	/declare TomeBindingClasses string outer WAR MNK ROG BER
+
+	/if (${HybridResearchClasses.Find[${Me.Class.ShortName}]}) {
+		/varset Container Hybrid Research Kit
+	} else /if (${SpellResearchClasses.Find[${Me.Class.ShortName}]}) {
+		/varset Container Spell Research Kit
+	} else /if (${PrayerWritClasses.Find[${Me.Class.ShortName}]}) {
+		/varset Container Prayer Writing Kit
+	} else /if (${Me.Class.ShortName.Equal[BRD]}) {
+		/varset Container Song Writing Kit
+	} else /if (${TomeBindingClasses.Find[${Me.Class.ShortName}]}) {
+		/varset Container Tome Binding Kit
+	}
+/return
+
+Sub CleanOutContainer
+	/declare i int local
+	/for i 1 to 10
+	/if (${Me.Inventory[32].Item[${i}].ID}) {
+		/nomodkey /shiftkey /itemnotify in pack10 ${i} leftmouseup
+		/delay 2
+		/autoinv
+		/delay 2
+	}
+	/next i
+/return
+	
+	

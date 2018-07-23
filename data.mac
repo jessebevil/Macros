@@ -1,0 +1,98 @@
+|	Written by ChatWithThisName
+|	BrokenRobotGames@gmail.com
+|	Created: 1/10/2018
+|
+
+| --------------------------------------------------------------------------------------------
+| SUB: Main
+| --------------------------------------------------------------------------------------------
+Sub Main
+	/call data hud
+	/call data spawn
+	/call data Deity
+	/call data spell
+	/call data range
+	/call data target
+	/call data altability
+	/call data item
+	/call data Evolving
+	/call data int
+	/call data skill
+	/call data array
+	/call data body
+	/call data buff
+	/call data character
+	/call data class
+	/call data corpse
+	/call data currentzone
+	/call data dynamicZone
+	/call data dzmember
+	/call data fellowship
+	/call data fellowshipmember
+	/call data float
+	/call data ground
+	/call data group
+	/call data heading
+	/call data invslot
+	/call data macro
+	/call data macroquest
+	/call data math
+	/call data mercenary
+	/call data merchant
+	/call data plugin
+	/call data race
+	/call data raid
+	/call data string
+	/call data switch
+	/call data ticks
+	/call data time
+	/call data timer
+	/call data type
+	/call data tindow
+	/call data xtarget
+	/call data zone
+	/call data double
+	/call data int64
+	/call data timestamp
+	/call data targetbuff
+	/call data pointmerchant
+	/call data pet
+	/call data keyring
+	/call data alert
+	/call data alertlist
+	/call data worldlocation
+	/call data everquest
+	/call data stick
+	/call data DisplayItem
+	/call data task
+	/call data bazaar
+	/call data Navigation
+	/call data twist
+	/call data body
+	/call data SpawnMaster
+	/call data EQBC
+	/call data Melee
+	/call data easyfind
+	/call data Debuff
+	/call data Cast
+	/call data moveto
+	/call data AdvPath
+	/call data Bardswap
+
+	/echo Done!
+/return
+
+| --------------------------------------------------------------------------------------------
+| SUB: data
+| --------------------------------------------------------------------------------------------
+Sub data(string dataType)
+	/declare i int local 0
+	/declare j int local 0
+	/echo Checking ${dataType} for members.
+	/for i 1 to 300
+		/if (${Type[${dataType}].Member[${i}].NotEqual[NULL]}) {
+			/echo Adding: ${Type[${dataType}].Member[${i}]}
+			/ini Data ${dataType} Member${i} ${Type[${dataType}].Member[${i}]}
+		}
+	/next i
+/return

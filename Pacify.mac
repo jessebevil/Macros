@@ -1,0 +1,21 @@
+#include kissassist.inc
+Sub Main
+	/call KissSetup Puller
+	/while (1) {
+		/target npc noalert 1
+		/delay 2s ${Target.ID}
+		/call Pacify ${Target.ID}
+	}
+/return
+
+Sub Pacify(PullTargetID)
+	/declare LullSpell string local Silence of Jembel
+	/declare i int local 0
+	/if (${Math.Calc[${SpawnCount[npc radius 60 zradius 25 loc ${Spawn[${PullTargetID}].X} ${Spawn[${PullTargetID}].Y} ${Spawn[${PullTargetID}].Z}]}-1].Int}) {
+		/for i 1 to ${Math.Calc[${SpawnCount[npc radius 60 zradius 25 loc ${Spawn[${PullTargetID}].X} ${Spawn[${PullTargetID}].Y} ${Spawn[${PullTargetID}].Z}]}-1].Int}
+			/if (${Spawn[${PullTargetID}].NearestSpawn[${i},radius 60 zradius ${Math.Calc[${Math.Abs[${Math.Calc[${Target.Z}-${Me.Z}]}]}+25]}].ID}) {
+				/call CastWhat "${LullSpell}" "${Spawn[${PullTargetID}].NearestSpawn[${i},radius 60 zradius ${Math.Calc[${Math.Abs[${Math.Calc[${Target.Z}-${Me.Z}]}]}+25]}].ID}" "Pacify" 0
+			}
+		/next i
+	}
+/return

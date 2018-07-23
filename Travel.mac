@@ -1,0 +1,76 @@
+Sub Main
+	/if (!${Param0.Length}) {
+		/echo You've failed to provide a destination. Please type /mac Travel desination, IE: /mac Travel "plane of knowledge"
+	} else {
+		/if (!${Defined[Desination]}) {
+			/declare Destination string outer "${Param0}"
+		}
+	}
+	/call OpenWnd ZoneGuideWnd
+	/echo Destination is ${Destination}
+	/echo Clicking Text box to search for destination.
+	/notify ZoneGuideWnd ZGW_ZoneSelect_EditBox leftmouseup
+	/if (${Window[ZoneGuideWnd].Child[ZGW_ClearZonesSearch_Btn].Enabled}) {
+		/echo Clicking Clear button
+		/notify ZoneGuideWnd ZGW_ClearZonesSearch_Btn leftmouseup
+	}
+	/call TypeIn "${Param0}"
+	/delay 1s ${Window[ZoneGuideWnd].Child[ZGW_SearchZones_Btn].Enabled}
+	/echo Clicking search button
+	/notify ZoneGuideWnd ZGW_SearchZones_Btn leftmouseup
+	/delay 1s ${Window[ZoneGuideWnd].Child[ZGW_Zones_ListBox].List[1,1].Length}
+	/declare i int local 0
+	/for i 1 to 10
+		/if (${Window[ZoneGuideWnd].Child[ZGW_Zones_ListBox].List[${i},1].Equal[${Destination}]}) {
+			/varset i ${i}
+			/break
+		}
+	/next i
+	/echo selecting zone from the list. 
+	/notify ZoneGuideWnd ZGW_Zones_ListBox listselect ${i}
+	/delay 5
+	/echo setting end location. 
+	/notify ZoneGuideWnd ZGW_SetEnd_Btn leftmouseup
+	/delay 1s ${Window[ZoneGuideWnd].Child[ZGW_PathEndZone_EditBox].Text.Equal[${Window[ZoneGuideWnd].Child[ZGW_Zones_ListBox].List[${i},1]}]}
+	/delay 5
+	/if (${Window[ZoneGuideWnd].Child[ZGW_PathEndZone_EditBox].Text.Equal[${Window[ZoneGuideWnd].Child[ZGW_Zones_ListBox].List[${i},1]}]}) {
+		/echo Clicking Activate Path. 
+		/notify ZoneGuideWnd ZGW_ActivatePath_Btn leftmouseup
+	} else {
+		/echo Something went wrong getting the destination setup, please try again!
+	}
+/return 
+
+Sub OpenWnd(string what)
+	/windowstate ${what} open
+	/delay 1s ${Window[${what}].Open}
+/return
+
+Sub Declares
+	
+/return
+
+Sub TypeIn(string InStr)
+	/echo Typing ${InStr}
+	/declare char string local
+	/declare i int local
+	/for i 1 to ${InStr.Length}
+		/varset char ${InStr.Mid[${i},1]}
+		/if (!${char.Length}) {
+			/nomodkey /keypress Space chat
+		} else {
+			/if (${char.Left[1].Equal[(]}) /return
+			/if (${char.Left[1].Equal[)]}) /return
+			/nomodkey /keypress ${char} chat
+		}
+	/next i
+/return
+
+Sub ClearChat(parent,child)
+	/while (${Window[${parent}].Child[${child}].Text.Length}>0) {
+		/ctrlkey /shiftkey /keypress home chat
+		/delay 5
+		/ctrlkey /shiftkey /keypress delete chat
+		/delay 5
+	}
+/return

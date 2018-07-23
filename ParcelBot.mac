@@ -1,0 +1,180 @@
+	#Event Sent "#*#tells you, 'I will deliver#*#"
+
+| --------------------------------------------------------------------------------------------
+| SUB: Main
+| --------------------------------------------------------------------------------------------
+Sub Main
+	/declare iniName string outer "ParcelBot_${Me.Name}_${EverQuest.Server}"
+	/declare thisVersion string outer 0.9
+	/if (!${Ini[${iniName},General,Version].Length} || ${Ini[${iniName},General,Version].NotEqual[${thisVersion}]}) {
+		/echo Creating INI.
+		/call CreateINI
+		/echo Edit the INI and then run the macro again.
+		/end
+	}
+	/call Initialize
+
+	/declare i int local 0
+	/declare j int local 0
+|** Target and open the parcel vendor named in INI **|
+	/target ${ParcelVendor}
+	/delay 2s ${Target.ID}
+	/invoke ${Target.RightClick}
+
+|** Open inventory and all bags **|
+	/keypress OPEN_INV_BAGS
+	/if (!${Window[InventoryWindow].Open}) /windowstate InventoryWindow open
+
+|** Wait for the merchant window to open **|
+	/delay 3s ${Window[MerchantWnd].Open}
+	/notify MerchantWnd MW_MerchantSubWindows tabselect 3
+	/delay 1s
+
+|** Send the items **|
+	/for i 1 to ${RecipientCount}
+		/for j 1 to ${Recipient${i}ItemCount}
+			/if (${FindItemCount[=${Recipient${i}Item[${j}]}]} < ${Recipient${i}ItemQuantity[${j}]} || !${FindItemCount[=${Recipient${i}Item[${j}]}]}) {
+				/echo \arYou do not have enough ${Recipient${i}Item[${j}]}s, Skipping this item!\n You have ${FindItemCount[=${Recipient${i}Item[${j}]}]} and you are trying to send ${Recipient${i}ItemQuantity[${j}]}
+				/continue
+			}
+			/echo \agSending ${Recipient${i}Item[${j}]} x (${Recipient${i}ItemQuantity[${j}]}) to ${Recipient[${i}]}
+			/itemnotify ${FindItem[=${Recipient${i}Item[${j}]}].InvSlot} leftmouseup
+			/notify MerchantWnd MW_Send_To_Edit leftmouseup
+			/call ClearChat
+			/call TypeIn ${Recipient[${i}]}
+			/delay 5
+			/notify MerchantWnd MW_Send_Button leftmouseup
+
+		|** Only use the Quantity Slider if the item is stackable or I have more than one of them. **|
+			/if (${FindItem[=${Recipient${i}Item[${j}]}].Stackable} && ${FindItemCount[=${Recipient${i}Item[${j}]}]} > 1) {
+				/delay 2s ${Window[QuantityWnd].Open}
+				/notify QuantityWnd QTYW_slider newvalue ${Recipient${i}ItemQuantity[${j}]}
+				/delay 1s
+				/notify QuantityWnd QTYW_Accept_Button leftmouseup
+			}
+
+		:waitTillSent
+			/delay 5
+			/doevents
+			/if (!${Sent}) /goto :waitTillSent
+			/varset Sent FALSE
+			/delay 1s
+		/next j
+	/next i
+
+	/cleanup
+/return
+
+|**Saar's Code **|
+| --------------------------------------------------------------------------------------------
+| SUB: ClearChat
+| --------------------------------------------------------------------------------------------
+Sub ClearChat
+:Try1
+	/ctrlkey /shiftkey /keypress home chat
+	/delay 5
+	/ctrlkey /shiftkey /keypress delete chat
+	/delay 5
+	/if (${Window[MerchantWnd].Child[MW_Send_To_Edit].Text.Length}>0) /goto :Try1
+/return
+
+|** Saar's Code **|
+| --------------------------------------------------------------------------------------------
+| SUB: TypeIn
+| --------------------------------------------------------------------------------------------
+Sub TypeIn(InStr)
+|/echo Sending Parcel to ${InStr}
+	/declare char string local
+	/declare i int local
+	/for i 1 to ${InStr.Length}
+		/varset char ${InStr.Mid[${i},1]}
+		/if (!${char.Length}) {
+			/nomodkey /keypress Space chat
+		} else {
+			/if (${char.Left[1].Equal[(]}) /return
+			/if (${char.Left[1].Equal[)]}) /return
+			/nomodkey /keypress ${char} chat
+		}
+	/next i
+/return
+
+| --------------------------------------------------------------------------------------------
+| SUB: CreateINI
+| --------------------------------------------------------------------------------------------
+Sub CreateINI
+	/if (!${Ini[${iniName},General,Version].Length} || ${Ini[${iniName},General,Version].NotEqual[${thisVersion}]}) {
+		/ini ${iniName} General Version ${thisVersion}
+	}
+	/call CheckINI General ParcelVendor PutTheNameHere
+	/declare i int local 0
+	/declare j int local 0
+	/for i 1 to 10
+		/call CheckINI Recipient${i} Name -----
+		/for j 1 to 20
+			/call CheckINI Recipient${i} ----${j} ----
+			/call CheckINI Recipient${i} ItemToSend${j} -----
+			/call CheckINI Recipient${i} ItemToSend${j}Quantity 1
+			/call CheckINI Recipient${i} ---------${j} ---------
+		/next j
+	/next i
+/return
+
+| --------------------------------------------------------------------------------------------
+| SUB: Initialize
+| --------------------------------------------------------------------------------------------
+Sub Initialize
+	/declare ParcelVendor string outer ${Ini[${iniName},General,ParcelVendor]}
+	/echo Using ${ParcelVendor} to send Items
+	/declare Sent bool outer FALSE
+	/declare Recipient[20] string outer -1
+	/declare i int local 0
+	/declare j int local 0
+	/declare NullCounterName int local 0
+	/declare RecipientCount int outer 0
+	/for i 1 to 20
+		/if (${Ini[${iniName},Recipient${i},Name].Equal[-----]} || ${Ini[${iniName},Recipient${i},Name].Equal[NULL]}) {
+			/varcalc NullCounterName ${NullCounterName} + 1
+			/if (${NullCounterName} > 2) /break
+			/continue
+		}
+		/varset Recipient[${i}] ${Ini[${iniName},Recipient${i},Name]}
+		/varcalc RecipientCount ${RecipientCount} + 1
+		/echo Recipient: ${Recipient[${i}]}
+		/for j 1 to 20
+			/if (!${Defined[Recipient${i}Item]}) {
+				/declare Recipient${i}Item[20] string outer -1
+				/declare Recipient${i}ItemQuantity[20] int outer 1
+			}
+			/if (!${Defined[Recipient${i}ItemCount]}) {
+				/declare Recipient${i}ItemCount int outer 0
+				/declare Recipient${i}NullCount int outer 0
+			}
+			/if (${Ini[${iniName},Recipient${i},ItemToSend${j}].Equal[-----]} || ${Ini[${iniName},Recipient${i},ItemToSend${j}].Equal[NULL]}) {
+				/varcalc Recipient${i}NullCount ${Recipient${i}NullCount} + 1
+				/if (${Recipient${i}NullCount} > 2) /break
+				/continue
+			}
+			/varset Recipient${i}Item[${j}] ${Ini[${iniName},Recipient${i},ItemToSend${j}]}
+			/varset Recipient${i}ItemQuantity[${j}] ${Ini[${iniName},Recipient${i},ItemToSend${j}Quantity]}
+			/varcalc Recipient${i}ItemCount ${Recipient${i}ItemCount} + 1
+			/echo Item: ${Recipient${i}Item[${j}]}
+		/next j
+	/next i
+/return
+
+| --------------------------------------------------------------------------------------------
+| SUB: CheckINI
+| --------------------------------------------------------------------------------------------
+Sub CheckINI(String Section,String Key,String Value)
+	/if (!${Ini[${iniName},${Section},${Key}].Length}) {
+		/ini ${iniName} ${Section} ${Key} ${Value}
+	}
+/return
+
+| --------------------------------------------------------------------------------------------
+| SUB: Event_Sent
+| --------------------------------------------------------------------------------------------
+Sub Event_Sent
+	/varset Sent TRUE
+/return
+|  [+++  Formatted by MQ2f using tabs for indents +++]

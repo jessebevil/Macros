@@ -1,0 +1,294 @@
+|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+|** Fish.mac - Updated by Chatwiththisname 12/30/2017 **|
+|
+|	All bags should remain open while the macro is in use. 
+|	Custom sub routine to open all your bags.
+|
+|	Uses Brell's Fishin' Pole to summon a new pole if yours breaks.
+|	Uses Endless Worms to summon new bait if you run out.
+|
+|	If no Fishing Pole and no Brell's Fishin' Pole ~ Will inform you that you need a new pole.
+|	If no bait and no Endless Worms ~ Will inform you that you are out and end the macro.
+|
+|	Type /stats 
+|	to get a statistics output to MQ2Window
+|
+|	Settings: 
+|		Verbose ~ Output a bunch of crap to MQ2 Window
+|		Destroy ~ Destroy Sandals and Daggers
+|		getDrunk ~ Uses Brell's Fishin' Pole to summon ale and drink it to get drunk
+|		reportSummoning ~ If true it will report to MQ2Window every time Fish.mac summons an item. 
+|							This can cause a lot of spam if getDrunk is TRUE
+|
+|	Email: BrokenRobotGames@gmail.com if the macro becomes unusable. 
+||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+#event Pole "#*#You can't fish without a fishing pole, go buy one.#*#"
+#event Pole "#*#fishing pole in your primary hand.#*#"
+#event poleBroke "#*#fishing pole broke#*#"
+#event NoBait "#*#without fishing bait#*#"
+#event noWater "#*#land sharks#*#"
+#event castLine "#*#cast your line#*#"
+#event moved "#*#go on your way#*#"
+#event dryLand "#*#dry land to fish#*#"
+#event drankAle "#*#You take a swig of Summoned: Ale#*#"
+#event caughtNothing "#*#You didn't catch anything#*#"
+#event spillBeer "#*#You spill your beer#*#"
+
+#warning
+
+Sub Main
+	|**************Settings**************|
+	/declare Verbose bool outer FALSE
+	/declare Destroy bool outer TRUE
+	/declare getDrunk bool outer TRUE
+	/declare reportSummoning bool outer TRUE
+	|**********End of Settings**********|
+	/declare DelayMult int outer 1
+	/declare caughtCount int outer 0
+	/declare poleCount int outer 0
+	/declare castCount int outer 0
+	/declare sandleCount int outer 0
+	/declare daggerCount int outer 0
+	/declare scalesCount int outer 0
+	/declare alesDrank int outer 0
+	/declare beerSpills int outer 0
+	/declare caughtNothing int outer 0
+	/declare CurrentSub string outer Main
+	
+	/alias /stats /multiline ; /echo \ag[Fish.mac]\ao Times Casted Line: ${castCount} ; /echo \ag[Fish.mac]\ao Good Catches: ${caughtCount}; /echo \ag[Fish.mac]\ao Caught Nothing: ${caughtNothing} ; /echo \ag[Fish.mac]\ao Sandles Caught: ${sandleCount} ; /echo \ag[Fish.mac]\ao Daggers Caught: ${daggerCount} ; /echo \ag[Fish.mac]\ao Scales Caught: ${scalesCount} ; /echo \ag[Fish.mac]\ao Poles Broken: ${poleCount} ; /echo \ag[Fish.mac]\ao Ales Drank: ${alesDrank} ; /echo \ag[Fish.mac]\ao Beers Spilled: ${beerSpills}
+	/echo \ag[Fish.mac]\ao Thanks for using Fish.mac by ChatWithThisName
+	/echo \ag[Fish.mac]\ao Typing /stats will output some useless statistics from your use of the macro from this run.
+	
+	/call OpenAllContainers
+    /call CheckPole
+	/call CheckBait
+
+	:Fish
+	/varset CurrentSub Main
+	/if (${Verbose}) {
+		/echo \ag[Fish.mac]\aw Entering Sub ${CurrentSub}
+	}
+	/doability Fishing
+	/doevents
+	/if (${getDrunk} && ${FindItem[=Brell's Fishin' Pole].Name.Equal[Brell's Fishin' Pole]} && ${FindItemCount[=Summoned: Ale]} < 1) {
+		/call getAle
+	} else /if (${getDrunk} && ${FindItemCount[=Summoned: Ale]}) {
+		/nomodkey /ctrl /itemnotify ${FindItem[=Summoned: Ale].InvSlot} rightmouseup
+	}
+	/doevents
+	/delay 65 
+	/doevents
+	/if (!${Cursor.ID}) /goto :Fish
+	/call KeepItem
+	
+	/goto :Fish
+/return
+
+Sub KeepItem
+	/varset CurrentSub KeepItem
+	/if (${Verbose}) {
+		/echo \ag[Fish.mac]\aw Entering Sub ${CurrentSub}
+	}
+
+	/if (${Cursor.Name.Find[bait]}) {
+		/autoinventory
+		/delay 5
+	}
+
+	/if (${Destroy}) {
+		/if (${Cursor.Name.Equal[Tattered Cloth Sandal]}) {
+			/varcalc sandleCount ${sandleCount} + 1
+			/destroy
+			/delay 1s
+		} else /if (${Cursor.Name.Equal[Rusty Dagger]}) {
+			/varcalc daggerCount ${daggerCount} + 1
+			/destroy
+			/delay 1s
+		}
+	}
+	/if (${Cursor.Name.Equal[Summoned: Ale]}) {
+		/autoinventory
+		/delay 5
+	}
+	
+	/if (${Cursor.Name.NotEqual[Fish Scales]} && !${Cursor.Name.Equal[Summoned: Ale]} && !${Cursor.Name.Equal[Rusty Dagger]} && !${Cursor.Name.Equal[Tattered Cloth Sandal]}) {
+		/echo \ag[Fish.mac]\aw Caught ${Cursor.Name}
+		/varcalc caughtCount ${caughtCount}+1
+		/autoinventory
+		/delay 5
+	} else /if (${Cursor.Name.Equal[Fish Scales]}) {
+		/varcalc scalesCount ${scalesCount} + 1
+		/autoinventory
+		/delay 5
+	}
+	/if (${Cursor.ID}) {
+		/call KeepItem
+	}
+/return
+
+Sub CheckPole
+	/varset CurrentSub CheckPole
+		/if (${Verbose}) {
+		/echo \ag[Fish.mac]\aw Entering Sub ${CurrentSub}
+	}
+	/call OpenAllContainers
+	/if (${Me.Inventory[mainhand].Name.Find[Fishing Pole]} || ${Me.Inventory[mainhand].Name.Find[Brell's Fishin' Pole]}) /return
+
+	/if (!${Me.Inventory[mainhand].Name.Find[Fishing Pole]} && ${FindItemCount[=Fisherman's Companion]} == 0) {
+		/if (${FindItemCount[=Fishing Pole]}>0) {
+			/echo \ag[Fish.mac]\aw Equiping ---> Fishing Pole <---
+			/delay ${Math.Calc[${DelayMult}*1]}s
+			:ReEquip1
+			/nomodkey /ctrl /itemnotify ${FindItem[=Fishing Pole].InvSlot} leftmouseup
+			/delay 2s ${Cursor.ID}
+			/nomodkey /itemnotify mainhand leftmouseup
+			/delay 1s
+			/autoinventory
+			/delay ${Math.Calc[${DelayMult}*2]}s
+			/if (!${Me.Inventory[mainhand].Name.Find[Fishing Pole]} && ${FindItemCount[=Fishing Pole]}) /goto :ReEquip1
+			/if (${Me.Inventory[mainhand].Name.Find[Fishing Pole]}>0) /return
+		}
+	}
+	
+	/if (!${Me.Inventory[mainhand].Name.Find[Fishing Pole]} && !${Me.Inventory[mainhand].Name.Find[Brell's Fishin' Pole]}) {
+		/if (${FindItemCount[=Brell's Fishin' Pole]}) {
+			/goto :ReEquip2
+		}
+		/if (${FindItemCount[=Fisherman's Companion]}) {
+			:ReCast
+			/if (${reportSummoning}) {
+				/echo \ag[Fish.mac]\ap Summoning \aw--->\ap Brell's Fishin' Pole \aw<---
+			}
+			/casting 29175|item
+			/delay 12s		
+			/if (${Cursor.ID}) /autoinventory
+			/if (!${Me.Inventory[mainhand].Name.Find[Brell's Fishin' Pole]} || !${FindItem[Brell's Fishin' Pole].Name.Equal[Brell's Fishin' Pole]}) /goto :ReCast
+			/if (${Me.Inventory[mainhand].Name.Find[Brell's Fishin' Pole]}) {
+				/return
+			} else {
+				/echo \ag[Fish.mac]\aw Equiping ---> Brell's Fishin' Pole <---
+				/delay ${Math.Calc[${DelayMult}*1]}s
+				:ReEquip2
+				/nomodkey /ctrl /itemnotify ${FindItem[=Brell's Fishin' Pole].InvSlot} leftmouseup
+				/delay 2s ${Cursor.ID}
+				/nomodkey /itemnotify mainhand leftmouseup
+				/delay 1s
+				/autoinventory
+				/delay ${Math.Calc[${DelayMult}*2]}s
+				/if (!${Me.Inventory[mainhand].Name.Find[Brell's Fishin' Pole]} && ${FindItemCount[=Brell's Fishin' Pole]}) /goto :ReEquip2
+				/if (${Me.Inventory[mainhand].Name.Find[Fishing Pole]}>0) /return
+			}
+		} 
+	}
+
+	/echo  \ag[Fish.mac]\aw You need to put your fishing pole in your primary hand.
+	/endm
+	/return
+
+Sub CheckBait
+	/varset CurrentSub CheckBait
+		/if (${Verbose}) {
+		/echo \ag[Fish.mac]\aw Entering Sub ${CurrentSub}
+	}
+	|** Your bags must be open or FindItem invslot checks will result in NULL!!!**|
+	/call OpenAllContainers
+		|** If you have no more bait **|
+	/if (${FindItemCount[Bait]}) /return
+	/if (!${FindItemCount[Bait]}) {
+		:WaitForWorms
+		/if (${FindItemCount[Endless Worms]}) {
+			/if (!${FindItem[Endless Worms].TimerReady}) {
+				/delay ${Math.Calc[${DelayMult}*1]}s
+				/nomodkey /ctrl /itemnotify ${FindItem[=Endless Worms].InvSlot} rightmouseup
+				/delay 4s ${Cursor.Name.Equal[Bait Worm]}
+				/autoinventory
+			} else {
+				/echo \ag[Fish.mac]\aw Waiting for Endless Worms to be ready!
+				/delay 1s ${FindItem[Endless Worms].TimerReady}
+				/goto :WaitForWorms
+			}
+		} else {
+			/stats
+			/echo \ag[Fish.mac]\aw You have run out of bait!
+			/echo \ag[Fish.mac]\aw Ending Macro!
+			/end
+		}
+	} 
+/return
+	
+Sub OpenAllContainers
+	/if (${Verbose}) {
+		/echo \ag[Fish.mac]\aw Entering Sub ${CurrentSub}
+	}
+	/varset CurrentSub OpenAllContainers
+	|** Done only once declare invslot count (calculation to remove the first 23 slots because those are your worn items.) **|
+	/if (!${Defined[InvSlots]}) {
+		/declare InvSlots int outer 32
+		/echo \ag[Fish.mac]\aw All packs opened, you must leave them open for macro to work. Move them if they are in your way!!
+	}
+	
+	|** Opening your inventory **|
+	/if (!${Window[InventoryWindow].Open}) {
+		/windowstate InventoryWindow open
+	}
+	
+	|** Opening all your bags **|
+	/declare i int inner
+	/for i 23 to ${InvSlots}
+		/if (${Me.Inventory[${i}].Container} && !${Me.Inventory[${i}].Open}) {
+			/nomodkey /itemnotify pack${Int[${Math.Calc[${i}-22]}]} rightmouseup
+		}
+	/next i
+	
+/return
+
+Sub getAle
+	/if (${reportSummoning}) {
+		/echo \ag[Fish.mac]\ap Summoning \aw--->\ap Summoned: Ale \aw<---
+	}
+	/casting 29193|item
+/return
+
+Sub Event_Pole
+	/call CheckPole
+/return
+
+Sub Event_NoBait
+	/call CheckBait
+/return
+
+Sub Event_moved
+	/echo \ag[Fish.mac]\aw Stop moving around or type /end to stop Fish.mac!
+/return
+
+Sub Event_castLine
+	/varcalc castCount ${castCount} + 1
+/return
+
+Sub Event_noWater
+	/echo \ag[Fish.mac]\aw There's no water here. Please move to a body of water and try again!
+	/stats
+	/end
+/return
+
+Sub Event_dryLand
+	/echo \ag[Fish.mac]\aw Trying to do some spear fishing? Get out of the water knucklehead!
+/return
+
+Sub Event_poleBroke
+	/varcalc poleCount ${poleCount} + 1
+	/call CheckPole
+/return
+
+Sub Event_drankAle
+	/varcalc alesDrank ${alesDrank} + 1
+/return
+
+Sub Event_caughtNothing
+	/varcalc caughtNothing ${caughtNothing} + 1
+/return
+
+Sub Event_spillBeer
+	/varcalc beerSpills ${beerSpills} + 1
+/return

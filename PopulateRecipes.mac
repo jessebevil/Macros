@@ -1,0 +1,140 @@
+Sub Main
+	/declare Debugging bool outer FALSE
+	/if (!${Window[TradeSkillWnd].Open}) {
+		/echo it doesn't appear that you have a tradeskill window open. Please open one and try again. Ending macro!
+		/end
+	} else {
+		/call GetRecipeCount "Baking"
+		/call GetRecipeCount "Blacksmithing"
+		/call GetRecipeCount "Brewing"
+		/call GetRecipeCount "Fishing"
+		/call GetRecipeCount "Fletching"
+		/call GetRecipeCount "Jewelry"
+		/call GetRecipeCount "Pottery"
+		/call GetRecipeCount "Researching"
+		/call GetRecipeCount "Tailoring"
+		/call GetRecipeCount "Tinkering"
+		
+			/echo \awBaking Recipes = \ag${BakingRecipeCount}
+			/echo \awSmithing Recipes = \ag${BlacksmithingRecipeCount}
+			/echo \awBrewing Recipes = \ag${BrewingRecipeCount}
+			/echo \awFishing Recipes = \ag${FishingRecipeCount}
+			/echo \awFletching Recipes = \ag${FletchingRecipeCount}
+			/echo \awJewelry Recipes = \ag${JewelryRecipeCount}
+			/echo \awPottery Recipes = \ag${PotteryRecipeCount}
+			/echo \awResearching Recipes = \ag${ResearchingRecipeCount}
+			/echo \awTailoring Recipes = \ag${TailoringRecipeCount}
+			/echo \awTinkering Recipes = \ag${TinkeringRecipeCount}
+		
+		/call PopulateComponents "Baking"
+		/call PopulateComponents "Blacksmithing"
+		/call PopulateComponents "Brewing"
+		/call PopulateComponents "Fishing"
+		/call PopulateComponents "Fletching"
+		/call PopulateComponents "Jewelry"
+		/call PopulateComponents "Pottery"
+		/call PopulateComponents "Researching"
+		/call PopulateComponents "Tailoring"
+		/call PopulateComponents "Tinkering"
+		
+	}
+	
+/return
+
+Sub GetRecipeCount(tradeskill)
+	/if (${Debugging}) /echo ${tradeskill}
+	/declare ${tradeskill}RecipeCount int outer 0
+	/if (!${Ini[${tradeskill}].Length}) {
+		/echo \arNo INI Found for ${tradeskill}!
+		/return
+	} else {
+		/echo \agGetting Recipe counts for ${tradeskill}!
+	}
+	/declare i int local 0
+	/declare nullcount int local 0
+	/for i 1 to 5000
+		/if (${Ini[${tradeskill}.ini,Recipes,Recipe${i}].Length}) {
+			/varcalc ${tradeskill}RecipeCount ${${tradeskill}RecipeCount}+1
+			/varset nullcount 0
+		} else {
+			/varcalc nullcount ${nullcount}+1
+		}
+		/if (${nullcount} > 5) /break
+	/next i
+/return
+
+Sub TypeIn(InStr)
+	/declare char string local
+	/declare i int local
+	/for i 1 to ${Math.Calc[${InStr.Length}-1].Int}
+		/varset char ${InStr.Mid[${i},1]}
+		/if (!${char.Length}) {
+			/nomodkey /keypress Space chat
+		} else {
+			/if (${char.Left[1].Equal[(]}) /return
+			/if (${char.Left[1].Equal[)]}) /return
+			/nomodkey /keypress ${char} chat
+		}
+	/next i
+/return
+
+Sub ClearChat(parent, child)
+	/while (${Window[${parent}].Child[${child}].Text.Length}>0) {
+		/ctrlkey /shiftkey /keypress home chat
+		/delay 5
+		/ctrlkey /shiftkey /keypress delete chat
+		/delay 5
+	}
+/return
+
+Sub PopulateComponents(Tradeskill)
+	/declare i int local 0
+	/declare j int local 0
+	/declare k int local 0
+	/echo \awPopulating Components for \ag${${Tradeskill}RecipeCount} \ao${Tradeskill} \awrecipes.
+	/if (${${Tradeskill}RecipeCount}) {
+		/for i 419 to ${${Tradeskill}RecipeCount}
+			/echo \awChecking Recipe: ${i}, \ap${Ini[${Tradeskill},Recipes,Recipe${i}].Arg[1,|]} \awfor a recipe!
+			/if (${Ini[${Tradeskill},Recipes,Recipe${i}].Arg[2,|].Length}) {
+				/echo \arAlready has at least one component added to this recipe. Skipping!
+				/continue
+			}
+			/notify TradeSkillWnd COMBW_SearchTextEdit leftmouseup
+			/call ClearChat "TradeSkillWnd" "COMBW_SearchTextEdit"
+			/call TypeIn "${Ini[${Tradeskill},Recipes,Recipe${i}]}"
+			/delay 5
+			/notify TradeSkillWnd COMBW_SearchButton leftmouseup
+			/delay 5
+			/delay 10s ${Window[TradeSkillWnd].Child[COMBW_SearchButton].Enabled}
+			
+			/for j 1 to 100
+				/if (${Debugging}) /echo ${Window[TradeSkillWnd].Child[COMBW_RecipeList].List[${j},1].Length} is the Length of the text at index ${j}
+				/if (!${Window[TradeSkillWnd].Child[COMBW_RecipeList].List[${j},1].Length}) {
+					/if (${Debugging}) /echo Reached the end of the list for ${Ini[${Tradeskill},Recipes,Recipe${i}].Left[${Math.Calc[${Ini[${Tradeskill},Recipes,Recipe${i}].Length}-1]}]}
+					/break
+				}
+				|** Test Echo, FINDME **|
+				|${Window[TradeSkillWnd].Child[COMBW_RecipeList].List[1,1].Equal[${Ini[Blacksmithing,Recipes,Recipe1].Left[${Math.Calc[${Ini[Blacksmithing,Recipes,Recipe1].Length}-1]}]}]}
+				/if (${Window[TradeSkillWnd].Child[COMBW_RecipeList].List[${j},1].Equal[${Ini[${Tradeskill},Recipes,Recipe${i}].Left[${Math.Calc[${Ini[${Tradeskill},Recipes,Recipe${i}].Length}-1]}]}]}) {
+					/if (${Debugging}) {
+						/echo We found a match. ${Window[TradeSkillWnd].Child[COMBW_RecipeList].List[${j},1]} is the same as ${Ini[${Tradeskill},Recipes,Recipe${i}].Left[${Math.Calc[${Ini[${Tradeskill},Recipes,Recipe${i}].Length}-1]}]} when J was ${j}!
+					}
+					/notify TradeSkillWnd COMBW_RecipeList listselect ${j}
+					/delay 2s ${Window[TradeSkillWnd].Child[COMBW_RequiredIcon9].Tooltip.Length}
+					/for k 0 to 9
+						/if (${Window[TradeSkillWnd].Child[COMBW_RequiredIcon${k}].Tooltip.Length}) {
+							/if (${Debugging}) /echo \agWriting \ap${Window[TradeSkillWnd].Child[COMBW_RequiredIcon${k}].Tooltip} \awto INI.
+							/ini "${Tradeskill}" "Recipes" "Recipe${i}" "${Ini[${Tradeskill},Recipes,Recipe${i}]}${Window[TradeSkillWnd].Child[COMBW_RequiredIcon${k}].Tooltip}|"
+						}
+					/next k
+					/echo \agSUCCESS! Recipe for \ao${Ini[${Tradeskill},Recipes,Recipe${i}].Arg[1,|]} \agwritten to file. 
+					/break
+				}
+			/next j
+			:wait
+			/delay 5
+			/if (!${Window[TradeSkillWnd].Child[COMBW_SearchButton].Enabled}) /goto :wait
+		/next i
+		/echo \agFinished \awchecking \ao${Tradeskill} \awfor recipes. 
+	}
+/return

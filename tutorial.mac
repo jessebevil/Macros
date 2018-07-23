@@ -1,0 +1,1796 @@
+	|||||||||||||||||||||||||||||||||||||||||||||||||||
+	|||||||||||||||||||||||||||||||||||||||||||||||||||
+|Tutorial.mac by Chatwiththisname
+|v1.0 ~ Initial release 2/19/2018
+|Usage: /mac Tutorial
+|
+|Purpose: Will conduct the tutorial for you from
+|			immediately after character creation
+|			to getting the skull from Arias then 
+|			moving into "The Revolt of Gloomingdeep"
+|
+| *2/23/2018
+| *Started defining rooms based on your location in 
+|  3D space in the tutorial to keep track of where you
+|  are so that the macro can make informed decisions
+|  on where it should go.
+|
+| *Corrected the spelling for Subscription from Subsription
+|
+| *Change the targets for leveling up to 5 from "rat" and "bat"
+|  to "a_cave_rat" and "a_cave_bat"
+|
+| *Now casting the Worn Totem received from Basher Alga
+|
+| *Made corrections to the med routines.
+|
+| *Fixed targeting a random mob on the add check. 
+|  It will now target your ${Me.XTarget[1].ID} instead
+|  of the first spawn returned in an area around you.
+|
+| *Added a check to avoid targets that already have
+|  an AggroHolder so you don't attack other players mobs.
+|
+| *Added in Group Task Arachnophobia once you reach level
+|  4 which gets you the Helmet.
+|
+| *Now doing "Spider Caves" "Arachnida" and "Spider Tamer Gugan"
+|  at the same time.
+|
+| *Fixed targeting of adds. The check was invalid, it has been
+|  corrected and now attacks mobs that are on the mercenary
+|  instead of you.
+|
+| *Made a new mesh to improve reliability. Better far as
+|  I can tell.
+|
+| *
+|
+| *2/20/2018
+| *Cleared Target after speaking with several NPCs so
+|  that you properly reacted to adds when navigating 
+|  to the next destination 
+|
+| *Elegist - now closing the extra dialog I missed.
+|
+| *Guard_Vyrinn - now getting both tasks at once.
+|
+| *Added a check to ensure you didn't have an add before
+|  attempting to loot items during the spider caves
+|
+| *Now verifies you are at least level 8 before trying to
+|  start Scout Zajeer mission. If you aren't will go about
+|  exping for you. (or trying lol)
+|
+| *Will now get tasks from Hobart on the way to Scout Zajeer
+|
+| *Correction to the group mana check sub. Should now properly
+|  verify group member (mercenaries) mana prior to pulling anything.
+|
+| *You will now sit when waiting on group members to get mana.
+|
+| *Navigating while using FarmStuff sub now checks for adds.
+|
+| *Will now get the quests from Guard Hobart before doing Scout Zajeer
+|
+| *Changed the name of "rat" to "a_cave_Rat" to avoid attacking Prathun
+|
+| *Added efficiency to mob hunting task in the way it decides what to kill
+|  Mostly helpful for bat/rat/nest quest because bats and rats are place
+|  holders for each other.
+|
+| *Changed the loot checking sub to now check all items after pulling to
+|  to avoid killing more than needed.
+| 
+| *Added all friendly NPCs to ignore list....I think.
+|
+| *Will now check your subscription status and buy the highest level merc
+|  you can get for your sub.
+	|||||||||||||||||||||||||||||||||||||||||||||||||||
+
+Sub Main
+	/call Declares
+	/call CheckZone
+	/call OpenTaskWnd
+	/call CheckPlugin MQ2Nav
+	/call CheckPlugin MQ2MoveUtils
+	/call CheckPlugin MQ2Melee
+	/melee melee=1
+	/if (${Zone.ID} == 188) {
+		/call CheckMesh
+		/call CloseAlert
+		/call AriasA
+		/call Zoning
+	}
+	/call CheckZone
+	/if (${Zone.ID} == 189) {
+		/call CheckMesh
+		/call LoadIgnores
+		/call WhereAmI
+		/call OpenTaskWnd
+		/call TutorialCheck "Basic Training"
+		/if (${Macro.Return.Equal[TRUE]}) {
+			/call AriasB
+			/call Absor
+			/call VahlaraA
+			/call Xenaida
+			/call Rytan
+			/call Prathun
+			/call Basher_Alga
+			/call AriasC
+		}
+		
+		/call TutorialCheck "The Revolt of Gloomingdeep"
+		/if (${Macro.Return.Equal[TRUE]}) {
+			/call TutorialCheck "Clearing the Vermin Nests"
+			/if (${Macro.Return.Equal[TRUE]}) /goto :Vermin
+			/call Guard_RahtizA
+		}
+		/call TutorialCheck "Clearing the Vermin Nests"
+		/if (${Macro.Return.Equal[TRUE]}) {
+			:Vermin
+			/call ClearNests
+			/call VahlaraB
+		}
+		/call TutorialCheck "The Revolt of Gloomingdeep"
+		/if (${Macro.Return.Equal[TRUE]}) {
+			/call Elegist
+			/call Guard_Vyrinn
+			/call Guard_RahtizB
+			/if (${Me.Level} < 4) {
+				/varset PullRange 300
+				/if (${myLocation.Equal[SpiderHall]} || ${myLocation.Equal[Spider1]}) {
+					/call LeaveSpiders
+				}
+				/echo \ayYou need to be level 4 before proceeding.
+			}
+			/while (${Me.Level} < 4) {
+				/if (!${TargetType.Equal[npc]}) /varset TargetType npc
+				/call FarmStuff a_cave_rat
+				/call FarmStuff a_cave_bat
+				/delay 5
+				/call CheckLoot ""
+			}
+			/call Guard_VyrinnB
+			/if (${Me.Level} < 6) {
+				/alert add 1 rat
+				/alert add 1 bat
+				/varset PullRange 500
+				/varset ZRadius 10
+				/if (${myLocation.Equal[SpiderHall]} || ${myLocation.Equal[Spider1]}) /call LeaveSpiders
+				/echo \ayYou need to be level 6 before proceeding!
+				/varset TargetType npc
+			}
+			/while (${Me.Level} < 6) {
+				/call WhereAmI
+				/if (!${myLocation.Equal[PitTop]} && !${myLocation.Equal[Unknown]}) {
+					/varset myTargetID 0
+					/squelch /target clear
+					/call NavToLoc -469 -815 0
+				}
+				/call FarmStuff
+				/call CheckLoot ""
+			}
+			/call Guard_HobartA
+			/call Guard_MaddocA
+			/call Scout_Zajeer
+			/call Scout_Kaikachi
+			/call Guard_HobartB
+			|** Add in optional quests? **|
+			/call FlutterwingA
+			/call Guard_MaddocC
+			/call Scout_KaikachiB
+			/call Flutterwing_Dilemma
+			/call Busted_Locks
+			|** Add in optional quests? **|
+			/call Freedom_Stand
+			/call AriasD
+		}
+		/echo "The Tutorial Quest is now complete at in ${Macro.RunTime}."
+		/played
+	} else {
+		/echo "\arYou can't use this here! This is for the tutorial!"
+	}
+/return
+
+Sub Busted_Locks
+	
+/return
+
+Sub AriasA
+	/call WaitNav ${Spawn[Arias].ID}
+	/delay 5
+	/say Escape
+	/call AcceptTask
+	/call ScribeSpells
+	/call ScribeTomes
+	/call WaitNav ${Spawn[Gloomingdeep].ID}
+	/if (!${Me.Combat}) /attack
+	/delay 3m !${Target.PctHPs}||!${Target.Type.Equal[npc]}||!${Target.ID}
+	/delay 5s ${Window[AdvancedLootWnd].Open}
+	/if (${Window[AdvancedLootWnd].Child[ADLW_ItemBtnTemplate].Tooltip.Equal[The Gloomingdeep Jailor's Key]}) {
+		/notify AdvancedLootWnd ADLW_LootBtnTemplate leftmouseup
+		/delay 5s !${Window[AdvancedLootWnd].Open}
+	}
+	/target Arias
+	/delay 2s ${Target.CleanName.Equal[Arias]}
+	/keypress OPEN_INV_BAGS
+	/if (!${Window[InventoryWindow].Open}) /windowstate InventoryWindow open
+	/delay 10s ${Window[InventoryWindow].Open}
+	/itemnotify ${FindItem[=The Gloomingdeep Jailor's Key].InvSlot} leftmouseup
+	/invoke ${Target.LeftClick}
+	/delay 2s !${Cursor.ID}
+	/notify GiveWnd GVW_Give_Button leftmouseup
+	/delay 2s !${Window[GiveWnd].Open}
+	/call CloseDialog
+	/call WaitNav ${Spawn[Arias].ID}
+/return
+
+Sub AriasB
+	/if (!${Window[TaskWND].Child[Task_TaskElementList].List[2,2].Equal[Done]}) {
+		/nav id ${Spawn[Arias].ID}
+		/call WaitNav ${Spawn[Arias].ID}
+		/call CloseDialog
+	}
+/return 
+
+Sub Absor
+	/if (!${Window[TaskWND].Child[Task_TaskElementList].List[3,2].Equal[Done]}) {
+		/declare myWeapon string local ${InvSlot[mainhand].Item.Name}
+		/if (${FindItem[${myWeapon.Arg[2, ]}].ID}) {
+			/varset myWeapon ${myWeapon.Arg[2, ]}
+		}
+		/varset myWeapon ${myWeapon.Replace[*,]}
+		/call WaitNav ${Spawn[Absor].ID}
+		/keypress OPEN_INV_BAGS
+		/if (!${Window[InventoryWindow].Open}) /windowstate InventoryWindow open
+		/delay 10s ${Window[InventoryWindow].Open}
+		/itemnotify ${FindItem[${myWeapon}].InvSlot} leftmouseup
+		/delay 2s ${Cursor.ID}
+		/invoke ${Target.LeftClick}
+		/delay 2s !${Cursor.ID}
+		/notify GiveWnd GVW_Give_Button leftmouseup
+		/delay 2s !${Window[GiveWnd].Open}
+		/delay 5s ${FindItemCount[${myWeapon}]}
+		/if (!${InvSlot[mainhand].Item.Name.Equal[${myWeapon}]}) {
+			/itemnotify ${FindItem[${myWeapon}].InvSlot} leftmouseup
+			/delay 2s ${Cursor.ID}
+			/notify InventoryWindow InvSlot13 leftmouseup
+		}
+	}
+/return
+
+Sub VahlaraA
+	/if (!${Window[TaskWND].Child[Task_TaskElementList].List[4,2].Equal[Done]}) {
+		/call WaitNav ${Spawn[Vahlara].ID}
+		/delay 3s ${Cursor.ID}
+		/delay 5
+		/if (${Cursor.ID}) /autoinv
+		/call CloseDialog
+		/say others
+		/call CloseDialog
+	}
+/return
+
+Sub Xenaida
+	/if (!${Window[TaskWND].Child[Task_TaskElementList].List[5,2].Equal[Done]}) {
+		/call WaitNav ${Spawn[Xenaida].ID}
+		/call CloseDialog
+		/call CloseDialog
+		/call WaitNavGround mushroom
+		/call WaitNav ${Spawn[Xenaida].ID}
+		/itemnotify ${FindItem[mushroom].InvSlot} leftmouseup
+		/delay 2s ${Cursor.ID}
+		/invoke ${Target.LeftClick}
+		/delay 2s !${Cursor.ID}
+		/notify GiveWnd GVW_Give_Button leftmouseup
+		/delay 2s !${Window[GiveWnd].Open}
+		/call CloseDialog
+	}
+/return
+
+Sub Rytan
+	/if (!${Window[TaskWND].Child[Task_TaskElementList].List[6,2].Equal[Done]}) {
+		/call WaitNav ${Spawn[Rytan].ID}
+		/delay 5
+		/say Blessed
+		/delay 2s ${Cursor.ID}
+		/autoinv
+		/delay 2s !${Cursor.ID}
+		/if (!${Window[InventoryWindow].Open}) /windowstate InventoryWindow open
+		/keypress OPEN_INV_BAGS
+		/delay 10s ${Window[InventoryWindow].Open}
+		/call ScribeSpells
+		/call ScribeTomes
+		/call CloseDialog
+		/call CloseDialog
+		/call CloseDialog
+	}
+/return
+
+Sub Prathun
+	/if (!${Window[TaskWND].Child[Task_TaskElementList].List[7,2].Equal[Done]}) {
+		/call WaitNav ${Spawn[Prathun].ID}
+		/call CloseDialog
+		/call CloseDialog
+		/call CloseDialog
+		/call CloseDialog
+		/call CloseDialog
+	}
+/return
+
+Sub Basher_Alga
+	/if (!${Window[TaskWND].Child[Task_TaskElementList].List[8,2].Equal[Done]}) {
+		:tryAgain
+		/call WaitNav ${Spawn[Basher Alga].ID}
+		/call AcceptTask
+		/call TutorialCheck "Hotbars"
+		/if (${Macro.Return.Equal[TRUE]}) {
+			/keypress H
+			/call CloseDialog
+			/call CloseDialog
+			/call CloseDialog
+			/call CloseDialog
+			/call CloseDialog
+			/call GetReward
+			/delay 5
+			/call CheckSwiftness
+		}
+		/call TutorialCheck "Basic Training"
+		/if (!${Window[TaskWND].Child[Task_TaskElementList].List[8,2].Equal[Done]}) /goto :tryAgain
+	}
+/return
+
+Sub AriasC
+	/if (!${Window[TaskWND].Child[Task_TaskElementList].List[9,2].Equal[Done]}) {
+		/call WaitNav ${Spawn[Arias].ID}
+		/call CloseDialog
+		/call WaitNav ${Spawn[Arias].ID}
+		/delay 3s ${Cursor.ID}
+		/keypress H
+		/delay 1s ${Cursor.Name.Equal[Kobold Skull Charm]}
+		/delay 5
+		/autoinv
+		/delay 3s !${Cursor.ID}
+	}
+/return
+
+Sub Guard_RahtizA
+	/if (${Debugging}) /echo \atGuard_RahtizA enter
+	/call TutorialCheck "The Revolt of Gloomingdeep"
+	/if (!${Window[TaskWND].Child[Task_TaskElementList].List[5,2].Equal[Done]}) {
+		/call TutorialCheck "Rebellion Reloaded"
+		/if (!${Macro.Return.Equal[TRUE]}) {
+			/call WaitNav ${Spawn[Guard Rahtiz].ID}
+			/call AcceptTask
+			/squelch /target clear
+		}
+	}
+	/if (${Debugging}) /echo \atGuard_RahtizA depart
+/return
+
+Sub ClearNests
+	/varset Targets a_cave_Rat Bat vermin
+	/while (!${Window[TaskWND].Child[Task_TaskElementList].List[1,2].Equal[Done]}) {
+		/varset TargetType npc
+		/call FarmStuff ${Targets.Arg[1, ]} npc
+		/if (!${Window[TaskWND].Child[Task_TaskElementList].List[2,2].Equal[Done]}) {
+			/varset TargetType npc
+			/call FarmStuff ${Targets.Arg[2, ]} npc
+		}
+		/if (!${Window[TaskWND].Child[Task_TaskElementList].List[3,2].Equal[Done]}) {
+			/varset TargetType object
+			/call FarmStuff ${Targets.Arg[3, ]} Object
+		}
+	}
+	/while (!${Window[TaskWND].Child[Task_TaskElementList].List[2,2].Equal[Done]}) {
+		/varset TargetType npc
+		/call FarmStuff ${Targets.Arg[2, ]} npc
+		/if (!${Window[TaskWND].Child[Task_TaskElementList].List[3,2].Equal[Done]}) {
+			/varset TargetType object
+			/call FarmStuff ${Targets.Arg[3, ]} Object
+		}
+	}
+	/while (!${Window[TaskWND].Child[Task_TaskElementList].List[3,2].Equal[Done]}) {
+		/varset TargetType object
+		/call FarmStuff ${Targets.Arg[3, ]} Object
+	}
+/return
+
+Sub VahlaraB
+	/if (!${Window[TaskWND].Child[Task_TaskElementList].List[4,2].Equal[Done]}) {
+		/call WaitNav ${Spawn[Vahlara].ID}
+		/call GetReward
+	}
+/return
+
+Sub Elegist
+	/if (!${Window[TaskWND].Child[Task_TaskElementList].List[3,2].Equal[Done]}) {
+		
+		/call WaitNav ${Spawn[Elegist].ID}
+		/call TutorialCheck "MercenariesForHire"
+		/if (${Macro.Return.Equal[TRUE]}) /goto :nextArea
+		/call AcceptTask
+		:nextArea
+		/call CloseDialog
+		/call CloseDialog
+		/call CloseDialog
+		/call TutorialCheck "Mercenaries for Hire"
+		/if (${Macro.Return.Equal[TRUE]}) {
+			/if (!${Window[TaskWND].Child[Task_TaskElementList].List[1,2].Equal[Done]}) {
+				/invoke ${Target.RightClick}
+				/delay 3s ${Window[MMTW_MerchantWnd].Open}
+				/delay 5
+				/if (${Me.Subscription.Equal[FREE]}) {
+					/notify MMTW_MerchantWnd MMTW_SubtypeListBox listselect 4
+				} else /if (${Me.Subscription.Equal[SILVER]}) {
+					/notify MMTW_MerchantWnd MMTW_SubtypeListBox listselect 10
+				} else /if (${Me.Subscription.Equal[GOLD]}) {
+					/notify MMTW_MerchantWnd MMTW_TypeComboBox listselect 2
+					/delay 5
+					/notify MMTW_MerchantWnd MMTW_SubtypeListBox listselect 2
+				}
+				/delay 10
+				/notify MMTW_MerchantWnd MMTW_HireButton leftmouseup
+				/delay 10
+				/keypress H
+				/call CloseDialog
+				
+			}
+			/if (!${Window[TaskWND].Child[Task_TaskElementList].List[2,2].Equal[Done]}) {
+				/varset Targets Infiltrator
+				/squelch /target clear
+
+				:notDone
+				/if (!${Window[TaskWND].Child[Task_TaskElementList].List[2,2].Equal[Done]}) {
+					/varset TargetType npc
+					/call FarmStuff ${Targets.Arg[1, ]} npc
+					/goto :notDone
+				}
+				/if (!${Window[TaskWND].Child[Task_TaskElementList].List[3,2].Equal[Done]}) {
+					/call WaitNav ${Spawn[Elegist].ID}
+				}
+			}
+		}
+	}
+/return
+
+Sub Guard_RahtizC
+	/call TutorialCheck "The Revolt of Gloomingdeep"
+	/if (!${Window[TaskWND].Child[Task_TaskElementList].List[5,2].Equal[Done]}) {
+		/call TutorialCheck "Rebellion Reloaded"
+		/if (!${Macro.Return.Equal[TRUE]}) {
+			/call WaitNav ${Spawn[Guard Rahtiz].ID}
+			/call AcceptTask
+			/squelch /target clear
+		}
+	}	
+	/call TutorialCheck "The Revolt of Gloomingdeep"
+	/if (!${Window[TaskWND].Child[Task_TaskElementList].List[14,2].Equal[Done]}) {
+		/call TutorialCheck "Arachnida"
+		/if (!${Macro.Return.Equal[TRUE]}) {
+			/call WaitNav ${Spawn[Guard Rahtiz].ID}
+			/call AcceptTask
+			/squelch /target clear
+		}
+	}
+/return
+
+Sub Guard_Vyrinn
+	/call TutorialCheck "Spider Caves"
+	/if (!${Macro.Return.Equal[TRUE]}) {
+		/call TutorialCheck "The Revolt of Gloomingdeep"
+		/if (${Macro.Return.Equal[TRUE]}) {
+			/if (!${Window[TaskWND].Child[Task_TaskElementList].List[4,2].Equal[Done]}) {
+				/call WaitNav ${Spawn[Guard Vyrinn].ID}
+				/call AcceptTask
+				/squelch /target clear
+			}
+		}
+	}
+	/call TutorialCheck "Spider Tamer Gugan"
+	/if (!${Macro.Return.Equal[TRUE]}) {
+		/call TutorialCheck "The Revolt of Gloomingdeep"
+		/if (${Macro.Return.Equal[TRUE]}) {
+			/if (!${Window[TaskWND].Child[Task_TaskElementList].List[6,2].Equal[Done]}) {
+				/call WaitNav ${Spawn[Guard Vyrinn].ID}
+				/call AcceptTask
+			}
+		}
+	}
+	/call Guard_RahtizC
+	/call TutorialCheck "Spider Caves"
+	/if (${Macro.Return.Equal[TRUE]}) {
+		/call SpiderCaves
+	}
+	
+	/call TutorialCheck "Spider Tamer Gugan"
+	/if (${Macro.Return.Equal[TRUE]}) {
+		/if (!${myLocation.Equal[Spider1]}) /call GotoSpiders
+		/while (!${Window[TaskWND].Child[Task_TaskElementList].List[1,2].Equal[Done]}) {
+			/varset TargetType npc
+			/call FarmStuff Gugan
+			/call CheckLoot "Gloomingdeep Violet"
+		}
+	}
+	/call TutorialCheck "Arachnida"
+	/if (${Macro.Return.Equal[TRUE]}) {
+		/call Arachnida
+	}
+
+	/call TutorialCheck "The Revolt of Gloomingdeep"
+	/if (${Macro.Return.Equal[TRUE]}) {
+		/if (!${Window[TaskWND].Child[Task_TaskElementList].List[4,2].Equal[Done]}) {
+			
+		}
+	}
+	/call TutorialCheck "Spider Caves"
+	/if (${Macro.Return.Equal[TRUE]}) {
+		/if (!${Window[TaskWND].Child[Task_TaskElementList].List[2,2].Equal[Done]}) {
+			/if (${myLocation.Equal[Spider1]}) {
+				/call LeaveSpiders
+			}
+			/call WaitNav ${Spawn[Vahlara].ID}
+			/call GiveItems "Gloomingdeep Cocoon Silk" 4
+			/call GetReward
+			
+		}
+	}
+	/call TutorialCheck "Spider Tamer Gugan"
+	/if (${Macro.Return.Equal[TRUE]}) {
+		/if (!${Window[TaskWnd].Child[Task_TaskElementList].List[2,2].Equal[Done]}) {
+			/if (${myLocation.Equal[Spider1]}) {
+				/call LeaveSpiders
+			}
+			/call WaitNav ${Spawn[Xenaida].ID}
+			/call GiveItems "Gloomingdeep Violet" 1
+			/call CloseDialog
+			/call CloseDialog
+			/squelch /target clear
+		}
+	}
+/return
+
+Sub SpiderCaves
+	/if (!${Window[TaskWND].Child[Task_TaskElementList].List[1,2].Equal[Done]}) {
+		:doSpiders
+		/if (!${myLocation.Equal[Spider1]}) {
+			/call GotoSpiders
+		}
+		/while (!${Window[TaskWND].Child[Task_TaskElementList].List[1,2].Equal[Done]}) {
+			/varset TargetType object
+			/call FarmStuff cocoon
+			/if (!${Me.XTarget[1].ID}) /call CheckLoot "Gloomingdeep Cocoon Silk"
+		}
+	}
+/return
+
+Sub Guard_RahtizB
+	/if (!${Window[TaskWnd].Child[Task_TaskElementList].List[5,2].Equal[Done]}) {
+		/call TutorialCheck "Rebellion Reloaded"
+		/if (!${Macro.Return.Equal[TRUE]}) {
+			/call WaitNav ${Spawn[Guard Rahtiz].ID}
+			/call AcceptTask
+			/squelch /target clear
+			/call TutorialCheck "Rebellion Reloaded"
+			/if (${Macro.Return.Equal[TRUE]}) {
+				/goto :Rebellion
+			}
+		} else {
+			:Rebellion
+			/if (!${Window[TaskWnd].Child[Task_TaskElementList].List[1,2].Equal[Done]}) {
+				/call NavToLoc -527 -582 -2
+				/while (!${Window[TaskWnd].Child[Task_TaskElementList].List[1,2].Equal[Done]} && !${FindItemCount[=Class 1 Wood Point Arrow]}) {
+					/call CheckLoot "Class 1 Wood Point Arrow"
+					/varset TargetType object
+					/call FarmStuff "a kobold barrel"
+				}
+				/call WaitNav ${Spawn[Guard Rahtiz].ID}
+				/call GiveItems "Class 1 Wood Point Arrow" 1
+				/squelch /target clear
+				/if (${myTargetID}) /varset myTargetID 0
+			}
+		}
+	}
+/return
+
+Sub Guard_HobartA
+	/call TutorialCheck "The Revolt of Gloomingdeep"
+	/if (${Macro.Return.Equal[TRUE]}) {
+		/if (!${Window[TaskWND].Child[Task_TaskElementList].List[10,2].Equal[Done]}) {
+			/call TutorialCheck "The Battle of Gloomingdeep"
+			/if (!${Macro.Return.Equal[TRUE]}) {
+				/call WaitNav ${Spawn[Hobart].ID}
+				/call AcceptTask
+			}
+			/call TutorialCheck "Freedom's Stand (Group)"
+			/if (!${Macro.Return.Equal[TRUE]}) {
+				/call WaitNav ${Spawn[Hobart].ID}
+				/call AcceptTask
+			}
+			/squelch /target clear
+		}
+	}
+/return	
+
+
+Sub Scout_Zajeer
+	/call TutorialCheck "The Revolt of Gloomingdeep"
+	/if (${Macro.Return.Equal[TRUE]}) {
+		/if (!${Window[TaskWND].Child[Task_TaskElementList].List[7,2].Equal[Done]}) {
+			/call TutorialCheck "Scouting Gloomingdeep"
+			/if (${Macro.Return.Equal[TRUE]}) /goto :scoutGloom
+			/call TutorialCheck "Sabotage"
+			/if (${Macro.Return.Equal[TRUE]}) {
+				/call Sabotage
+				/return
+			}
+			/call WaitNav ${Spawn[Zajeer].ID}
+			/call AcceptTask
+			/call WaitNav ${Spawn[Zajeer].ID}
+			/call AcceptTask
+			/delay 5
+			/if (${Cursor.ID}) /autoinv
+			/squelch /target clear
+			/call TutorialCheck "Scouting Gloomingdeep"
+			/if (${Macro.Return.Equal[TRUE]}) {
+				:scoutGloom
+				/if (!${Window[TaskWND].Child[Task_TaskElementList].List[1,2].Equal[Done]}) {
+					/call NavToLoc -47 -849 -29
+				}
+				/if (!${Window[TaskWND].Child[Task_TaskElementList].List[2,2].Equal[Done]}) {
+					/call NavToLoc -226 -866 -1
+				}
+				/if (!${Window[TaskWND].Child[Task_TaskElementList].List[3,2].Equal[Done]}) {
+					/call NavToLoc -519 -1101 3
+				}
+				/if (!${Window[TaskWND].Child[Task_TaskElementList].List[4,2].Equal[Done]}) {
+					/call NavToLoc -254 -1539 -105
+				}
+				/call TutorialCheck "Sabotage"
+				/if (${Macro.Return.Equal[TRUE]}) {
+					/call Sabotage
+				}
+				/call Guard_MaddocB
+				/if (!${Window[TaskWND].Child[Task_TaskElementList].List[5,2].Equal[Done]}) {
+					/call WaitNav ${Spawn[Zajeer].ID}
+					/squelch /target clear
+				}
+			}
+		} else {
+			/call Sabotage
+		}
+	}
+/return
+
+Sub Sabotage
+	/call TutorialCheck "The Revolt of Gloomingdeep"
+	/if (!${Window[TaskWND].Child[Task_TaskElementList].List[8,2].Equal[Done]}) {
+			/call TutorialCheck "Sabotage"
+			/if (${Macro.Return.Equal[TRUE]}) {
+				:sabotage
+				/call WaitNav ${Spawn[kobold siege].ID}
+				/call GiveItems "Makeshift Lantern Bomb" 1
+				/squelch /target clear
+				/call NavToLoc -254 -1539 -105
+			}
+		}
+/return
+
+Sub Scout_Kaikachi
+	/call TutorialCheck "The Revolt of Gloomingdeep"
+	/if (${Macro.Return.Equal[TRUE]}) {
+		/if (!${Window[TaskWND].Child[Task_TaskElementList].List[9,2].Equal[Done]}) {
+			/call TutorialCheck "Goblin Treachery"
+			/if (!${Macro.Return.Equal[TRUE]}) {
+				/call WaitNav ${Spawn[Kaikachi].ID}
+				/call AcceptTask
+			}
+			/call TutorialCheck "Goblin Treachery"
+			/if (!${Macro.Return.Equal[TRUE]}) {
+				/call WaitNav ${Spawn[Kaikachi].ID}
+				/call AcceptTask
+			}
+			/squelch /target clear
+			/call TutorialCheck "Goblin Treachery"
+			/if (${Macro.Return.Equal[TRUE]}) {
+				/echo \atDoing Task "Goblin Treachery"
+				/if (!${Window[TaskWND].Child[Task_TaskElementList].List[1,2].Equal[Done]}) {
+					/call NavToLoc -49 -822 -20
+				}
+				/while (!${Window[TaskWND].Child[Task_TaskElementList].List[1,2].Equal[Done]}) {
+					/varset PullRange 200
+					/varset TargetType npc
+					/call FarmStuff goblin_slave
+				}
+				/if (!${Window[TaskWND].Child[Task_TaskElementList].List[2,2].Equal[Done]}) {
+					/call EnterPit
+					/varset TargetType npc
+					/varset PullRange 1000
+				}
+				
+				/while (!${Window[TaskWND].Child[Task_TaskElementList].List[2,2].Equal[Done]}) {
+					/if (${myLocation.Equal[PitTop]}) /call EnterPit
+					/if (${myLocation.Equal[PitSteps]}) /call NavToLoc -418 -893 -61
+					/call FarmStuff Rookfynn
+				}
+				/if (!${Window[TaskWND].Child[Task_TaskElementList].List[3,2].Equal[Done]}) {
+					/call ExitPit
+					/call WaitNav ${Spawn[Kaikachi].ID}
+					/call GetReward
+					/squelch /target clear
+				}
+			}
+		}
+	}
+/return
+
+Sub Guard_HobartB
+	/call TutorialCheck "The Revolt of Gloomingdeep"
+	/if (${Macro.Return.Equal[TRUE]}) {
+		/if (!${Window[TaskWND].Child[Task_TaskElementList].List[10,2].Equal[Done]}) {
+			/call TutorialCheck "The Battle of Gloomingdeep"
+			/if (!${Macro.Return.Equal[TRUE]}) {
+				/call WaitNav ${Spawn[Hobart].ID}
+				/call AcceptTask
+			}
+			/call TutorialCheck "Freedom's Stand (Group)"
+			/if (!${Macro.Return.Equal[TRUE]}) {
+				/call WaitNav ${Spawn[Hobart].ID}
+				/call AcceptTask
+			}
+			/call TutorialCheck "The Battle of Gloomingdeep"
+			/if (${Macro.Return.Equal[TRUE]}) {
+				/squelch /target clear
+				/declare Searches int local 0
+				/varset ZRadius 15
+				/if (!${Window[TaskWND].Child[Task_TaskElementList].List[1,2].Equal[Done]} || !${Window[TaskWND].Child[Task_TaskElementList].List[2,2].Equal[Done]}) /call NavToLoc -599 -950 1
+				/while (!${Window[TaskWND].Child[Task_TaskElementList].List[1,2].Equal[Done]}) {
+					
+					/varset TargetType npc
+					/call FarmStuff Grunt
+					/if (!${Window[TaskWND].Child[Task_TaskElementList].List[2,2].Equal[Done]}) {
+						/call FarmStuff Gloomingdeep_Warrior
+					}
+					/if (!${Window[TaskWND].Child[Task_TaskElementList].List[3,2].Equal[Done]}) {
+						/call FarmStuff Warden
+					}
+					/if (!${Window[TaskWND].Child[Task_TaskElementList].List[4,2].Equal[Done]}) {
+						/call FarmStuff Spiritweaver
+					}
+				}
+				/while (!${Window[TaskWND].Child[Task_TaskElementList].List[2,2].Equal[Done]}) {
+					/varcalc Searches ${Searches}+1
+					/varset TargetType npc
+					/call FarmStuff Gloomingdeep_Warrior
+					/if (!${Window[TaskWND].Child[Task_TaskElementList].List[3,2].Equal[Done]}) {
+						/call FarmStuff Warden
+					}
+					/if (!${Window[TaskWND].Child[Task_TaskElementList].List[4,2].Equal[Done]}) {
+						/call FarmStuff Spiritweaver
+					}
+					/if (${Searches} == 10) {
+						/echo Increasing ZRadius by 5
+						/varcalc ZRadius ${ZRadius}+5
+						/varset Searches 0
+					}
+				}
+				/varset ZRadius 15
+				/varset Searches 0
+				/while (!${Window[TaskWND].Child[Task_TaskElementList].List[3,2].Equal[Done]}) {
+					/varcalc Searches ${Searches}+1
+					/varset TargetType npc
+					/call FarmStuff Warden
+					/if (!${Window[TaskWND].Child[Task_TaskElementList].List[4,2].Equal[Done]}) {
+						/call FarmStuff Spiritweaver
+					}
+					/if (${Searches} == 10) {
+						/echo Increasing ZRadius by 5
+						/varcalc ZRadius ${ZRadius}+5
+						/varset Searches 0
+					}
+				}
+				/varset ZRadius 15
+				/varset Searches 0
+				/while (!${Window[TaskWND].Child[Task_TaskElementList].List[4,2].Equal[Done]}) {
+					/varcalc Searches ${Searches}+1
+					/varset TargetType npc
+					/call FarmStuff Spiritweaver
+					/if (${Searches} == 10) {
+						/echo Increasing ZRadius by 5
+						/varcalc ZRadius ${ZRadius}+5
+						/varset Searches 0
+					}
+				}
+				/varset ZRadius 1000
+				/call WaitNav ${Spawn[Hobart].ID}
+				/squelch /target clear
+			}
+		}
+	}
+/return
+
+Sub Freedom_Stand
+	/call TutorialCheck "The Revolt of Gloomingdeep"
+	/if (!${Window[TaskWND].Child[Task_TaskElementList].List[11,2].Equal[Done]}) {
+		/call TutorialCheck "Freedom's Stand (Group)"
+		/if (${Macro.Return.Equal[TRUE]}) {
+			/if (!${Window[TaskWND].Child[Task_TaskElementList].List[1,2].Equal[Done]}) {
+				/call NavToLoc -517 -1086 3
+				/call NavToLoc -254 -1731 -100
+			}
+			/while (!${Window[TaskWND].Child[Task_TaskElementList].List[1,2].Equal[Done]}) {
+				/varset TargetType npc
+				/call FarmStuff Gnikan
+			}
+			/call WaitNav ${Spawn[Guard Hobart].ID}
+			/call GetReward
+			/squelch /target clear
+		}
+	}
+/return
+
+Sub AriasD
+	/call WaitNav ${Spawn[Arias].ID}
+	
+/return
+
+Sub Guard_VyrinnB
+	/call TutorialCheck "Arachnophobia (Group)"
+	/if (!${Macro.Return.Equal[TRUE]}) {
+		/call TutorialCheck "The Revolt of Gloomingdeep"
+		/if (!${Window[TaskWND].Child[Task_TaskElementList].List[16,2].Equal[Done]}) {
+			/call WaitNav ${Spawn[Guard Vyrinn].ID}
+			/call AcceptTask
+		}
+	}
+	/call TutorialCheck "Arachnophobia (Group)"
+	/if (${Macro.Return.Equal[TRUE]}) {
+		/if (!${myLocation.Equal[Spiders1]}) /call GotoSpiders
+		/call GotoQueen
+		/while (!${Window[TaskWND].Child[Task_TaskElementList].List[1,2].Equal[Done]}) {
+			/varset TargetType npc
+			/call FarmStuff Queen_Gloomfang
+		}
+		/call LeaveQueen
+		/call LeaveSpiders
+		/call WaitNav ${Spawn[Guard Hobart].ID}
+		/call GetReward
+		/delay 2s ${Cursor.ID}
+		/autoinv
+		/delay 2s !${Cursor.ID}
+	}
+/return
+
+Sub Guard_MaddocA
+	/call TutorialCheck "Kobold Leadership"
+	/if (!${Macro.Return.Equal[TRUE]}) {
+		/call TutorialCheck "The Revolt of Gloomingdeep"
+		/if (!${Window[TaskWND].Child[Task_TaskElementList].List[20,2].Equal[Done]}) {
+			/call WaitNav ${Spawn[Guard Maddoc].ID}
+			/call AcceptTask
+		}
+	}
+/return
+
+Sub Guard_MaddocB
+	/call TutorialCheck "Kobold Leadership"
+	/if (${Macro.Return.Equal[TRUE]}) {
+		/call NavToLoc -258 -1591 -106
+		/call TutorialCheck "Kobold Leadership"
+		/while (!${Window[TaskWND].Child[Task_TaskElementList].List[1,2].Equal[Done]} && ${Window[TaskWND].Child[Task_TaskList].List[Kobold Leadership,3]}) {
+			/call FarmStuff Gloomingdeep_Captain
+		}
+	}
+/return
+
+Sub Arachnida
+	/call TutorialCheck "The Revolt of Gloomingdeep"
+	/if (${Window[TaskWND].Child[Task_TaskElementList].List[14,2].Equal[Done]}) {
+		/call TutorialCheck "Arachnida"
+		/if (${Macro.Return.Equal[TRUE]}) {
+			/if (${Window[TaskWND].Child[Task_TaskElementList].List[1,2].Equal[Done]}) {
+				/varset TargetType npc
+				/while (${Window[TaskWND].Child[Task_TaskElementList].List[1,2].Equal[Done]}) {
+					/call FarmStuff Gloom_Spider
+					/if (${Window[TaskWND].Child[Task_TaskElementList].List[2,2].Equal[Done]}) {
+						/call Farmstuff Lurker
+					}
+				}
+			}
+			/if (${Window[TaskWND].Child[Task_TaskElementList].List[2,2].Equal[Done]}) {
+				/varset TargetType npc
+				/while (!${Window[TaskWND].Child[Task_TaskElementList].List[2,2].Equal[Done]}) {
+					/call Farmstuff Lurker
+				}
+			}
+		}
+	}
+/return
+
+Sub PitFiend
+	/call TutorialCheck "Pit Fiend (Group)"
+	/if (!${Window[TaskWND].Child[Task_TaskElementList].List[1,2].Equal[Done]}) {
+	
+	}
+/return
+
+Sub Scout_KaikachiB
+	/call TutorialCheck "The Revolt of Gloomingdeep"
+	/if (!${Window[TaskWND].Child[Task_TaskElementList].List[18,2].Equal[Done]}) {
+		/call TutorialCheck "Busted Locks"
+		/if (!${Macro.Return.Equal[TRUE]}) {
+			/call WaitNav ${Spawn[Kaikachi].ID}
+			/call AcceptTask
+			/squelch /target clear
+		}
+	}
+/return
+
+Sub FlutterwingA
+	/call TutorialCheck "Flutterwing's Dilemma"
+	/if (!${Macro.Return.Equal[TRUE]}) {
+		/call TutorialCheck "The Revolt of Gloomingdeep"
+		/if (!${Window[TaskWND].Child[Task_TaskElementList].List[22,2].Equal[Done]}) {
+			/call WaitNav ${Spawn[Flutterwing].ID}
+			/say Siblings
+			/call AcceptTask
+			/squelch /target clear
+		}
+	}
+	
+/return
+
+Sub Flutterwing_Dilemma
+	/call TutorialCheck "Flutterwing's Dilemma"
+	/if (${Macro.Return.Equal[TRUE]}) {
+		/call NavToLoc -457 -372 -39
+		/call NavToLoc -527 -591 -1
+		/call NavToLoc -62 -869 -27
+		/call NavToLoc 769 -325 -11
+		/while (!${Window[TaskWND].Child[Task_TaskElementList].List[1,2].Equal[Done]}) {
+			/call FarmStuff Ruga
+		}
+		
+	}
+/return
+
+Sub FlutterwingB
+	
+	
+/return
+
+Sub Guard_MaddocC
+	/call TutorialCheck "Pit Fiend (Group)"
+	/if (!${Macro.Return.Equal[TRUE]}) {
+		/call TutorialCheck "The Revolt of Gloomingdeep"
+		/if (!${Window[TaskWND].Child[Task_TaskElementList].List[24,2].Equal[Done]}) {
+			/call WaitNav ${Spawn[Guard Maddoc].ID}
+			/call AcceptTask
+			/squelch /target clear
+		}
+	}
+/return
+
+| ------------------------------------------------------------------------------------------------------------------------------------|
+| 															UTILITY SUBS															  |
+| ------------------------------------------------------------------------------------------------------------------------------------|
+			
+Sub TutorialCheck(string CheckFor)
+	/declare i int local
+	/for i 1 to 10
+	/if (${Window[TaskWND].Child[Task_TaskList].List[${i},3].Equal[${CheckFor}]}) {
+		/notify TaskWnd Task_TaskList listselect ${i} leftmouseup
+		/return TRUE
+	}
+	/next i
+	/return FALSE
+/return
+
+Sub WaitNav(NavTargetID)
+	/while (${Spawn[id ${NavTargetID}].Distance} > 15) {
+		/call CheckSwiftness
+		/call WhereAmI
+		/if (${Navigation.Active}) {
+			/if (${Me.XTarget[1].ID}) {
+				/if (${Navigation.Active}) /nav stop
+				/varset TargetType npc
+				/call FarmStuff
+			} else {
+				/call GroupDeathChk
+				/call GroupHealthChk
+				/call GroupManaChk
+				/call CheckMerc
+			}
+			/if (${Me.Combat} && !${Me.XTarget[1].ID}) /squelch /target clear
+			/delay 10
+		} else {
+			/if (${Me.XTarget[1].ID}) {
+				/if (${Navigation.Active}) /nav stop
+				/target id ${Me.XTarget[1].ID}
+				/varset TargetType npc
+				/call FarmStuff
+			} else {
+				/call GroupDeathChk
+				/call GroupHealthChk
+				/call GroupManaChk
+				/call CheckMerc
+			}
+			/if (${Me.Combat} && !${Me.XTarget[1].ID}) /squelch /target clear
+			/nav id ${NavTargetID}
+		}
+	}
+	/if (${Navigation.Active}) /nav stop
+	:target
+	/target id ${NavTargetID}
+	/delay 2s ${Target.CleanName.Equal[${Spawn[id ${NavTargetID}].CleanName}]}
+	/if (!${Target.CleanName.Equal[${Spawn[id ${NavTargetID}].CleanName}]}) {
+		/goto :target
+	}
+	/keypress H
+/return
+
+Sub WaitNavGround(GroundItemName)
+	/echo GroundItemName: ${GroundItemName} Distance: ${Ground[${GroundItemName}].Distance3D}
+	/while (${Ground[${GroundItemName}].Distance3D} > 15) {
+		/if (${Navigation.Active}) {
+			/delay 10
+		} else {
+			/nav loc ${Ground[${GroundItemName}].Y} ${Ground[${GroundItemName}].X} ${Ground[${GroundItemName}].Z}
+		}
+	}
+	/if (${Navigation.Active}) /nav stop
+	/invoke ${Ground[${GroundItemName}].DoTarget.ID}
+	/delay 10
+	/invoke ${Ground[${GroundItemName}].Grab}
+	/delay 2s ${Cursor.ID}
+	/delay 5
+	/autoinv
+/return
+
+| --------------------------------------------------------------------------------------------
+| SUB: ScribeSpells
+| --------------------------------------------------------------------------------------------
+Sub ScribeSpells
+	/declare Bag int local
+	/declare Slot int local
+	/if (${Cursor.ID}) /autoinv
+|** Opening your inventory for access bag slots **|
+	/if (!${Window[InventoryWindow].Open}) {
+		/windowstate InventoryWindow open
+	}
+|** Open all bags **|
+	/keypress OPEN_INV_BAGS
+
+|** Check Top Level Inventory Slot for bag/no bag **|
+	/for Bag 1 to 10
+	|** If it's a bag do this **|
+		/if (${InvSlot[pack${Bag}].Item.Container}) {
+			/if (!${Window[Pack${Bag}].Open}) /itemnotify pack${Bag} rightmouseup
+			/delay 1s ${Window[Pack${Bag}].Open}
+			/delay 5
+
+			/for Slot 1 to ${InvSlot[pack${Bag}].Item.Container}
+				/if (${InvSlot[pack${Bag}].Item.Item[${Slot}].Type.Equal[Scroll]} && ${InvSlot[pack${Bag}].Item.Item[${Slot}].Spell.Level} <= ${Me.Level} && !${Me.Book[${InvSlot[pack${Bag}].Item.Item[${Slot}].Spell.Name}]}) {
+					/nomodkey /ctrlkey /itemnotify in pack${Bag} ${Slot} rightmouseup
+					/delay 1s ${Cursor.ID}
+					/if (${Cursor.ID}) /call doScribe
+				}
+			/next Slot
+		|** Close the bag I just checked **|
+			/if (${Window[Pack${Bag}].Open}) /itemnotify pack${Bag} rightmouseup
+		} else {
+		|** If it's not a bag, do this **|
+		| Debug message /echo TopLevel Inv Slot ~ IsAScroll: ${InvSlot[pack${Bag}].Item.Type.Equal[Scroll]} && Item Spell level: ${InvSlot[pack${Bag}].Item.Spell.Level} <= My Level: ${Me.Level} && Scribed Already: !${Me.Book[${InvSlot[pack${Bag}].Item.Spell.Name}]}
+			/if (${InvSlot[pack${Bag}].Item.Type.Equal[Scroll]} && ${InvSlot[pack${Bag}].Item.Spell.Level} <= ${Me.Level} && !${Me.Book[${InvSlot[pack${Bag}].Item.Spell.Name}]}) {
+				/echo Scribing: ${InvSlot[Pack${Bag}].Item.Name}
+				/nomodkey /ctrlkey /itemnotify pack${Bag} rightmouseup
+				/delay 1s ${Cursor.ID}
+				/if (${Cursor.ID}) /call doScribe
+			}
+		}
+	/next Bag
+
+	/if (${Window[SpellBookWnd].Open}) /squelch /windowstate SpellBookWnd close
+/return
+
+| --------------------------------------------------------------------------------------------
+| SUB: ScribeTomes
+| --------------------------------------------------------------------------------------------
+Sub ScribeTomes
+	/declare Bag int local
+	/declare Slot int local
+
+	/if (${Cursor.ID}) /autoinv
+
+	/if (!${HasVoA} && ${InvSlot[pack${InvScribeSlot}].Item.Type.Equal[Scroll]} && ${InvSlot[pack${InvScribeSlot}].Item.Spell.Level} <= ${Me.Level} && !${Me.Book[${InvSlot[pack${InvScribeSlot}].Item.Spell.Name}]}) /nomodkey /ctrlkey /itemnotify ${InvSlot[pack${InvScribeSlot}]} rightmouseup
+
+	/for Bag 1 to 10
+		/if (${InvSlot[pack${Bag}].Item.Container}) {
+			/if (!${Window[Pack${Bag}].Open}) /itemnotify pack${Bag} rightmouseup
+			/delay 1s ${Window[Pack${Bag}].Open}
+			/for Slot 1 to ${InvSlot[pack${Bag}].Item.Container}
+				/if (${InvSlot[pack${Bag}].Item.Item[${Slot}].Name.Find[Tome]} && ${InvSlot[pack${Bag}].Item.Item[${Slot}].Type.Equal[Scroll]} && ${InvSlot[pack${Bag}].Item.Item[${Slot}].Spell.Level} <= ${Me.Level} && !${Me.Book[${InvSlot[pack${Bag}].Item.Item[${Slot}].Spell.Name}]}) {
+					/if (${HasVoA}) {
+						/nomodkey /ctrlkey /itemnotify in pack${Bag} ${Slot} rightmouseup
+						/delay 1s !${InvSlot[pack${Bag}].Item.Item[${Slot}].ID}
+					} else {
+						/nomodkey /ctrlkey /itemnotify in pack${Bag} ${Slot} leftmouseup
+						/delay 1s ${Cursor.ID}
+						/nomodkey /ctrlkey /itemnotify ${InvSlot[pack${InvScribeSlot}]} leftmouseup
+						/delay 1s !${Cursor.ID}
+						/nomodkey /ctrlkey /itemnotify ${InvSlot[pack${InvScribeSlot}]} rightmouseup
+						/delay 1s !${InvSlot[pack${InvScribeSlot}].ID}
+					}
+				}
+			/next Slot
+
+		} else {
+			/if (${InvSlot[pack${Bag}].Item.Name.Find[Tome]} && ${InvSlot[pack${Bag}].Item.Item[${Slot}].Spell.Level} <= ${Me.Level} && !${Me.Book[${InvSlot[pack${Bag}].Item.Item[${Slot}].Spell.Name}]}) {
+				/echo Scribing: ${InvSlot[Pack${Bag}].Item.Name}
+				/nomodkey /ctrlkey /itemnotify pack${Bag} rightmouseup
+				/delay 1s ${Cursor.ID}
+				/if (${Cursor.ID}) /call doScribe
+			}
+		}
+		/if (${Window[Pack${Bag}].Open}) /itemnotify pack${Bag} rightmouseup
+	/next Bag
+	/if (${Cursor.ID}) /autoinv
+/return
+
+| --------------------------------------------------------------------------------------------
+| SUB: doScribe
+| --------------------------------------------------------------------------------------------
+Sub doScribe
+	/declare tOut timer local 10s
+:WaitFinished
+	/if (${Window[ConfirmationDialogBox].Open} && ${Window[ConfirmationDialogBox].Child[CD_TextOutput].Text.Find[${Cursor.Spell.Name} will replace]}) /notify ConfirmationDialogBox Yes_Button leftmouseup
+	/if (!${tOut}) /autoinv
+	/delay 2
+	/doevents
+	/if (${Cursor.ID}) /goto :WaitFinished
+/return
+
+Sub CheckPlugin(PluginName)
+	/if (!${Plugin[${PluginName}].Name.Equal[${PluginName}]}) {
+		/plugin ${PluginName}
+		/delay 3s ${Plugin[${PluginName}].Name.Equal[${PluginName}]}
+		/if (!${Plugin[${PluginName}].Name.Equal[${PluginName}]}) {
+			/echo "The Plugin --> ${PluginName} didn't load for some reason. Ending the Macro."
+		}
+	}
+/return
+
+Sub Zoning
+	:Zoning
+	/delay 2m ${Zone.ID}==189
+	/target id ${Me.ID}
+	/delay 5s ${Target.ID}==${Me.ID}
+	/if (${Target.ID}!=${Me.ID}) /goto :Zoning
+	/squelch /target clear
+/return
+
+Sub CheckZone
+	/if (!${Select[${Zone.ID},188,189]}) {
+		/echo "\arYou're not in the tutorial. Ending the macro!"
+		/end
+	}
+/return
+
+Sub CheckMesh
+	/if (!${Navigation.MeshLoaded}) {
+		/nav reload
+		/delay 3s ${Navigation.MeshLoaded}
+		/if (!${Navigation.MeshLoaded}) {
+			/echo "No navigational mesh could be found for this zone. Make one and try again"
+			/echo "Ending Macro."
+			/end
+		}
+	}
+/return
+
+Sub AcceptTask
+	/delay 5s ${Window[TaskSelectWnd].Open}
+	/notify TaskSelectWnd TSEL_AcceptButton leftmouseup
+	/delay 5s !${Window[TaskSelectWnd].Open}
+	/delay 5
+/return
+
+Sub CloseDialog
+	/delay 5s ${Window[LargeDialogWindow].Open}
+	/notify LargeDialogWindow LDW_OkButton leftmouseup
+	/delay 5s !${Window[LargeDialogWindow].Open}
+/return
+
+Sub CloseAlert
+	/if (${Window[AlertWnd].Open}) {
+		/notify AlertWnd ALW_Dismiss_Button leftmouseup
+		/delay 5s !${Window[AlertWnd].Open}
+	}
+/return
+
+Sub OpenTaskWnd
+	/if (!${Window[TaskWnd].Open}) /keypress ALT+Q
+	/delay 5s ${Window[TaskWnd].Open}
+	/delay 10
+/return
+
+Sub FarmStuff(string Enemy)
+	/if (${Bool[${Enemy}]}) {
+		/varset FarmMob ${Enemy}
+		/if (${Debugging} && !${reportTarget}) {
+			/echo Looking for: ${FarmMob}
+			/varset reportTarget ${reportTarget.OriginalValue}
+		}
+	} else {
+		/echo Attacking anything I can get my grubby paws on.
+	}
+	:findMob
+	/if (${Target.Type.Equal[corpse]}) /squelch /target clear
+	/if (${Window[RespawnWnd].Open}) /call GroupDeathChk
+	/if (!${Me.XTarget[1].ID} || ${Window[RespawnWnd].Open}) {
+		/call GroupDeathChk
+		/call GroupHealthChk
+		/call GroupManaChk
+	}
+	/if (!${Spawn[id ${myTargetID}].ID} || ${Spawn[id ${myTargetID}].Type.Equal[Corpse]} && !${Me.XTarget[1].ID}) {
+		/if (${Debugging}) /echo "Getting a target!"
+		/varset myTargetID 0
+		/call TargetShortest
+		/if (${Debugging} && ${myTargetID}) /echo Target is ${Spawn[id ${myTargetID}]}
+	}
+	:navto
+	/if (${Spawn[${myTargetID}].Distance} > 30 && !${Me.XTarget[1].ID}) {
+		/squelch /nav id ${myTargetID}
+		/call WhereAmI
+		/delay 10
+		/goto :navto
+	} else /if (!${Target.ID} && ${Target.ID} != ${myTargetID} && ${Target.ID} != ${Me.ID} && ${myTargetID} != 0 && !${Me.XTarget[1].ID}) {
+		/if (${Debugging}) /echo I'm targeting ${Spawn[${myTargetID}].CleanName} ID: ${myTargetID}
+		/target id ${myTargetID}
+		/delay 10
+	}
+	/delay 5
+	/if (${Target.ID} && ${Target.Type.Equal[${TargetType}]}) {
+		/if (${Navigation.Active}) /squelch /nav stop
+		/stick 8 uw loose moveback
+		/setchattitle Killing ${Target.CleanName}
+		/killthis
+		:waitTillDead
+		/call WhereAmI
+		/if (${Target.ID} && ${Me.Combat} && ${Target.Type.Equal[${TargetType}]}) {
+			/delay 10
+			/goto :waitTillDead
+		} else /if (${Target.Type.Equal[corpse]}) {
+			/target clear
+			/varset myTargetID 0
+		}
+	} else /if (${Me.XTarget[1].ID}) {
+		/if (${Spawn[id ${Me.XTarget[1].ID} radius 30 zradius 50].ID} && ${Spawn[id ${Me.XTarget[1].ID} radius 30 zradius 50].LineOfSight}) {
+			/if (${Navigation.Active}) /nav stop
+			/target id ${Me.XTarget[1].ID}
+			/setchattitle Handling add, ${Spawn[${Me.XTarget[1].ID}].CleanName}
+		} else /if (${Spawn[id ${Me.XTarget[1].ID}].Distance} > 30 || !${Spawn[id ${Me.XTarget[1].ID} radius 30 zradius 50].LineOfSight}) {
+			/nav id ${Me.XTarget[1].ID}
+			/setchattitle Navigating to add ${Spawn[id ${Me.XTarget[1].ID}].CleanName}
+			/while (${Spawn[${Me.XTarget[1].ID}].Distance} > 30) {
+				/if (!${Navigation.Active}) /nav id ${Me.XTarget[1].ID}
+				/delay 10
+			}
+		}
+		/killthis
+		/setchattitle Killing ${Target.CleanName}
+		/goto :waitTillDead
+	}
+/return
+	:OnExit
+	/setchattitle MQ2
+	/end
+	
+Sub TargetShortest
+	/declare PullTargetID int local 0
+	/declare Shortest int local 0
+	
+	/if (!${Me.XTarget[1].ID}) {
+		|In order if I should even loop through to see how many mobs are in range I need to get a count based on my conditions
+		/declare MobsInRange int local ${SpawnCount[${TargetType} noalert 1 targetable radius ${PullRange} zradius ${ZRadius} "${FarmMob}"]}
+		/if (${Debugging}) /echo There were ${MobsInRange} ${FarmMob} in radius of ${PullRange} and ZRad: ${ZRadius}.
+		/declare i int local 0
+		/declare j int local 1
+		/if (${MobsInRange}) {
+		|** PullList[#,1] = ID of mob, PullList[#,2] = PathLength **|
+		|I created an array and made it the size of the mobcount by the 2 to store each mob's ID and the length of their nav path
+			/declare PullList[${MobsInRange},2] int local 0
+			|I set i equal to 1 and I iterate through each mob
+			/for i 1 to ${MobsInRange}
+				|just in case something dies, I don't to result in NULL during my check producing results
+				/if (${NearestSpawn[${i},${TargetType} noalert 1 targetable radius ${PullRange} zradius ${ZRadius} "${FarmMob}"].Name.NotEqual[NULL]} && ${If[!${Bool[${NearestSpawn[${i},npc noalert 1 radius ${PullRange} zradius ${ZRange}].AggroHolder}]},TRUE,${If[${Bool[${NearestSpawn[${i},npc noalert 1 radius ${PullRange} zradius ${ZRange}].AggroHolder} && ${Bool[${NearestSpawn[${i},npc noalert 1 radius ${PullRange} zradius ${ZRange}].AggroHolder.Equal[${Me.Mercenary.Name}]},TRUE,FALSE]}]}]}]}) {
+					/echo \atFound one. Maybe, lets see if it has a path. 
+					|If there is a path and only if there is a path will I enter the following block statement. This is done to avoid adding mobs to the array that don't have a path.
+					/if (${Navigation.PathExists[id ${NearestSpawn[${i},${TargetType} noalert 1 targetable radius ${PullRange} zradius ${ZRadius} "${FarmMob}"].ID}]} && ${Int[${NearestSpawn[${i},${TargetType} noalert 1 targetable radius ${PullRange} zradius ${ZRadius} "${FarmMob}"].Distance3D}]} <= ${Int[${Navigation.PathLength[id ${NearestSpawn[${i},${TargetType} noalert 1 targetable radius ${PullRange} zradius ${ZRadius} "${FarmMob}"].ID}]}]}) {
+						|Now that I know this mob has a Navigation path, I need to add it to the array where ${j} is incremented only if I add a mob's ID and Path Length
+						/varset PullList[${j},1] ${NearestSpawn[${i},${TargetType} noalert 1 targetable radius ${PullRange} zradius ${ZRadius} "${FarmMob}"].ID}
+						/varset PullList[${j},2] ${Int[${Navigation.PathLength[id ${NearestSpawn[${i},${TargetType} noalert 1 targetable radius ${PullRange} zradius ${ZRadius} "${FarmMob}"].ID}]}]}
+						|If this is the first mob I've added to the array, it is now my target and it has the shortest path. 
+						/if (${j}==1) {
+							/varset PullTargetID ${PullList[${j},1]}
+							/varset Shortest ${PullList[${j},2]}
+						} else /if (${PullList[${j},2]} < ${Shortest}) {
+							|Otherwise if the mob I added has a PathLength shorter that the current shortest Nav Path, make it my target and set it as the shortest.
+							/varset PullTargetID ${PullList[${j},1]}
+							/varset Shortest ${PullList[${j},2]}
+						}
+						|Since I added a mob I need to increment j by 1 in the PullList Array. 
+						/varcalc j ${j}+1
+					} else {
+						/if (${Debugging}) {
+							/echo \at${NearestSpawn[${i},${TargetType} noalert 1 targetable radius ${PullRange} zradius ${ZRadius} "${FarmMob}"].Name} was not a valid pull target.
+							/echo \ar${Navigation.PathExists[id ${NearestSpawn[${i},${TargetType} noalert 1 targetable radius ${PullRange} zradius ${ZRadius} "${FarmMob}"].ID}]} && ${Int[${NearestSpawn[${i},${TargetType} noalert 1 targetable radius ${PullRange} zradius ${ZRadius} "${FarmMob}"].Distance3D}]} <= ${Int[${Navigation.PathLength[id ${NearestSpawn[${i},${TargetType} noalert 1 targetable radius ${PullRange} zradius ${ZRadius} "${FarmMob}"].ID}]}]})
+						}
+					}
+				}
+			|Check the next mob in the NearestSpawn meeting my conditions loop 
+			/next i
+			|Now that I've exited the loop, the PullTargetID variable is the one I want to navigate to and kill. 
+			/varset myTargetID ${PullTargetID}
+			|Set the chattitle of the MQ2 window to the macro's status (Suggestion by Kaen01)
+			/setchattitle Going to kill ${Spawn[id ${myTargetID}].CleanName}!
+		}
+	} else {
+		/varset myTargetID ${Me.XTarget[1].ID}
+	}
+/return
+
+| --------------------------------------------------------------------------------------------
+| SUB: GroupManaChk
+| --------------------------------------------------------------------------------------------
+Sub GroupManaChk
+	/if (${Me.XTarget[1].ID}) /return
+	/call AmIDead
+	/if (!${Me.Combat}) {
+		/setchattitle "Group Mana Check"
+		/if (${Me.PctMana} < ${MedAt} && ${Me.Class.CanCast} && !${Me.State.Equal[DEAD]}) {
+			/echo \arYOU are low on mana!
+			/setchattitle "Waiting on YOUR mana to reach ${MedTill}%"
+			/if (!${Me.XTarget[1].ID}) {
+				/while (${Me.PctMana} < ${MedTill} && !${Me.XTarget[1].ID} && !${Me.State.Equal[DEAD]}) {
+					/if (${Me.Standing} && !${Me.Casting.ID} && !${Me.Mount.ID}) /sit
+					/delay 10
+				}
+			}
+		}
+		/if (${Group}) {
+			/declare i int local
+			/for i 1 to ${Group}
+				/if ((${Group.Member[${i}].PctMana} < ${MedAt}) && ${Group.Member[${i}].Class.CanCast} && !${Group.Member[${i}].State.Equal[DEAD]}) {
+					/echo \ar${Group.Member[${i}].Name} is low on mana!
+					/setchattitle "Waiting on ${Group.Member[${i}].Name}'s mana to reach ${MedTill}%"
+					/if (!${Me.XTarget[1].ID}) {
+						/while (${Group.Member[${i}].PctMana} < ${MedTill} && !${Me.XTarget[1].ID} && !${Group.Member[${i}].State.Equal[DEAD]}) {
+						/if (${Me.Standing} && !${Me.Casting.ID} && !${Me.Mount.ID}) /sit
+							/delay 10
+						}
+					}
+				}
+			/next i
+		}
+	}
+/return
+
+| --------------------------------------------------------------------------------------------
+| SUB: GroupHealthChk
+| --------------------------------------------------------------------------------------------
+Sub GroupHealthChk
+	/if (${Me.XTarget[1].ID}) /return
+	/call AmIDead
+	/setchattitle "GroupHealthCheck"
+	/if (!${Me.Combat}) {
+		/if (${Me.PctHPs} < ${HealAt} && !${Me.State.Equal[DEAD]}) {
+			/echo \arYOU are low on Health!
+			/setchattitle "Waiting on YOUR health to reach ${HealTill}%"
+			/if (!${Me.XTarget[1].ID}) {
+				/while (${Me.PctHPs} < ${HealTill} && !${Me.XTarget[1].ID} && !${Me.State.Equal[DEAD]}) {
+					/if ((${Me.Standing}) && (!${Me.Casting.ID}) && (!${Me.Mount.ID})) /sit
+					/delay 10
+				}
+			}
+		}
+		/if (${Group}) {
+			/declare i int local
+			/for i 1 to ${Group}
+				/if (${Group.Member[${i}].ID}) {
+					/if (${Group.Member[${i}].PctHPs} < ${HealAt} && !${Group.Member[${i}].State.Equal[DEAD]}) {
+						/echo ${Group.Member[${i}].Name} is low on Health!
+						/setchattitle "Waiting on ${Group.Member[${i}].Name} health to reach ${HealTill}%"
+						/if (!${Me.XTarget[1].ID}) {
+							/while (${Group.Member[${i}].PctHPs} < ${HealTill} && !${Me.XTarget[1].ID} && !${Group.Member[${i}].State.Equal[DEAD]}) {
+								/if ((${Me.Standing}) && (!${Me.Casting.ID}) && (!${Me.Mount.ID})) /sit
+								/if (${UseEQBC}) {
+									/declare j int local
+									/for j to ${Group}
+										/if (${Group.Member[${j}].State.Equal[Stand]} && !${Group.Member[${j}].Type.Equal[Mercenary]}) /bct ${Group.Member[${j}].Name} //sit
+									/next j
+								}
+								/delay 10
+							}
+						}
+					}
+				}
+			/next i
+		}
+	}
+/return
+
+| --------------------------------------------------------------------------------------------
+| SUB: GroupDeathChk
+| --------------------------------------------------------------------------------------------
+Sub GroupDeathChk
+	
+	/if (${Me.State.Equal[DEAD]}) {
+		/echo \arYOU~ have died! Waiting for YOU to get off your face.
+		/setchattitle "You died, waiting for rez!"
+		/while (${Me.STATE.Equal[DEAD]} ) {
+			/delay 10
+			/call AmIDead
+		}
+	}
+	/if (${Me.XTarget[1].ID}) /return
+	/if (${Group}) {
+		/declare i int local
+		/for i 1 to ${Group}
+			/if (${Group.Member[${i}].State.Equal[DEAD]} ) {
+				/echo ${Group.Member[${i}].Name} has died. Waiting for them to get off their face.
+				/setchattitle "${Group.Member[${i}].Name} has died. Waiting for Rez"
+				/if (!${Me.XTarget[1].ID}) {
+					/while (${Group.Member[${i}].State.Equal[DEAD]} && !${Me.XTarget[1].ID}) {
+						/if ((${Me.Standing}) && (!${Me.Casting.ID}) && (!${Me.Mount.ID})) /sit
+						/if (${UseEQBC}) {
+							/declare j int local
+							/for j to ${Group}
+								/if (${j} != ${i}) {
+									/if (${Group.Member[${j}].State.Equal[Stand]} && !${Group.Member[${j}].Type.Equal[Mercenary]}) /bct ${Group.Member[${i}].Name} //sit
+								}
+							/next j
+						}
+						/delay 10
+					}
+				}
+			}
+		/next i
+	}
+/return
+
+Sub NavToLoc(int Y,int X,int Z)
+	/while (${Math.Distance[${Me.Y}, ${Me.X}, ${Me.Z}: ${Y}, ${X}, ${Z}]} > 15) {
+		/call CheckSwiftness
+		/call WhereAmI
+		/if (${Navigation.Active}) {
+			/if (${Me.XTarget[1].ID}) {
+				/if (${Navigation.Active}) /nav stop
+				/varset TargetType npc
+				/call FarmStuff
+			} else {
+				/call GroupDeathChk
+				/call GroupHealthChk
+				/call GroupManaChk
+				/call CheckMerc
+			}
+			/if (${Me.Combat} && !${Me.XTarget[1].ID}) /squelch /target clear
+			/delay 10
+		} else {
+			/if (${Me.XTarget[1].ID}) {
+				/if (${Navigation.Active}) /nav stop
+				/varset TargetType npc
+				/call FarmStuff
+			} else {
+				/call GroupDeathChk
+				/call GroupHealthChk
+				/call GroupManaChk
+				/call CheckMerc
+			}
+			/if (${Me.Combat} && !${Me.XTarget[1].ID}) /squelch /target clear
+			/nav loc ${Y} ${X} ${Z}
+		}
+	}
+	/if (${Navigation.Active}) /nav stop
+/return
+
+Sub GetReward
+	/delay 3s ${Window[RewardSelectionWnd].Open}
+	/invoke ${Window[RewardSelectionWnd].FirstChild.FirstChild.Next.Child[RewardSelectionChooseButton].LeftMouseUp}
+	/delay 3s !${Window[RewardSelectionWnd].Open}
+/return
+
+Sub LootItem
+	/if (${Window[AdvancedLootWnd].Child[ADLW_LootBtnTemplate].Enabled}) {
+		/notify AdvancedLootWnd ADLW_LootBtnTemplate leftmouseup
+		/delay 5
+		/if (${Window[ConfirmationDialogBox].Open}) {
+			/notify ConfirmationDialogBox CD_Yes_Button leftmouseup
+		}
+	}
+/return
+
+Sub LeaveItem
+	/if (${Window[AdvancedLootWnd].Child[ADLW_LootBtnTemplate].Enabled}) {
+		/notify AdvancedLootWnd ADLW_LeaveBtnTemplate leftmouseup
+		/delay 5
+	}
+/return
+
+Sub CheckLoot(string itemINeed)
+	/while (${Window[AdvancedLootWnd].Open} && ${Window[AdvancedLootWnd].Child[ADLW_ItemBtnTemplate]} && !${Me.XTarget[1].ID}) {
+		/if (${Window[AdvancedLootWnd].Open} && ${Window[AdvancedLootWnd].Child[ADLW_ItemBtnTemplate].Tooltip.Equal[${itemINeed}]}) {
+			/call LootItem
+		} else /if (${Window[AdvancedLootWnd].Open} && ${Window[AdvancedLootWnd].Child[ADLW_ItemBtnTemplate].Tooltip.Length}) {
+			/call LeaveItem
+		}
+	}
+/return
+
+Sub GiveItems(string itemToGive, int Amount)
+	/if (!${Bool[${Amount}]}) /varset Amount 1
+	/if (${Debugging}) /echo "\aoGiving \ay${Amount} \aox \ap${itemToGive} \aoto \ag${Target.CleanName}"
+	/declare i int local
+	/keypress OPEN_INV_BAGS
+	/if (!${Window[InventoryWindow].Open}) /windowstate InventoryWindow open
+	/delay 10s ${Window[InventoryWindow].Open}
+	/delay 5
+	
+	/for i 1 to ${Amount}
+		/nomodkey /ctrlkey /itemnotify ${FindItem[=${itemToGive}].InvSlot} leftmouseup
+		/invoke ${Target.LeftClick}
+		/delay 2s !${Cursor.ID}
+	/next i
+	/notify GiveWnd GVW_Give_Button leftmouseup
+	/delay 2s !${Window[GiveWnd].Open}
+/return
+
+Sub GotoSpiders
+	/if (${Me.Z} > -67 && ${Me.Y} > -693) {
+		:SpidersCave
+		/call NavToLoc -600 -372 -41
+		/call MoveToWait -740 -387 -42
+	}
+/return
+
+Sub CheckBlessing
+	/if (!${Me.Buff[Gloomingdeep Guard].ID}) {
+		/declare myLoc "${Me.Y} ${Me.X} ${Me.Z}"
+		/call NavToLoc -180 -171 14
+		/target id ${Spawn[Rytan].ID}
+		/delay 2s ${Target.ID}==${Spawn[Rytan].ID}
+		/say Blessed
+		/call CloseDialog
+		/call CloseDialog
+		/call CloseDialog
+		/delay 2s ${Me.Buff[Gloomingdeep Guard].ID}
+		/call NavToLoc ${myLoc.Arg[1, ]} ${myLoc.Arg[2, ]} ${myLoc.Arg[3, ]}
+	}
+/return
+
+Sub LeaveSpiders
+	/call NavToLoc -682 -370 -65
+	/face loc -595,-373,-40
+	/keypress W hold
+	:keepGoing
+	/if (${Me.Y} < -598) /goto :keepGoing
+	/keypress W
+/return
+
+Sub EnterPit
+	/if (${Me.Z} > -29) {
+		/call NavToLoc -479 -1051 -1
+		/call MoveToWait -483 -965 -19
+		/call MoveToWait -486 -897 -42
+		/call MoveToWait -418 -893 -61
+	}
+/return
+
+Sub ExitPit
+	/call NavToLoc -388 -656 -79
+	/call NavToLoc -436 -899 -63
+	/call NavToLoc -485 -897 -42
+	/call NavToLoc -485 -962 -19
+	/call NavToLoc -481 -980 -12
+	/face loc -480,-1024,-1
+	:exitPit
+	/keypress W hold
+	/if (${Me.X} > -1060) {
+		/goto :exitPit
+	}
+	/keypress W
+/return
+
+Sub CheckMerc
+	/if (${Mercenary.State.Equal[DEAD]}) {
+		/echo Your mercenary has died. Waiting to be able to revive them. 
+		:waitForMerc
+		/if (${Group} && ${Window[MMGW_ManageWnd].Child[MMGW_SuspendButton].Tooltip.Equal[Revive your current mercenary.]} && ${Window[MMGW_ManageWnd].Child[MMGW_SuspendButton].Enabled}) /notify MMGW_ManageWnd MMGW_SuspendButton leftmouseup
+		/if (${Mercenary.State.Equal[DEAD]} && !${Me.XTarget[1].ID}) /goto :waitForMerc
+	}
+/return
+
+Sub AmIDead
+	/if (!${Me.PctHPs} && ${Window[RespawnWnd].Child[RW_OptionsList].List[1,2].Equal[Bind Location]}) {
+		/notify RespawnWnd RW_OptionsList listselect 1
+		/notify RespawnWnd RW_SelectButton leftmouseup
+		/delay 5s ${Me.X}==-152&&${Me.Y}==-31
+		/call TutorialCheck "The Gloomingdeep Revolt"
+		/if (${Macro.Return.Equal[TRUE]}) {
+			/declare i int local
+			/declare step int local
+			/for i 1 to 12
+			/if (!${Window[TaskWND].Child[Task_TaskElementList].List[${i},2].Equal[Done]}) {
+				/varset step ${i}
+				/break
+			}
+			/next i
+			/if (${Select[${Step},7,8,9]}) {
+				/call NavToLoc -527 -582 -2
+			}
+		}
+	}
+/return
+
+Sub MoveToWait(int Y, int X, int Z)
+	/moveto loc ${Y} ${X} ${Z}
+	/while (${MoveTo.Moving}) {
+		/call WhereAmI
+		/call CheckMerc
+		/delay 10
+	}
+/return
+
+Sub LoadIgnores
+	/alert clear 1
+	/alert add 1 McKenzie_the_Younger
+	/alert add 1 Prathun
+	/alert add 1 Guard
+	/alert add 1 Rashere
+	/alert add 1 Basher_Alga
+	/alert add 1 Flutterwing
+	/alert add 1 Poxan
+	/alert add 1 Vahlara
+	/alert add 1 Nura
+	/alert add 1 Rowyl
+	/alert add 1 Gordish
+	/alert add 1 Klide
+	/alert add 1 Keridon
+	/alert add 1 Oshran
+	/alert add 1 Clockwork_War_Machine
+	/alert add 1 Celrak
+	/alert add 1 A Priest_of_Luclin
+	/alert add 1 Elegist
+	/alert add 1 Absor
+	/alert add 1 Xenaida
+	/alert add 1 Scribe_Farquard
+	/alert add 1 Wijdan
+	/alert add 1 Lyndroh
+	/alert add 1 Rytan
+	/alert add 1 Guard_Rahtiz
+	/alert add 1 Guard_Vyrinn
+	/alert add 1 Frizznik
+	/alert add 1 Arias
+	/alert add 1 Guard_Hobart
+	/alert add 1 Guard_Maddoc
+	/alert add 1 Revolt_Scout_Kaikachi
+	/alert add 1 Revolt_Scout_Zajeer
+	/alert add 1 a_garroted_kobold
+/return
+
+
+Sub Declares
+	/declare Targets string outer
+	/declare TargetType string outer npc
+	/declare PullRange int outer 1000
+	/declare ZRadius int outer 1000
+	/declare Debugging bool outer TRUE
+	/declare HealAt int outer 70
+	/declare HealTill int outer 100
+	/declare MedAt int outer 30
+	/declare MedTill int outer 100
+	/declare myTargetID int outer 0
+	/declare FarmMob string outer
+	/declare reportTarget timer outer 5s
+	/declare useEQBC bool outer TRUE
+	/declare myLocation string outer
+/return
+
+Sub WhereAmI
+	/if (${Zone.ID} != 189) /return
+	/if (${Range.Between[-298,154 : ${Me.Y}]} && ${Range.Between[-309,63 : ${Me.X}]}) {
+		/if (!${myLocation.Equal[StartArea]}) {
+			/varset myLocation StartArea
+			/echo \awLocation:\agStartArea
+		}
+	} else /if (${Range.Between[-447,-299 : ${Me.Y}]} && ${Range.Between[-386,-99 : ${Me.X}]}) {
+		/if (!${myLocation.Equal[Hall1]}) {
+			/varset myLocation Hall1
+			/echo \awLocation:\agHall1
+		}
+	} else /if (${Range.Between[-614,-448 : ${Me.Y}]} && ${Range.Between[-430,-344 : ${Me.X}]}) {
+		/if (!${myLocation.Equal[RatBat]}) {
+			/varset myLocation RatBat
+			/echo \awLocation:\agRatBat
+		}
+	} else /if (${Range.Between[-684,-615 : ${Me.Y}]} && ${Range.Between[-386,-355 : ${Me.X}]}) {
+		/if (!${myLocation.Equal[SpiderHall]}) {
+			/varset myLocation SpiderHall
+			/echo \awLocation:\agSpiderHall
+		}
+	} else /if (${Range.Between[-1025,-685 : ${Me.Y}]} && ${Range.Between[-672,-204 : ${Me.X}]}) {
+		/if (!${myLocation.Equal[Spider1]}) {
+			/varset myLocation Spider1
+			/echo \awLocation:\agSpider1
+		}
+	} else /if (${Range.Between[-552,-497 : ${Me.Y}]} && ${Range.Between[-598,-431 : ${Me.X}]} && ${Range.Between[-40,5 : ${Me.Z}]}) {
+		/if (!${myLocation.Equal[Hall2]}) {
+			/varset myLocation Hall2
+			/echo \awLocation:\agHall2
+		}
+	} else /if (${Range.Between[-572,-420 : ${Me.Y}]} && ${Range.Between[-711,-598 : ${Me.X}]} && ${Range.Between[-3,10 : ${Me.Z}]}) {
+		/if (!${myLocation.Equal[RatBat2]}) {
+			/varset myLocation RatBat2
+			/echo \awLocation:\agRatBat2
+		}
+	} else /if (${Range.Between[-491,-421 : ${Me.Y}]} && ${Range.Between[-819,-711 : ${Me.X}]} && ${Range.Between[-3,10 : ${Me.Z}]}) {
+		/if (!${myLocation.Equal[Hall3]}) {
+			/varset myLocation Hall3
+			/echo \awLocation:\agHall3
+		}
+	} else /if (${Range.Between[-640,-210 : ${Me.Y}]} && ${Range.Between[-1079,-820 : ${Me.X}]} && ${Range.Between[-3,10 : ${Me.Z}]}) {
+		/if (!${myLocation.Equal[PitTop]}) {
+			/varset myLocation PitTop
+			/echo \awLocation:\agPitTop
+		}
+	} else /if (${Range.Between[-570,-444 : ${Me.Y}]} && ${Range.Between[-994,-884 : ${Me.X}]} && ${Range.Between[-60,-2 : ${Me.Z}]}) {
+		/if (!${myLocation.Equal[PitSteps]}) {
+			/varset myLocation PitSteps
+			/echo \awLocation:\agPitSteps
+		}
+	} else {
+		/if (!${myLocation.Equal[Unknown]}) {
+			/varset myLocation Unknown
+			/echo \awLocation:\agUnknown
+		}
+	}
+/return
+
+Sub CastItem(string ItemToCast)
+	/casting "${ItemToCast}"|Item
+	/delay 2s ${Me.Casting.ID}
+	/delay ${FindItem[=${ItemToCast}].CastTime.TotalSeconds}s !${Me.Casting.ID}
+/return
+
+Sub CheckSwiftness
+	/if (!${Me.Buff[Blessing of Swiftness].ID} && !${Me.XTarget[1].ID}) {
+		/if (${FindItemCount[=Worn Totem]} && !${Me.Buff[${FindItem[=Worn Totem].Spell}].Equal[Null]} && !${FindItem[=Worn Totem].TimerReady}) {
+			/if (${Navigation.Active}) /nav stop
+			/delay 5s !${Me.Moving}
+			/call CastItem "Worn Totem"
+		}
+	}
+/return
+
+Sub GotoQueen
+	/call NavToLoc -1020 -498 -5
+	/call MoveToWait -1047 -497 -2
+/return
+
+Sub LeaveQueen
+	/call NavToLoc -1047 -497 -2
+	/call MoveToWait -1020 -498 -5
+/return
+
+Sub Bind_AddToIgnore
+	/alert add 1 ${Target.CleanName}
+	/varset myTargetID 0
+	/squelch /target clear
+/return 
+
+Sub Bind_AddThisIgnore
+	/alert add 1 ${Target.Name}
+	/varset myTargetID 0
+	/squelch /target clear
+/return

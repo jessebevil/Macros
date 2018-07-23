@@ -1,0 +1,288 @@
+	|||||||||||||||||||||||||||||||||||||||||||||||||||
+|CheckBarter.mac by Chatwiththisname
+|v1.0 ~ Initial release 2/13/2018
+|v1.1 ~ Updated 2/14/2018 
+|		Added Exlusion list for items
+|		corrected invalid search results being counted 
+|			as valid.
+|		Converted all non-essential echos to debugging
+|			messages to reduce clutter.
+|		Added this header. 
+|v2.0 ~ Added in selling of items.
+|		Now generates an INI.
+|v2.1 ~ Tracks highest offer ever seen. Reports new 
+|		highest offer when found, current highest 
+|		offer if none present.
+|v2.2 ~ Updated 3/21/2018
+|		Now sells all of an item instead of just whatever is 
+|		sold on the first attempt with the sell button. Which
+|		makes the output Sells totally accurate. 
+|		Now checks for a vendor to still be present when selling
+|		and stops selling to that list location if they aren't there
+|		anymore. 
+|		Added code comments for others to understand what I'm doing
+|		in some places on the code.
+|
+|Usage: /mac CheckBarter
+|
+|Purpose: Will check your sellable items for a buyline 
+|			in the barter window and report any matches. 
+|
+	|||||||||||||||||||||||||||||||||||||||||||||||||||
+	
+#Event SoldDecrement "You've Sold #1# #2# to #*#"
+
+Sub Main
+	/declare Debugging bool outer FALSE
+|	ExcludeItem format "Cloudy Potion Krono Philter of Major Translocation"
+	/declare ExcludeItem string outer "Krono, Cloudy Potion, Philter of Major Translocation, "
+	/declare ReportExcluded bool outer TRUE
+	/declare Sells int outer 0
+	/declare NumToSell int outer 0
+	/declare SellItem string outer
+	/declare SoldItem bool outer FALSE
+	/declare VendorName string outer 
+	/call OpenBarter
+	/call GenerateItemCount
+	/call CheckBarter
+/end
+/return
+
+Sub OpenBarter
+	/if (!${Window[BarterSearchWnd].Open}) {
+		/barter
+		/delay 5s ${Window[BarterSearchWnd].Open}
+	}
+	|** Refresh your barter window inventory list to update counts **|
+	/notify BarterSearchWnd BTRSRCH_RefreshInventoryButton leftmouseup
+/return
+
+Sub CheckBarter
+	/declare highest int local 0
+	/declare current int local 0
+	/declare i int local 0
+	/declare j int local 1
+	/echo \aw[\ayItems You currently have and are selling\aw]
+	/for i 1 to ${itemCount}
+		/if (!${Ini[CheckBarterSellList.ini,${Window[BarterSearchWnd].Child[BTRSRCH_InventoryList].List[${i},2]},SellPrice].Length}) {
+			/ini "CheckBarterSellList.ini" "${Window[BarterSearchWnd].Child[BTRSRCH_InventoryList].List[${i},2]}" "SellPrice" 0
+			/if (${Debugging}) /echo \awCreated an INI Entry for: \ap${Window[BarterSearchWnd].Child[BTRSRCH_InventoryList].List[${i},2]}
+		}
+		
+		/if (${Ini[CheckBarterSellList.ini,${Window[BarterSearchWnd].Child[BTRSRCH_InventoryList].List[${i},2]},SellPrice]}) {
+			/echo \awItem: \ap${Window[BarterSearchWnd].Child[BTRSRCH_InventoryList].List[${i},2]} \awYour Lowest Sell Price: \ag${Ini[CheckBarterSellList.ini,${Window[BarterSearchWnd].Child[BTRSRCH_InventoryList].List[${i},2]},SellPrice]}pp each!
+		}
+	/next i
+	/echo \awFound: \ay${itemCount} \awitems to check. 
+	/for i 1 to ${itemCount}
+		/if (${Bool[${Window[BarterSearchWnd].Child[BTRSRCH_InventoryList].List[${i},2]}]}) {
+			|** Skip an item if it's been excluded in the Exclude list **|
+			/if (${ExcludeItem.Find[${Window[BarterSearchWnd].Child[BTRSRCH_InventoryList].List[${i},2]}]}) {
+				/if (${Debugging} || ${ReportExcluded}) {
+					/echo \ap${Window[BarterSearchWnd].Child[BTRSRCH_InventoryList].List[${i},2]} \awis on the exclude list, \arSkipping!
+				}
+				/continue
+			}
+			|** Wait until the search button is ready to be hit **|
+			/delay 5s ${Window[BarterSearchWnd].Child[BTRSRCH_SearchButton].Enabled}
+			/if (${Debugging}) {
+				/echo \atChecking - \awItem: \ap${Window[BarterSearchWnd].Child[BTRSRCH_InventoryList].List[${i},2]} \awQuantity: \ay${Window[BarterSearchWnd].Child[BTRSRCH_InventoryList].List[${i},3]}
+			}
+			|** Select the item on the list at index i **|
+			/notify BarterSearchWnd BTRSRCH_InventoryList listselect ${i} leftmouseup
+			|** Wait until the selected item's text populates into the search box **|
+			/delay 3s ${Window[BarterSearchWnd].Child[BTRSRCH_ItemSearchEdit].Text.Equal[${Window[BarterSearchWnd].Child[BTRSRCH_InventoryList].List[${i},2]}]}
+			/varset SellItem ${Window[BarterSearchWnd].Child[BTRSRCH_InventoryList].List[${i},2]}
+			/if (${Debugging}) /echo ${SellItem}
+			|** If there is no INI entry for this item I want to make one. **|
+			/if (!${Ini[CheckBarterSellList.ini,${Window[BarterSearchWnd].Child[BTRSRCH_InventoryList].List[${i},2]},SellPrice].Length}) {
+				/ini "CheckBarterSellList.ini" "${Window[BarterSearchWnd].Child[BTRSRCH_InventoryList].List[${i},2]}" "SellPrice" 0
+				/echo \awCreated an INI Entry for: \ap${Window[BarterSearchWnd].Child[BTRSRCH_InventoryList].List[${i},2]}
+			}
+			|** Hit the search button for this item to see if there are any buylines **|
+			/notify BarterSearchWnd BTRSRCH_SearchButton leftmouseup
+			|** This delay of 1s is here to ensure that hitting search had time to clear the buyline list for the new item **|
+			/delay 10
+			|** Wait until there are results or for 5 seconds (about how long it takes the search button to be available again) **|
+			/delay 5s (${Bool[${Window[BarterSearchWnd].Child[BTRSRCH_BuyLineList].List[${j},4]}]} || ${Window[BarterSearchWnd].Child[BTRSRCH_SearchButton].Enabled})
+			|** If I found an item in the list of buylines with a value **|
+			/if (${Bool[${Window[BarterSearchWnd].Child[BTRSRCH_BuyLineList].List[${j},4]}]}) {
+				|** Need to increment through the available buy lines and compare some information **|
+				/while (${Int[${Window[BarterSearchWnd].Child[BTRSRCH_BuyLineList].List[${j},4]}]}) {
+					/if (${Debugging}) {
+						/echo There was a potential buyer when j was ${j}
+						/echo ${Window[BarterSearchWnd].Child[BTRSRCH_InventoryList].List[${i},2]} compared to ${Window[BarterSearchWnd].Child[BTRSRCH_BuyLineList].List[${j},2]} is ${Window[BarterSearchWnd].Child[BTRSRCH_InventoryList].List[${i},2].Compare[${Window[BarterSearchWnd].Child[BTRSRCH_BuyLineList].List[${j},2]}]}
+					}
+					|** Do the items have the same name? IE: Searching for "Diamond" but "Conflagrant Diamond is listed" **|
+					/if (${Window[BarterSearchWnd].Child[BTRSRCH_InventoryList].List[${i},2].Compare[${Window[BarterSearchWnd].Child[BTRSRCH_BuyLineList].List[${j},2]}]} == 0) {
+						/if (${Debugging}) {
+							/echo They were the same.
+						}
+						|** If this is the same as the item I want to sell, lets save it's price to variable current **|
+						/varset current ${Window[BarterSearchWnd].Child[BTRSRCH_BuyLineList].List[${j},4]}
+						|** If the current listing is offering more than my current highest then current is the new highest, and I need to remember where they are located on the list **|
+						/if (${current} > ${highest}) {
+							/varset highest ${Window[BarterSearchWnd].Child[BTRSRCH_BuyLineList].List[${j},4]}
+							/if (!${Defined[SellerListLocation]}) {
+								/declare SellerListLocation int local ${j}
+							} else {
+								/varset SellerListLocation ${j}
+							}
+						}
+					}
+					|** I'm done checking the buy line at index j and now need to check the next one so I increment. **|
+					/varcalc j ${j}+1
+				}
+				|** Okay, now I need to know what the vendor value is and compare it to the highest buy line for the item **|
+				/if (${FindItem[=${Window[BarterSearchWnd].Child[BTRSRCH_InventoryList].List[${i},2]}].Value} && ${highest}) {
+					|** If the vendor value is higher than the buy line listed, then I don't want to sell the item on barter. **|
+					/if (${Int[${Math.Calc[${FindItem[=${Window[BarterSearchWnd].Child[BTRSRCH_InventoryList].List[${i},2]}].Value}/1000]}]} > ${highest}) {
+						/if (${Debugging}) {
+							/echo \awThere were buylines for \ap${Window[BarterSearchWnd].Child[BTRSRCH_InventoryList].List[${i},2]} \awbut it was less than the vendor's value of \ag${Int[${Math.Calc[${FindItem[=${Window[BarterSearchWnd].Child[BTRSRCH_InventoryList].List[${i},2]}].Value}/1000]}]}pp \awfor the item.
+						}
+						|** If the highest offer was more than the vendor value and there was a buyline **|
+					} else /if (${highest}) {
+						/echo \awYou can sell \ap${Window[BarterSearchWnd].Child[BTRSRCH_InventoryList].List[${i},2]} \awfor \ag${highest}pp \aweach! ${If[${Ini[CheckBarterSellList.ini,${Window[BarterSearchWnd].Child[BTRSRCH_InventoryList].List[${i},2]},Highest].Length},\ayHighest offer seen: \ag${Ini[CheckBarterSellList.ini,${Window[BarterSearchWnd].Child[BTRSRCH_InventoryList].List[${i},2]},Highest]}pp \ayeach.,]}
+						|** If there is no INI entry for the highest offer ever on this item, I want to make it and set it as the current highest offer **|
+						/if (!${Ini[CheckBarterSellList.ini,${Window[BarterSearchWnd].Child[BTRSRCH_InventoryList].List[${i},2]},Highest].Length}) {
+							/ini "CheckBarterSellList.ini" "${Window[BarterSearchWnd].Child[BTRSRCH_InventoryList].List[${i},2]}" "Highest" ${highest}
+							/echo \awHighest Buyer offer created for: \ap${Window[BarterSearchWnd].Child[BTRSRCH_InventoryList].List[${i},2]} \awof ${highest}pp
+						|** If there was already a highest offer ever on this item, lets compare the current highest offer from this search to the INI's highest and see which is higher **|
+						} else /if (${Ini[CheckBarterSellList.ini,${Window[BarterSearchWnd].Child[BTRSRCH_InventoryList].List[${i},2]},Highest]} < ${highest}) {
+							/echo \awNew Highest Buyer offer found for: \ap${Window[BarterSearchWnd].Child[BTRSRCH_InventoryList].List[${i},2]} \awof ${highest}pp
+							/ini "CheckBarterSellList.ini" "${Window[BarterSearchWnd].Child[BTRSRCH_InventoryList].List[${i},2]}" "Highest" ${highest}
+						}
+						|** Do I want to sell this item? Lets check the INI to see if SellPrice is anything other than 0 **|
+						/if (${Ini[CheckBarterSellList.ini,${Window[BarterSearchWnd].Child[BTRSRCH_InventoryList].List[${i},2]},SellPrice]}) {
+							/if (${Debugging}) /echo \awYou'll sell for at least ${Ini[CheckBarterSellList.ini,${Window[BarterSearchWnd].Child[BTRSRCH_InventoryList].List[${i},2]},SellPrice]}pp
+							|** I was selling this item, lets see if the highest buyline was greater than or equal to the minimum value I was willing to accept for the item **|
+							/if (${highest} >= ${Ini[CheckBarterSellList.ini,${Window[BarterSearchWnd].Child[BTRSRCH_InventoryList].List[${i},2]},SellPrice]}) {
+								/varset NumToSell ${Window[BarterSearchWnd].Child[BTRSRCH_InventoryList].List[${i},3]}
+								/echo \arSelling: \ap${Window[BarterSearchWnd].Child[BTRSRCH_InventoryList].List[${i},2]}\aw(\ayx${Window[BarterSearchWnd].Child[BTRSRCH_InventoryList].List[${i},3]}\aw) for \ag${Math.Calc[${highest}*${Window[BarterSearchWnd].Child[BTRSRCH_InventoryList].List[${i},3]}].Int}pp \aw(\ag${highest}pp \aweach.)
+								|** I'm trying to calculate the total amount of plat made from sells on this run of checkbarter.mac **|
+								/varcalc Sells ${Sells}+${Math.Calc[${highest}*${Window[BarterSearchWnd].Child[BTRSRCH_InventoryList].List[${i},3]}].Int}
+								|** Need to save the vendor's name so I can verify they're still there. **|
+								/varset VendorName ${Window[BarterSearchWnd].Child[BTRSRCH_BuyLineList].List[${SellerListLocation},5]}
+								/if (${Debugging}) /echo \awVendors name: \ay${VendorName}
+								
+								
+								/while (${NumToSell}) {
+									/if (${Debugging}) /echo \ay Vendor name different at SellerListLocation? ${Window[BarterSearchWnd].Child[BTRSRCH_BuyLineList].List[${SellerListLocation},5].NotEqual[${VendorName}]}
+									/if (${Window[BarterSearchWnd].Child[BTRSRCH_BuyLineList].List[${SellerListLocation},5].NotEqual[${VendorName}]}) {
+										/if (${Debugging}) /echo \ar Vendor isn't there anymore for me to sell to them.
+										/varcalc Sells ${Sells}-${Math.Calc[${highest}*${NumToSell}].Int}
+										/if (${Debugging}) /echo \ay Subtracted the remaining quantity's value from the total sells income. 
+										/break
+									}
+									|** Lets go ahead and select the buyline with the highest value that I saved earlier **|
+									/notify BarterSearchWnd BTRSRCH_BuyLineList listselect ${SellerListLocation}
+									
+									|** Give the UI time to register that I've clicked on the buyers buyline **|
+									/delay 5
+									|** Go ahead and hit the sell button for that buyline **|
+									/notify BarterSearchWnd SellButton leftmouseup
+									|** Let us wait until the Quantity window is open so we can set the amount we want to sell **|
+									/delay 2s ${Window[QuantityWnd].Open}
+									|** I want to set the Quantity slider to the amount I current have (max is 20) TODO: Add ensuring all are sold via #Event and counter loop **|
+									/notify QuantityWnd QTYW_Slider newvalue ${NumToSell}
+									|** Wait for the UI to register the change to the slider. **|
+									/delay 5
+									|** Okay, now lets hit the accept button to accept the value we input **|
+									/notify QuantityWnd QTYW_Accept_Button leftmouseup
+									/while (!${SoldItem}) {
+										/doevents
+										/delay 5
+									}
+									/varset SoldItem FALSE
+									/if (!${NumToSell}) /break
+								}
+							}
+						}
+					}
+					|** If there was no vendor value but there was a buy line **|
+				} else /if (${highest}) {
+					/echo \awYou can sell \ap${Window[BarterSearchWnd].Child[BTRSRCH_InventoryList].List[${i},2]} \awfor \ag${highest}pp \aweach! ${If[${Ini[CheckBarterSellList.ini,${Window[BarterSearchWnd].Child[BTRSRCH_InventoryList].List[${i},2]},Highest].Length},\ayHighest offer seen: \ag${Ini[CheckBarterSellList.ini,${Window[BarterSearchWnd].Child[BTRSRCH_InventoryList].List[${i},2]},Highest]}pp \ayeach.,]}
+					/if (!${Ini[CheckBarterSellList.ini,${Window[BarterSearchWnd].Child[BTRSRCH_InventoryList].List[${i},2]},Highest].Length}) {
+						/ini "CheckBarterSellList.ini" "${Window[BarterSearchWnd].Child[BTRSRCH_InventoryList].List[${i},2]}" "Highest" ${highest}
+						/echo \awHighest Buyer offer created for: \ap${Window[BarterSearchWnd].Child[BTRSRCH_InventoryList].List[${i},2]} \awof ${highest}pp
+					} else /if (${Ini[CheckBarterSellList.ini,${Window[BarterSearchWnd].Child[BTRSRCH_InventoryList].List[${i},2]},Highest]} < ${highest}) {
+						/echo \awNew Highest Buyer offer found for: \ap${Window[BarterSearchWnd].Child[BTRSRCH_InventoryList].List[${i},2]} \awof ${highest}pp
+						/ini "CheckBarterSellList.ini" "${Window[BarterSearchWnd].Child[BTRSRCH_InventoryList].List[${i},2]}" "Highest" ${highest}
+					}
+					/if (${Ini[CheckBarterSellList.ini,${Window[BarterSearchWnd].Child[BTRSRCH_InventoryList].List[${i},2]},SellPrice]}) {
+						/if (${Debugging}) /echo \awYou'll sell for at least ${Ini[CheckBarterSellList.ini,${Window[BarterSearchWnd].Child[BTRSRCH_InventoryList].List[${i},2]},SellPrice]}pp
+						/if (${highest} >= ${Ini[CheckBarterSellList.ini,${Window[BarterSearchWnd].Child[BTRSRCH_InventoryList].List[${i},2]},SellPrice]}) {
+							/echo \arSelling: \ap${Window[BarterSearchWnd].Child[BTRSRCH_InventoryList].List[${i},2]}\aw(\ayx${Window[BarterSearchWnd].Child[BTRSRCH_InventoryList].List[${i},3]}\aw) for \ag${Math.Calc[${highest}*${Window[BarterSearchWnd].Child[BTRSRCH_InventoryList].List[${i},3]}].Int}pp
+							|** I'm trying to calculate the total amount of plat made from sells on this run of checkbarter.mac **|
+							/varcalc Sells ${Sells}+${Math.Calc[${highest}*${Window[BarterSearchWnd].Child[BTRSRCH_InventoryList].List[${i},3]}].Int}
+							|** Need to save the vendor's name so I can verify they're still there. **|
+							/varset VendorName ${Window[BarterSearchWnd].Child[BTRSRCH_BuyLineList].List[${SellerListLocation},5]}
+							/if (${Debugging}) /echo \awVendors name: \ay${VendorName}
+							
+							
+							/while (${NumToSell}) {
+								/if (${Debugging}) /echo \ay Vendor name different at SellerListLocation? ${Window[BarterSearchWnd].Child[BTRSRCH_BuyLineList].List[${SellerListLocation},5].NotEqual[${VendorName}]}
+								/if (${Window[BarterSearchWnd].Child[BTRSRCH_BuyLineList].List[${SellerListLocation},5].NotEqual[${VendorName}]}) {
+									/if (${Debugging}) /echo \ar Vendor isn't there anymore for me to sell to them.
+									/varcalc Sells ${Sells}-${Math.Calc[${highest}*${NumToSell].Int}
+									/if (${Debugging}) /echo \ay Subtracted the remaining quantity's value from the total sells income. 
+									/break
+								}
+								|** Lets go ahead and select the buyline with the highest value that I saved earlier **|
+								/notify BarterSearchWnd BTRSRCH_BuyLineList listselect ${SellerListLocation}
+								
+								|** Give the UI time to register that I've clicked on the buyers buyline **|
+								/delay 5
+								|** Go ahead and hit the sell button for that buyline **|
+								/notify BarterSearchWnd SellButton leftmouseup
+								|** Let us wait until the Quantity window is open so we can set the amount we want to sell **|
+								/delay 2s ${Window[QuantityWnd].Open}
+								|** I want to set the Quantity slider to the amount I current have (max is 20) TODO: Add ensuring all are sold via #Event and counter loop **|
+								/notify QuantityWnd QTYW_Slider newvalue ${NumToSell}
+								|** Wait for the UI to register the change to the slider. **|
+								/delay 5
+								|** Okay, now lets hit the accept button to accept the value we input **|
+								/notify QuantityWnd QTYW_Accept_Button leftmouseup
+								/while (!${SoldItem}) {
+									/doevents
+									/delay 5
+								}
+								/varset SoldItem FALSE
+								/if (!${NumToSell}) /break
+							}
+						}
+					}
+				}
+			} else {
+				/if (${Debugging}) {
+					/echo \arNo Buy Lines were found for this item!
+				}
+			}
+		}
+		/varset current 0
+		/varset highest 0
+		/varset j 1
+	/next i
+	|** Refresh your barter window inventory list to update counts **|
+	/notify BarterSearchWnd BTRSRCH_RefreshInventoryButton leftmouseup
+	/echo \agTotal Sells: \aw${Sells}pp
+/return
+
+Sub GenerateItemCount
+	/declare nullCount int local 0
+	/declare itemCount int outer 0
+	/declare i int local 0
+	/for i 1 to 400
+		/if (${Bool[${Window[BarterSearchWnd].Child[BTRSRCH_InventoryList].List[${i},2]}]}) {
+			/varcalc itemCount ${itemCount}+1
+		} else {
+			/break
+		}
+	/next i
+/return
+
+Sub Event_SoldDecrement(int line, string numSold)
+	/if (${Debugging}) /echo You've sold ${numSold} x ${SellItem}
+	/varcalc NumToSell ${NumToSell}-${numSold}
+	/varset SoldItem TRUE
+/return
