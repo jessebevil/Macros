@@ -1,6 +1,6 @@
 	|||||||||||||||||||||||||||||||||||||||||||||||||||
 |Farm.mac by Chatwiththisname
-|v1.20 ~ Initial release 2/15/2018
+|v1.21 ~ Initial release 2/15/2018
 |	   ~ Ignores Update 3/15/2018
 |	   ~ Now generates a quick list of named, merchants,
 |		 bankers, and NPCs, as well as a permanent ignore list
@@ -27,6 +27,19 @@
 |		your starting zone. If UseEQBC is TRUE it will /exit all other toons on
 |		the EQBC Server, that said, make sure that's what you want to do when using
 |		this feature. 
+|	  ~ 1/15/2019
+|	  ~ Was an issue with new PullAbility setup and PullAbilityRange being read when 
+|		there was no PullAbility setup. Fixed it so that it wouldn't stop at 150 default 
+|		before reissuing nav.
+|	  ~ Added a basic check for mob to already have a debuff on it before casting a spell....
+|		my BL was chain casting slow. Thought I had added this already, but guess not.
+|	  ~ If you cut a name out of the FarmMobIgnored.ini list and paste it into the ignore list, it 
+|		won't repopulate into it's respective list again, should help see what you haven't put on the 
+|		permanent ignore list.
+|	  ~ Creatures on the NamedList should not longer also populate the NPC list in FarmMobIgnored.ini
+|	  ~ Found the elusive "there are no spawns matching: (0-200) any" bug, where it would get stuck in 
+|		a loop. and made corrections to two while loops to break out if the player didn't have a 
+|		target, or the spawn didn't exist anymore.
 |
 |Usage: /mac Farm radius target ~~ /mac farm 500 pyrilen
 |		/mac farm radius ~~ /mac farm 1000
@@ -68,15 +81,15 @@ Sub Main(int Param0, string Param1)
 	} else {
 		/echo Attacking anything I can get my grubby paws on.
 	}
-	/echo Usage: /farm radius mobstring, example: /farm 10000 cave_bear
+	/echo Usage: /mac farm radius mobstring, example: /mac farm 10000 cave bear
 	/call GenerateList
 	/if (${Debugging}) /delay 2s
 
 	/if (${UseEQBC} && !${Me.CombatState.Equal[Combat]}) {
 		/if (${Debugging}) /bc (Line: ${Macro.CurLine}) target me and stick (WaitNav).
-		/bca //target id ${Me.ID}
+		/bcg //target id ${Me.ID}
 		/delay 5
-		/bca //stick 10 loose moveback uw behind
+		/bcg //stick 10 loose moveback uw behind
 	}
 	/while (${EverQuest.GameState.Equal[INGAME]}) {
 		/if (${Zone.ID} != ${startZone}) /break
@@ -89,12 +102,13 @@ Sub Main(int Param0, string Param1)
 		/call BindCheck
 	}
 	/if (${useLogOut} && ${Zone.ID} != ${startZone}) {
-		/if (${UseEQBC}) /bca //exit
+		/if (${UseEQBC}) /bcg //exit
 		/exit
 	}
 	
 /return
 	:OnExit
+	/squelch /nav stop
 	/squelch /alias /showignored delete
 	/if (${Debugging}) /invoke ${Macro.Undeclared}
 	/setchattitle MQ2
@@ -105,7 +119,6 @@ Sub TargetShortest
 	/declare Shortest int local 0
 	
 	/if (!${Me.XTarget[1].ID}) {
-		|In order if I should even loop through to see how many mobs are in range I need to get a count based on my conditions
 		/declare MobsInRange int local ${SpawnCount[npc noalert 1 targetable radius ${PullRange} zradius ${ZRadius} "${FarmMob}"]}
 		/declare i int local 0
 		/declare j int local 1
@@ -115,33 +128,20 @@ Sub TargetShortest
 				/varset MobsInRange 100
 			}
 		|** PullList[#,1] = ID of mob, PullList[#,2] = PathLength **|
-		|I created an array and made it the size of the mobcount by the 2 to store each mob's ID and the length of their nav path
 			/declare PullList[${MobsInRange},2] int local 0
-			|I set i equal to 1 and I iterate through each mob
 			/for i 1 to ${MobsInRange}
-				|just in case something dies, I don't to result in NULL during my check producing results
-				|I also want to ignore mobs in the ignores section.
 				/if (${NearestSpawn[${i},npc noalert 1 targetable radius ${PullRange} zradius ${ZRadius} "${FarmMob}"].Name.NotEqual[NULL]} && !${Ini[${MobIgnore},${Zone.ShortName},Ignored].Find[${NearestSpawn[${i},npc noalert 1 targetable radius ${PullRange} zradius ${ZRadius} "${FarmMob}"].CleanName}|]}) {
-					|/echo \atFound one. Maybe, lets see if it has a path. 
-					|If there is a path and only if there is a path will I enter the following block statement. This is done to avoid adding mobs to the array that don't have a path.
-					
 					/if (${Navigation.PathExists[id ${NearestSpawn[${i},npc noalert 1 targetable radius ${PullRange} zradius ${ZRadius} "${FarmMob}"].ID}]} && ${Int[${NearestSpawn[${i},npc noalert 1 targetable radius ${PullRange} zradius ${ZRadius} "${FarmMob}"].Distance3D}]} <= ${Int[${Navigation.PathLength[id ${NearestSpawn[${i},npc noalert 1 targetable radius ${PullRange} zradius ${ZRadius} "${FarmMob}"].ID}]}]}) {
-						|** Before I add them to the pull list, let me also check that they still have 100% Hps. **|
 						/if (${NearestSpawn[${i},npc noalert 1 targetable radius ${PullRange} zradius ${ZRadius} "${FarmMob}"].PctHPs} == 100) {
-							|Now that I know this mob has a Navigation path, I need to add it to the array where ${j} is incremented only if I add a mob's ID and Path Length
-							|/echo Adding a mob to the pullList
 							/varset PullList[${j},1] ${NearestSpawn[${i},npc noalert 1 targetable radius ${PullRange} zradius ${ZRadius} "${FarmMob}"].ID}
 							/varset PullList[${j},2] ${Int[${Navigation.PathLength[id ${NearestSpawn[${i},npc noalert 1 targetable radius ${PullRange} zradius ${ZRadius} "${FarmMob}"].ID}]}]}
-							|If this is the first mob I've added to the array, it is now my target and it has the shortest path. 
 							/if (${j}==1) {
 								/varset PullTargetID ${PullList[${j},1]}
 								/varset Shortest ${PullList[${j},2]}
 							} else /if (${PullList[${j},2]} < ${Shortest}) {
-								|Otherwise if the mob I added has a PathLength shorter that the current shortest Nav Path, make it my target and set it as the shortest.
 								/varset PullTargetID ${PullList[${j},1]}
 								/varset Shortest ${PullList[${j},2]}
 							}
-							|Since I added a mob I need to increment j by 1 in the PullList Array. 
 							/varcalc j ${j}+1
 						}
 					} else {
@@ -151,12 +151,9 @@ Sub TargetShortest
 						}
 					}
 				}
-			|Check the next mob in the NearestSpawn meeting my conditions loop 
 			/next i
-			|Now that I've exited the loop, the PullTargetID variable is the one I want to navigate to and kill. 
 			/if (${PullTargetID}) {
 				/varset myTargetID ${PullTargetID}
-				|Set the chattitle of the MQ2 window to the macro's status (Suggestion by Kaen01)
 				/setchattitle Going to kill ${Spawn[id ${myTargetID}].CleanName}!
 			}
 		} else /if (${Me.Standing}) {
@@ -167,7 +164,6 @@ Sub TargetShortest
 		}
 	} else /if (!${Me.XTarget[1].Type.Equal[Corpse]}) {
 		/varset myTargetID ${Me.XTarget[1].ID}
-		|/if (${Debugging}) /echo \atI had an XTarget and have set myTargetID: ${myTargetID} - ${Spawn[${myTargetID}].Name}
 	}
 /return
 
@@ -206,7 +202,7 @@ Sub GroupManaChk
 					/delay 2
 				}
 				/if (${UseEQBC}) {
-					/bcaa //stand
+					/bcga //stand
 				}
 			}
 		}
@@ -240,7 +236,7 @@ Sub GroupManaChk
 							/delay 2
 						}
 						/if (${UseEQBC}) {
-							/bcaa //stand
+							/bcga //stand
 						}
 					}
 				}
@@ -284,7 +280,7 @@ Sub GroupHealthChk
 					/delay 2
 				}
 				/if (${UseEQBC}) {
-					/bcaa //stand
+					/bcga //stand
 				}
 			}
 		}
@@ -319,7 +315,7 @@ Sub GroupHealthChk
 								/delay 2
 							}
 							/if (${UseEQBC}) {
-								/bcaa //stand
+								/bcga //stand
 							}
 						}
 					}
@@ -363,7 +359,7 @@ Sub GroupEndChk
 					/delay 2
 				}
 				/if (${UseEQBC}) {
-					/bcaa //stand
+					/bcga //stand
 				}
 			}
 		}
@@ -398,7 +394,7 @@ Sub GroupEndChk
 								/delay 2
 							}
 							/if (${UseEQBC}) {
-								/bcaa //stand
+								/bcga //stand
 							}
 						}
 					}
@@ -425,6 +421,21 @@ Sub GroupDeathChk
 	/if (${Group}) {
 		/declare i int local
 		/for i 1 to ${Group}
+			/if (${Group.Member[${i}].Mercenary} && !${Group.Member[${i}].ID}) {
+				/echo Mercenary is dead.
+				/while (!${Group.Member[${i}].ID}) {
+					/if (!${Window[MMGW_ManageWnd].Open}) {
+						/merc 
+					} else {
+						/if (${Window[MMGW_ManageWnd].Child[MMGW_SuspendButton].Text.Equal[Revive]}) {
+							/notify MMGW_ManageWnd MMGW_SuspendButton leftmouseup
+							/delay 1s
+							/break
+						}
+					}
+					/delay 5
+				}
+			}
 			/if (${Group.Member[${i}].State.Equal[DEAD]} ) {
 				/echo ${Group.Member[${i}].Name} has died. Waiting for them to get off their face.
 				/setchattitle "${Group.Member[${i}].Name} has died. Waiting for Rez"
@@ -487,7 +498,7 @@ Sub WaitNav(NavTargetID, distance)
 				/if (${Navigation.Active}) /squelch /nav stop
 				/if (${UseEQBC}) {
 					/if (${Debugging}) /bc (Line: ${Macro.CurLine}) target xtarget ${Spawn[id ${Me.XTarget[1].ID}].Name}
-					/bcaa //target id ${Me.XTarget[1].ID}
+					/bcga //target id ${Me.XTarget[1].ID}
 				} else {
 					/target id ${Me.XTarget[1].ID}
 				}
@@ -507,9 +518,9 @@ Sub WaitNav(NavTargetID, distance)
 			/if (${Navigation.PathExists[id ${NavTargetID}]}) /squelch /nav id ${NavTargetID}
 			/if (${UseEQBC} && !${Me.CombatState.Equal[Combat]}) {
 				/if (${Debugging}) /bc (Line: ${Macro.CurLine}) target me and stick (WaitNav).
-				/bca //target id ${Me.ID}
+				/bcg //target id ${Me.ID}
 				/delay 5
-				/bca //stick 10 loose moveback uw behind
+				/bcg //stick 10 loose moveback uw behind
 			}
 		}
 	}
@@ -520,7 +531,7 @@ Sub WaitNav(NavTargetID, distance)
 	/call BindCheck
 	/if (${UseEQBC} && ${assistMe}) {
 		/if (${Debugging}) /bc (Line: ${Macro.CurLine}) target NavTarget ${Spawn[id ${NavTargetID}].Name}
-		/bcaa //target id ${NavTargetID}
+		/bcga //target id ${NavTargetID}
 	} else {
 		/target id ${NavTargetID}
 	}
@@ -613,7 +624,7 @@ Sub FarmStuff(string Enemy)
 		/if (${Debugging}) /echo I'm targeting ${Spawn[${myTargetID}].CleanName} ID: ${myTargetID}
 		/if (${UseEQBC} && ${assistMe}) {
 			/if (${Debugging}) /bc (Line: ${Macro.CurLine}) target myTargetID ${Spawn[id ${myTargetID}].Name}
-			/bcaa //target id ${myTargetID}
+			/bcga //target id ${myTargetID}
 		} else {
 			/target id ${myTargetID}
 		}
@@ -635,14 +646,15 @@ Sub Combat
 		/setchattitle Killing ${Target.CleanName}
 		/if (${UseEQBC} && ${assistMe}) {
 			/if (${Debugging}) /bc (Line: ${Macro.CurLine}) killthis
-			/timed 10 /bca //pet attack
-			/timed 15 /bca //pet swarm
-			/timed 20 /bca //killthis
+			/timed 10 /bcg //pet attack
+			/timed 15 /bcg //pet swarm
+			/timed 20 /bcg //killthis
 		}
 		/pet attack
 		/pet swarm
 		/killthis
 		:waitTillDead
+		/if (${Navigation.Active}) /squelch /nav stop
 		/call BindCheck
 		/if (${Me.Sitting}) /stand
 		/if (${Target.ID} && ${Me.CombatState.Equal[Combat]} && ${Target.Type.Equal[npc]}) {
@@ -654,6 +666,7 @@ Sub Combat
 							/call WaitNav ${Target.ID} ${Math.Calc[${Target.Distance}*0.80].Int}
 							/delay 2
 							/call BindCheck
+							/if (!${myTargetID} || !${Spawn[id ${myTargetID}].ID}) /break
 						}
 					} else {
 						/while (!${Target.LineOfSight}) {
@@ -661,6 +674,7 @@ Sub Combat
 							/delay 3s ${Target.LineOfSight}
 							/stop
 							/call BindCheck
+							/if (!${myTargetID} || !${Spawn[id ${myTargetID}].ID}) /break
 						}
 					}
 					/call CastDetrimentalSpells
@@ -677,7 +691,7 @@ Sub Combat
 			/if (${Navigation.Active}) /squelch /nav stop
 			/if (${UseEQBC} && ${assistMe}) {
 				/if (${Debugging}) /bc (Line: ${Macro.CurLine}) target XTarget ${Spawn[id ${Me.XTarget[1].ID}].Name}
-				/bcaa //target id ${Me.XTarget[1].ID}
+				/bcga //target id ${Me.XTarget[1].ID}
 			} else {
 				/target id ${Me.XTarget[1].ID}
 			}
@@ -686,9 +700,9 @@ Sub Combat
 			/if (${Navigation.PathExists[id ${Me.XTarget[1].ID}]}) /squelch /nav id ${Me.XTarget[1].ID}
 			/if (${UseEQBC} && !${Me.CombatState.Equal[Combat]}) {
 				/if (${Debugging}) /bc (Line: ${Macro.CurLine}) target me and stick (FarmStuff1).
-				/bca //target id ${Me.ID}
+				/bcg //target id ${Me.ID}
 				/delay 5
-				/bca //stick 10 loose moveback uw
+				/bcg //stick 10 loose moveback uw
 			}
 			/setchattitle Navigating to add ${Spawn[id ${Me.XTarget[1].ID}].CleanName}
 			/while (${Spawn[${Me.XTarget[1].ID}].Distance} > 30) {
@@ -696,9 +710,9 @@ Sub Combat
 					/if (${Navigation.PathExists[id ${Me.XTarget[1].ID}]}) /squelch /nav id ${Me.XTarget[1].ID}
 					/if (${UseEQBC} && !${Me.CombatState.Equal[Combat]}) {
 						/if (${Debugging}) /bc (Line: ${Macro.CurLine}) target me and stick (FarmStuff2).
-						/bca //target id ${Me.ID}
+						/bcg //target id ${Me.ID}
 						/delay 5
-						/bca //stick 10 loose moveback uw
+						/bcg //stick 10 loose moveback uw
 					}
 				}
 				/delay 10
@@ -710,9 +724,9 @@ Sub Combat
 		}
 		/if (${UseEQBC} && ${assistMe}) {
 			/if (${Debugging}) /bc (Line: ${Macro.CurLine}) killthis						   
-			/timed 10 /bca //pet attack
-			/timed 15 /bca //pet swarm
-			/timed 20 /bca //killthis
+			/timed 10 /bcg //pet attack
+			/timed 15 /bcg //pet swarm
+			/timed 20 /bcg //killthis
 		}
 		/pet attack
 		/pet swarm
@@ -728,7 +742,9 @@ Sub CastDetrimentalSpells
 		/for i 1 to 13
 			/if (!${Me.XTarget}) /break
 			/if (${Me.Gem[${i}].ID}) {
-				/if (${Me.Gem[${i}].TargetType.Equal[Single]} && ${Me.Gem[${i}].SpellType.Equal[Detrimental]} !${Target.Buff[${Me.Gem[${i}].Name}].ID}) {
+				/if (${Me.Gem[${i}].TargetType.Equal[Single]} && ${Me.Gem[${i}].SpellType.Equal[Detrimental]} && !${Target.Buff[${Me.Gem[${i}].Name}].ID}) {
+					/if (${Target.Buff[${Me.Gem[${i}].Name}].ID}) /continue
+					/if (${Me.GemTimer[${i}]}) /continue
 					/if (${Target.ID}) /face fast
 					/if (${Target.ID}) /cast ${i}
 					/if (${Target.ID}) /delay 3s ${Me.Casting.ID}
@@ -832,6 +848,7 @@ Sub Bind_AddThisIgnore
 /return
 
 Sub Bind_PermIgnore
+	/echo \ap${Target.CleanName} \ayadded to the permanent ignore list on FarmMobIgnored.ini
 	/ini "FarmMobIgnored.ini" "${Zone.ShortName}" "Ignored" "${If[${Bool[${Ini[FarmMobIgnored.ini,${Zone.ShortName},Ignored]}]},${Ini[FarmMobIgnored.ini,${Zone.ShortName},Ignored]},]}${Target.CleanName}|"
 	/varset myTargetID 0
 	/squelch /target clear
@@ -846,7 +863,7 @@ Sub GenerateList
 	/if (!${Ini[FarmMobIgnored.ini,${Zone.ShortName},Ignored].Length}) /ini "FarmMobIgnored.ini" "${Zone.ShortName}" "Ignored" "|"
 	/for i 1 to ${SpawnCount[npc named]}
 		/if (${NearestSpawn[${i},npc named].Name.NotEqual[NULL]}) {
-			/if (!${Ini[FarmMobIgnored.ini,${Zone.ShortName},NamedList].Find[${NearestSpawn[${i},npc named].CleanName}]}) {
+			/if (!${Ini[FarmMobIgnored.ini,${Zone.ShortName},NamedList].Find[${NearestSpawn[${i},npc named].CleanName}]} && !${Ini[FarmMobIgnored.ini,${Zone.ShortName},Ignored].Find[${NearestSpawn[${i},NPC named].CleanName}]}) {
 				/if (${Ini[FarmMobIgnored.ini,${Zone.ShortName},NamedList].Length} < 1900) {	
 					/echo \ayFound - \ar${NearestSpawn[${i},npc named].CleanName}
 					/ini "FarmMobIgnored.ini" "${Zone.ShortName}" "NamedList" "${If[${Bool[${Ini[FarmMobIgnored.ini,${Zone.ShortName},NamedList]}]},${Ini[FarmMobIgnored.ini,${Zone.ShortName},NamedList]},]}${NearestSpawn[${i},npc named].CleanName}|"
@@ -858,7 +875,7 @@ Sub GenerateList
 	/if (!${Ini[FarmMobIgnored.ini,${Zone.ShortName},Merchants].Length}) /ini "FarmMobIgnored.ini" "${Zone.ShortName}" "Merchants" "|"
 	/for i 1 to ${SpawnCount[Merchant]}
 		/if (${NearestSpawn[${i},Merchant].Name.NotEqual[NULL]}) {
-			/if (!${Ini[FarmMobIgnored.ini,${Zone.ShortName},Merchants].Find[${NearestSpawn[${i},Merchant].CleanName}]}) {
+			/if (!${Ini[FarmMobIgnored.ini,${Zone.ShortName},Merchants].Find[${NearestSpawn[${i},Merchant].CleanName}]} && !${Ini[FarmMobIgnored.ini,${Zone.ShortName},Ignored].Find[${NearestSpawn[${i},Merchant].CleanName}]}) {
 				/if (${Ini[FarmMobIgnored.ini,${Zone.ShortName},Merchants].Length} < 1900) {	
 					/echo \ayFound - \ar${NearestSpawn[${i},Merchant].CleanName}
 					/ini "FarmMobIgnored.ini" "${Zone.ShortName}" "Merchants" "${If[${Bool[${Ini[FarmMobIgnored.ini,${Zone.ShortName},Merchants]}]},${Ini[FarmMobIgnored.ini,${Zone.ShortName},Merchants]},]}${NearestSpawn[${i},Merchant].CleanName}|"
@@ -873,7 +890,7 @@ Sub GenerateList
 	/if (!${Ini[FarmMobIgnored.ini,${Zone.ShortName},Bankers].Length}) /ini "FarmMobIgnored.ini" "${Zone.ShortName}" "Bankers" "|"
 	/for i 1 to ${SpawnCount[Banker]}
 		/if (${NearestSpawn[${i},Banker].Name.NotEqual[NULL]}) {
-			/if (!${Ini[FarmMobIgnored.ini,${Zone.ShortName},Bankers].Find[${NearestSpawn[${i},Banker].CleanName}]}) {
+			/if (!${Ini[FarmMobIgnored.ini,${Zone.ShortName},Bankers].Find[${NearestSpawn[${i},Banker].CleanName}]} && !${Ini[FarmMobIgnored.ini,${Zone.ShortName},Ignored].Find[${NearestSpawn[${i},Banker].CleanName}]}) {
 				/if (${Ini[FarmMobIgnored.ini,${Zone.ShortName},Bankers].Length} < 1900) {
 					/echo \ayFound - \ar${NearestSpawn[${i},Banker].CleanName}
 					/ini "FarmMobIgnored.ini" "${Zone.ShortName}" "Bankers" "${If[${Bool[${Ini[FarmMobIgnored.ini,${Zone.ShortName},Bankers]}]},${Ini[FarmMobIgnored.ini,${Zone.ShortName},Bankers]},]}${NearestSpawn[${i},Banker].CleanName}|"
@@ -888,7 +905,7 @@ Sub GenerateList
 	/if (!${Ini[FarmMobIgnored.ini,${Zone.ShortName},Objects].Length}) /ini "FarmMobIgnored.ini" "${Zone.ShortName}" "Objects" "|"
 	/for i 1 to ${SpawnCount[Object]}
 		/if (${NearestSpawn[${i},Object].Name.NotEqual[NULL]}) {
-			/if (!${Ini[FarmMobIgnored.ini,${Zone.ShortName},Objects].Find[${NearestSpawn[${i},Object].CleanName}]}) {
+			/if (!${Ini[FarmMobIgnored.ini,${Zone.ShortName},Objects].Find[${NearestSpawn[${i},Object].CleanName}]} && !${Ini[FarmMobIgnored.ini,${Zone.ShortName},Ignored].Find[${NearestSpawn[${i},Object].CleanName}]}) {
 				/if (${Ini[FarmMobIgnored.ini,${Zone.ShortName},Objects].Length} < 1900) {
 					/echo \ayFound - \ar${NearestSpawn[${i},Object].CleanName}
 					/ini "FarmMobIgnored.ini" "${Zone.ShortName}" "Objects" "${If[${Bool[${Ini[FarmMobIgnored.ini,${Zone.ShortName},Objects]}]},${Ini[FarmMobIgnored.ini,${Zone.ShortName},Objects]},]}${NearestSpawn[${i},Object].CleanName}|"
@@ -903,7 +920,7 @@ Sub GenerateList
 	/if (!${Ini[FarmMobIgnored.ini,${Zone.ShortName},NPCs].Length}) /ini "FarmMobIgnored.ini" "${Zone.ShortName}" "NPCs" "|"
 	/for i 1 to ${SpawnCount[npc]}
 		/if (${NearestSpawn[${i},NPC].Name.NotEqual[NULL]} && !${NearestSpawn[${i},NPC].Named}) {
-			/if (!${Ini[FarmMobIgnored.ini,${Zone.ShortName},NPCs].Find[${NearestSpawn[${i},NPC].CleanName}]}) {
+			/if (!${Ini[FarmMobIgnored.ini,${Zone.ShortName},NPCs].Find[${NearestSpawn[${i},NPC].CleanName}]} && !${Ini[FarmMobIgnored.ini,${Zone.ShortName},NamedList].Find[${NearestSpawn[${i},NPC].CleanName}]} && !${Ini[FarmMobIgnored.ini,${Zone.ShortName},Ignored].Find[${NearestSpawn[${i},NPC].CleanName}]}) {
 				/if (${Ini[FarmMobIgnored.ini,${Zone.ShortName},NPCs].Length} < 1900) {
 					/echo \ayFound - \ar${NearestSpawn[${i},NPC].CleanName}
 					/ini "FarmMobIgnored.ini" "${Zone.ShortName}" "NPCs" "${If[${Bool[${Ini[FarmMobIgnored.ini,${Zone.ShortName},NPCs]}]},${Ini[FarmMobIgnored.ini,${Zone.ShortName},NPCs]},]}${NearestSpawn[${i},NPC].CleanName}|"
@@ -1003,7 +1020,7 @@ Sub PetPull
 	/while (!${Me.XTarget[1].ID}) {
 		/if (!${Me.Pet.ID}) /call SummonPet
 		/if (${Me.Pet.ID}) {
-			/if (${Target.Type.Equal[Corpse]}) /break
+			/if (${Target.Type.Equal[Corpse]} || !${Target.ID}) /return
 			/echo \aySending Pet to attack ${Target.CleanName}
 			/pet attack
 			/delay 2s ${Me.XTarget[1].ID}
@@ -1044,7 +1061,6 @@ Sub CheckPlugin(PluginName, Option)
 				/delay 3s ${EQBC.Connected}
 				/if (!${EQBC.Connected}) {
 					/echo "\arCould not connect to the EQBC Server. Are you sure it's running?"
-					/varset Endmac TRUE
 				}
 			}
 		}
@@ -1066,8 +1082,9 @@ Sub GetPullAbilityCommand
 	/if (!${Me.Skill[${PullAbility}]} && !${Me.Book[${PullAbility}]} && !${Me.AltAbility[${PullAbility}]} && !${Me.CombatAbility[${PullAbility}]} && !${PullAbility.Equal[pet]} && !${FindItem[${PullAbility}].ID} && !${Select[${PullAbility},Ranged,Throwing,Archery,Bow]}) {
 		/echo \ar${PullAbility} is not a Skill, Spell, AltAbility, or CombatAbility, or Item. Check your INI, using default Pulling.
 		/declare PullCommand string outer
+		/varset PullAbilityRange 20
 	} else {
-		/if (${Me.Skill[${PullAbility}]}) {
+		/if (${Me.Skill[${PullAbility}]} && ${PullAbility.NotEqual[Throwing,Archery,Bow]}) {
 			/if (${Debugging}) /echo \ayPullAbility:${PullAbility} is a skill
 			/declare PullCommand string outer /doability ${PullAbility}
 		} else /if (${Me.AltAbility[${PullAbility}]}) {
@@ -1585,7 +1602,7 @@ Sub Help
 /return
 
 Sub INIChange(Section,Key,Value)
-	/ini "${Settings}" "${Section" "${Key}" "${Value}"
+	/ini "${Settings}" "${Section}" "${Key}" "${Value}"
 /return
 
 |Thanks to Kaen01 for his assistance with compressing my IsNumber sub to from 13 lines to 5 lines so that I could compress it to 4 lines.
